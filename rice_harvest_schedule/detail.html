@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver/Farmer Detail</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/0.7.4/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/th.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/html5-qrcode@2.0.9/dist/html5-qrcode.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=K2D:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <!-- Lightbox CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+</head>
+
+<body>
+    <div class="container mx-auto mt-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <div class="flex space-x-4">
+                    <a href="C:\Users\veerachot\rice-harvest-schedule\rice_harvest_schedule\บัตรประชาชน.jpg" data-lightbox="document-set">
+                        <img src="C:\Users\veerachot\rice-harvest-schedule\rice_harvest_schedule\บัตรประชาชน.jpg"
+                            alt="ID Card" class="w-32 h-auto rounded-lg border">
+                    </a>
+                    <a href="C:\Users\veerachot\rice-harvest-schedule\rice_harvest_schedule\สำเนาทะเบียนรถ.jpg" data-lightbox="document-set">
+                        <img src="C:\Users\veerachot\rice-harvest-schedule\rice_harvest_schedule\สำเนาทะเบียนรถ.jpg"
+                            alt="Car Registration" class="w-32 h-auto rounded-lg border">
+                    </a>
+                    <a href="C:\Users\veerachot\rice-harvest-schedule\rice_harvest_schedule\คนขับ.jpg" data-lightbox="document-set">
+                        <img src="C:\Users\veerachot\rice-harvest-schedule\rice_harvest_schedule\คนขับ.jpg"
+                            alt="Driver with Car" class="w-32 h-auto rounded-lg border">
+                    </a>
+                </div>
+            </div>
+            <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 class="text-2xl font-bold mb-4">Driver/Farmer Details</h2>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Name:</label>
+                    <p>{{ customer.name }}</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Company:</label>
+                    <p>{{ customer.company }}</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Model:</label>
+                    <p>{{ customer.model }}</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">License Plate:</label>
+                    <p>{{ customer.license_plate }}</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Fuel Type:</label>
+                    <p>{{ customer.fuel_type }}</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Seats:</label>
+                    <p>{{ customer.seats }}</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Gear Type:</label>
+                    <p>{{ customer.gear_type }}</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">About:</label>
+                    <p>{{ customer.about }}</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Price:</label>
+                    <p>{{ customer.price }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'customer_list' %}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete Vehicle</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+</body>
+
+</html>
