@@ -1,0 +1,293 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/0.7.4/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://kit.fontawesome.com/541087f5af.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css"  rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+    <!-- Include flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Include flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Include flatpickr Thai language -->
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/th.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/html5-qrcode@2.0.9/dist/html5-qrcode.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=K2D:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,700;1,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+
+
+    <style>
+        .slow-moves {
+            transition: 0.3s;
+        }
+
+        .sidebar-inactive {
+            transform: translateX(-100%);
+        }
+    </style>
+</head>
+
+<body class="bg-light h-screen overflow-hidden ">
+    <div id="main" class="w-full min-h-full absolute pin-r flex flex-col overflow-y-auto max-h-screen">
+        <nav id="navbar" class="fixed top-0 left-0 z-50 w-full border-b text-lg p-6 bg-white shadow-md flex flex-wrap justify-between items-center">
+            
+            {% if user.is_authenticated %}
+            <button id="menu-switch" class="focus:outline-none">
+                <span class="fa fa-bars"></span>
+            </button>
+            {% endif %}
+            <div class="flex-grow"></div>
+
+            {% if user.is_authenticated %}
+            <button id="profile-menu" class="focus:outline-none flex items-center ">
+                <span class="fa fa-user-circle"></span>
+                <span class="ml-2">{{ user.username }}</span>
+            </button>
+            <div id="dropdown-profile" class="hidden absolute right-5 mt-32 w-48 py-2 bg-white rounded-lg shadow-xl z-10 border border-black">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ออกจากระบบ</a>
+            </div>
+            {% else %}
+            <div class="mt-2 sm:mt-0 sm:flex md:order-2 ml-auto" style="margin-right: 80px;">
+                <a href="{% url 'login' %}" class="rounde mr-3 hidden border border-blue-700 py-1.5 px-6 text-center text-sm font-medium text-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 md:inline-block rounded-lg">เข้าสู่ระบบ</a>
+                <a href="{% url 'chooserole' %}" class="rounde mr-3 hidden bg-blue-700 py-1.5 px-6 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 md:mr-0 md:inline-block rounded-lg">สมัครสมาชิก</a>
+            </div>
+            <div class="md:hidden flex items-center">
+                <button data-collapse-toggle="navbar-sticky" type="button" class="inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 md:hidden" aria-controls="navbar-sticky" aria-expanded="false">
+                    <span class="sr-only">Open main menu</span>
+                    <svg class="h-6 w-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            {% endif %}
+            <div id="navbar-sticky" class="hidden md:hidden w-full items-center justify-between md:order-1  ">
+                <ul class="mt-4 flex flex-col text-center rounded-lg border border-gray-100 bg-gray-50 p-4 md:mt-0 md:flex-row md:space-x-8 md:border-0 md:bg-white md:text-sm md:font-medium">
+                    <li>
+                        <a href="{% url 'login' %}" class="block rounded bg-blue-700 py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 md:text-blue-700" aria-current="page">เข้าสู่ระบบ</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'chooserole' %}" class="block rounded py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-100 md:p-0 md:hover:bg-transparent md:hover:text-blue-700">สมัครสมาชิก</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+  
+
+        {% block main %}{% block content %} {% block car %} {% block booking %}
+        {% endblock %} {% endblock %}{% endblock %}{% endblock %}
+    </div>
+    <aside id="sidebar" class="fixed z-30 pin-y bg-grey-lightest shadow-md w-full sm:w-1/3 lg:w-1/6 sidebar-inactive">
+        <h1 class="text-xl p-6 bg-grey-lighter border-grey-light border-b text-grey-darkest">จองง่ายได้เกี่ยว</h1>
+        <ul class="list-reset">
+            {% if user.is_authenticated %}
+            {% for group in user.groups.all %}
+            {% if group.name == 'farmer' %}
+            <li class="hover:bg-teal">
+                <a href="{% url 'home_farmer' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    home (Farmer)
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-grip-horizontal"></span>
+                    จองรถเกี่ยวนวดข้าว
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'farmer_booking_list' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-newspaper"></span>
+                    ข้อมูลจองรถเกี่ยวนวดข้าว
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="#" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-ellipsis-h"></span>
+                    ข้อมูลส่วนตัว
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'profile_update' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa-solid fa-user"></span>
+                    แก้ไขข้อมูลส่วนตัว
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="#" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-cogs"></span>
+                    Settings
+                </a>
+            </li>
+            {% elif group.name == 'driver' %}
+            <li class="hover:bg-teal">
+                <a href="{% url 'home_driver' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-truck"></span>
+                    Orders (Driver)
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="#" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-grip-horizontal"></span>
+                    Dashboard
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'add_vehicle' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-newspaper"></span>
+                    เพิ่มรถเกี่ยว
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'add_event' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa-solid fa-calendar-days"></span>
+                    เพิ่มตารางรถเกี่ยว
+                </a>
+            </li>
+            
+            <li class="hover:bg-teal">
+                <a href="{% url 'driver_booking_list' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-envelope"></span>
+                    ข้อมูลจองรถเกี่ยวนวดข้าว
+                    <span class="bg-yellow-300 text-black text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300 ">{{ no_of_pending_request }}</span>
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="#" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-cogs"></span>
+                    แก้ไขข้อมูลรถ
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'add_detailvehicle' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-cogs"></span>
+                    เพิ่มข้อมูลรถ
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'profile_update' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa-solid fa-user"></span>
+                    แก้ไขข้อมูลส่วนตัว
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'upload_document' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa-solid fa-user"></span>
+                    ส่งเอกสารยืนยันตัวตน
+                </a>
+            </li>
+
+            
+            
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+        </ul>
+    </aside>
+    <script>
+        (function () {
+            let menuSwitch = document.querySelector("#menu-switch"),
+                sidebar = document.querySelector("#sidebar"),
+                main = document.querySelector("#main"),
+                profileMenu = document.querySelector("#profile-menu"),
+                dropdownProfile = document.querySelector("#dropdown-profile");
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const button = document.querySelector('[data-collapse-toggle="navbar-sticky"]');
+                const menu = document.getElementById('navbar-sticky');
+
+                button.addEventListener('click', function () {
+                    const expanded = this.getAttribute('aria-expanded') === 'true' || false;
+                    this.setAttribute('aria-expanded', !expanded);
+                    menu.classList.toggle('hidden');
+                });
+            });
+
+            function toggleSidebar() {
+                let classesToApplyForSidebar = {
+                    active: [],
+                    inactive: ["sidebar-inactive"]
+                },
+                    classesToApplyForMain = {
+                        active: ["sm:w-5/6"],
+                        inactive: []
+                    },
+                    classesToApplyForMenuButton = {
+                        active: ["fa-times-circle", "text-red-light"],
+                        inactive: ["fa-bars"]
+                    };
+
+                let isMenuActive = menuSwitch.getAttribute("data-menu-active") === "true";
+
+                if (isMenuActive) {
+                    menuSwitch.setAttribute("data-menu-active", null);
+
+                    menuSwitch.children[0].classList.remove(
+                        ...classesToApplyForMenuButton.active
+                    );
+                    menuSwitch.children[0].classList.add(
+                        ...classesToApplyForMenuButton.inactive
+                    );
+
+                    sidebar.classList.remove(...classesToApplyForSidebar.active);
+                    sidebar.classList.add(...classesToApplyForSidebar.inactive);
+
+                    main.classList.remove(...classesToApplyForMain.active);
+                    main.classList.add(...classesToApplyForMain.inactive);
+                } else {
+                    menuSwitch.setAttribute("data-menu-active", true);
+
+                    menuSwitch.children[0].classList.add(
+                        ...classesToApplyForMenuButton.active
+                    );
+                    menuSwitch.children[0].classList.remove(
+                        ...classesToApplyForMenuButton.inactive
+                    );
+
+                    sidebar.classList.add(...classesToApplyForSidebar.active);
+                    sidebar.classList.remove(...classesToApplyForSidebar.inactive);
+
+                    main.classList.add(...classesToApplyForMain.active);
+                    main.classList.remove(...classesToApplyForMain.inactive);
+                }
+            }
+
+            document.querySelector("#menu-switch").addEventListener("click", e => {
+                e.preventDefault();
+                toggleSidebar();
+            });
+
+            profileMenu.addEventListener("click", e => {
+                e.preventDefault();
+                dropdownProfile.classList.toggle("hidden");
+            });
+
+            toggleSidebar();
+            setTimeout(() => {
+                sidebar.classList.add("slow-moves");
+                main.classList.add("slow-moves");
+            }, 300);
+        })();
+    </script>
+</body>
+</html>

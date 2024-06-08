@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+  add_detailvehicle - Driver
+{% endblock %}   
+{% block main %}
+<body class="bg-gray-100">
+    <div>
+        <h1 class="mb-3">กรอกรายละเอียดการจอง</h1>
+    </div>
+
+    <div class="container mx-auto p-6"style="margin-top: 5cm;">
+        <div class="flex max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+          <!-- Vehicle Image -->
+          <div class="w-1/2 p-4">
+            <img class="w-full h-full object-cover rounded-lg" src="{{ vehicle.image.url }}" alt="Vehicle">
+          </div>
+          <!-- Vehicle Information Form -->
+          <div class="w-1/2 p-4">
+            <form method="post" action="">
+                {% csrf_token %}
+              <div class="mb-4">
+                <label for="model" class="block text-sm font-medium text-gray-700">รุ่น:</label>
+                <input type="text" id="model" name="model" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+              </div>
+              <div class="mb-4">
+                <label for="power" class="block text-sm font-medium text-gray-700">กำลังเครื่อง:</label>
+                <input type="text" id="power" name="power" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+              </div>
+              <div class="mb-4">
+                <label for="price" class="block text-sm font-medium text-gray-700">ราคา บาท/ไร่:</label>
+                <input type="text" id="price" name="price" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+              </div>
+              <div class="mb-4">
+                <label for="details" class="block text-sm font-medium text-gray-700">รายละเอียด:</label>
+                <textarea id="details" name="details" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+              </div>
+              <div class="flex justify-between">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">ยกเลิก</button>
+                <button type="reset" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">เพิ่ม</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+</body>
+{% endblock %}

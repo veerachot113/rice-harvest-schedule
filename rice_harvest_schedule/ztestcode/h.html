@@ -1,0 +1,59 @@
+<!-- home.html -->
+{% extends "base.html" %}
+{% load static %}
+{% block car %}
+
+<section>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="mx-auto grid max-w-6xl grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+        {% for vehicle in vehicles %}
+            <article class="rounded-xl bg-white p-3 shadow-lg hover:shadow-xl hover:transform hover:scale-95 duration-300 ">
+                <div class="relative max-w-sm mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+                    <!-- Dropdown Button -->
+                    <div class="absolute top-0 right-0 mt-2 mr-2">
+                        <button onclick="toggleDropdown('{{ vehicle.id }}')" class="text-gray-700 focus:outline-none">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div id="dropdownMenu{{ vehicle.id }}" class="hidden absolute right-0 mt-8 w-48 bg-white rounded-md shadow-lg z-10">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลรถเกี่ยว</a>
+                            <a href="{% url 'view_driver_profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลเจ้าของรถ</a>
+                        </div>
+                    </div>
+                    <!-- Product Image -->
+                    <img class="w-full h-56 object-cover object-center" src="{{ vehicle.image.url }}" alt="Kubota Tractor">
+                    <!-- Product Details -->
+                    <div class="p-5">
+                        <h3 class="text-gray-600">รุ่น : {{ vehicle.model }}</h3>
+                        <p class="text-gray-600">ประเภท : {{ vehicle.type }}</p>
+                        <p class="text-gray-600 mb-4">ราคา : {{ vehicle.price }}</p>
+                        <!-- Booking Buttons -->
+                        <div class="flex justify-center space-x-16 items-center">
+                            <a href="calendar.html " class="w-28 h-10 bg-blue-500 text-white text-xs font-bold uppercase rounded flex justify-center items-center hover:transform hover:scale-110 duration-300">ตารางการจอง</a>
+                            <a href="{% url 'booking' vehicle.id %}" class="w-28 h-10 bg-green-500 text-white text-xs font-bold uppercase rounded flex justify-center items-center hover:transform hover:scale-110 duration-300">จองทันที</a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+
+    <script>
+        function toggleDropdown(vehicleId) {
+            // ปิด dropdown ทั้งหมดที่ไม่ใช่ dropdown ที่ถูกกด
+            const allDropdowns = document.querySelectorAll('[id^="dropdownMenu"]');
+            allDropdowns.forEach(dropdown => {
+                if (dropdown.id !== 'dropdownMenu' + vehicleId) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            // เปิดหรือปิด dropdown ที่ถูกกด
+            const dropdownMenu = document.getElementById("dropdownMenu" + vehicleId);
+            dropdownMenu.classList.toggle("hidden");
+        }
+    </script>
+</div>
+
+{% endblock %}

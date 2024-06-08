@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>การจองรถแทรกเตอร์</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-52 py-60 ">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white rounded-lg shadow-md overflow-hidden">
+            <!-- Image Block -->
+            <div class="flex justify-center items-center">
+                <img class="w-full h-96 object-cover md:w-full" src="media\vehicle_images\pic-DC-70G-PRO-s_1.jpg" alt="Kubota Tractor">
+            </div>
+            <!-- Form Block -->
+            <div class="p-4 flex flex-col justify-between">
+                <form class="flex-grow">
+                    <div class="mb-4">
+                        <label for="name" class="block text-gray-700 text-sm font-bold mb-2">ชื่อผู้จอง:</label>
+                        <input type="text" id="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="phone" class="block text-gray-700 text-sm font-bold mb-2">เบอร์โทรศัพท์:</label>
+                        <input type="tel" id="phone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="address" class="block text-gray-700 text-sm font-bold mb-2">ที่อยู่:</label>
+                        <input type="text" id="address" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="details" class="block text-gray-700 text-sm font-bold mb-2">รายละเอียดเพิ่มเติม:</label>
+                        <textarea id="details" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></textarea>
+                    </div>
+                </form>
+                <div class="flex justify-between mt-4">
+                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">ยกเลิก</button>
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">ยืนยัน</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
