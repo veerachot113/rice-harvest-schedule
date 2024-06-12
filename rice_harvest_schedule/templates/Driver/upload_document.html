@@ -1,10 +1,51 @@
-{% extends 'base.html' %}
+<!-- driver/upload_document.html -->
+{% extends "base.html" %}
+{% block booking %}
+<body class="bg-gray-100">
 
-{% block content %}
-<h2 class="mt-36">Upload License Document</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit</button>
-</form>
+<div class="min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center">อัพโหลดเอกสารรถเกี่ยว</h2>
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="{% if message.tags %}{{ message.tags }}{% endif %} bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong class="font-bold">{{ message }}</strong>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_card">
+                    บัตรประชาชน/ใบขับขี่
+                </label>
+                <input type="file" id="id_card" name="id_card" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="car_registration">
+                    สำเนาทะเบียนรถ
+                </label>
+                <input type="file" id="car_registration" name="car_registration" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="driver_with_car">
+                    รูปคู่กับรถ
+                </label>
+                <input type="file" id="driver_with_car" name="driver_with_car" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>    
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    ยืนยัน
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}

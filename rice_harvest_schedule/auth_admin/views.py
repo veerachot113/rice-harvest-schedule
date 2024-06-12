@@ -1,69 +1,62 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import Group
-from django.contrib.auth import get_user_model
-from .forms import LicenseDocumentForm, ReviewDocumentForm
-from .models import LicenseDocument
-from accounts.models import UserDriver
-
-User = get_user_model()
-
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def document_list(request):
-    pending_documents = LicenseDocument.objects.filter(is_approved=False, is_rejected=False)
-    approved_documents = LicenseDocument.objects.filter(is_approved=True)
-    rejected_documents = LicenseDocument.objects.filter(is_rejected=True)
-    return render(request, 'auth_admin/document_list.html', {
-        'pending_documents': pending_documents,
-        'approved_documents': approved_documents,
-        'rejected_documents': rejected_documents,
-    })
+from django.contrib import messages
+from .models import DriverDocument
+from .forms import DriverDocumentForm
+from accounts.models import CustomUser
 
 @login_required
 def upload_document(request):
-    if request.method == 'POST':
-        form = LicenseDocumentForm(request.POST, request.FILES)
-        if form.is_valid():
-            driver = request.user
-            if LicenseDocument.objects.filter(driver=driver, is_approved=False, is_rejected=False).exists():
-                form.add_error(None, "You have already submitted a document for approval.")
-            else:
-                form.instance.driver = driver
-                form.save()
-                return redirect('document_status')
-    else:
-        form = LicenseDocumentForm()
-    return render(request, 'Driver/upload_document.html', {'form': form})
+    existing_document = DriverDocument.objects.filter(driver=request.user).exclude(request_status='Declined').first()
+    if existing_document:
+        messages.error(request, 'คุณได้ส่งเอกสารไปแล้ว รอการตรวจสอบหรือส่งใหม่ในกรณีที่ถูกปฏิเสธ')
+        return redirect('document_status')
 
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def approve_document(request, document_id):
-    document = get_object_or_404(LicenseDocument, id=document_id)
     if request.method == 'POST':
-        document.is_approved = True
-        document.save()
-        document.driver.is_staff = True
-        document.driver.save()
-        return redirect('document_list')
-    return render(request, 'auth_admin/review_document.html', {'document': document})
-
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def reject_document(request, document_id):
-    document = get_object_or_404(LicenseDocument, id=document_id)
-    if request.method == 'POST':
-        form = ReviewDocumentForm(request.POST, instance=document)
+        form = DriverDocumentForm(request.POST, request.FILES)
         if form.is_valid():
-            document.is_rejected = True
-            document.can_resubmit = True
+            document = form.save(commit=False)
+            document.driver = request.user
             document.save()
-            return redirect('document_list')
+            messages.success(request, 'เอกสารถูกส่งเรียบร้อยแล้ว')
+            return redirect('document_status')
     else:
-        form = ReviewDocumentForm(instance=document)
-    return render(request, 'auth_admin/review_document.html', {'form': form, 'document': document})
+        form = DriverDocumentForm()
+    
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="Pending").count()
+    return render(request, 'driver/upload_document.html', {'form': form, 'no_of_pending_documents': no_of_pending_documents})
 
 @login_required
 def document_status(request):
-    documents = LicenseDocument.objects.filter(driver=request.user)
-    return render(request, 'Driver/document_status.html', {'documents': documents})
+    documents = DriverDocument.objects.filter(driver=request.user)
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="Pending").count()
+    return render(request, 'driver/document_status.html', {'documents': documents, 'no_of_pending_documents': no_of_pending_documents})
+
+@user_passes_test(lambda u: u.is_superuser)
+def document_review(request):
+    documents = DriverDocument.objects.all()
+    no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()
+    return render(request, 'auth_admin/document_review.html', {'documents': documents, 'no_of_pending_documents': no_of_pending_documents})
+
+@user_passes_test(lambda u: u.is_superuser)
+def process_document(request, document_id):
+    document = get_object_or_404(DriverDocument, id=document_id)
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        note = request.POST.get('note', '')
+        if action == 'approve':
+            document.request_status = 'Approved'
+            document.driver.is_staff = True
+            document.driver.save()
+        elif action == 'decline':
+            document.request_status = 'Declined'
+        else:
+            messages.error(request, 'Invalid action.')
+            return redirect('document_review')
+        document.note = note
+        document.save()
+        messages.success(request, f'เอกสารได้ถูก{action}เรียบร้อยแล้ว')
+    return redirect('document_review')
+
+
+

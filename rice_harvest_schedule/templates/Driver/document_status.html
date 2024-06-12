@@ -1,53 +1,45 @@
-{% extends 'base.html' %}
-
-{% block title %}Document Status{% endblock %}
-
-{% block content %}
-<h2 class="text-2xl font-bold mb-4">Document Status</h2>
-<table class="min-w-full bg-white">
-    <thead class="bg-gray-800 text-white">
-        <tr>
-            <th class="w-1/3 py-3 px-4 uppercase font-semibold text-sm">Document Type</th>
-            <th class="w-1/3 py-3 px-4 uppercase font-semibold text-sm">Status</th>
-        </tr>
-    </thead>
-    <tbody class="text-gray-700">
-        {% for document in documents %}
-        <tr>
-            <td class="py-3 px-4">ID Card</td>
-            <td class="py-3 px-4">{{ document.id_card.url }}</td>
-        </tr>
-        <tr>
-            <td class="py-3 px-4">Driving License</td>
-            <td class="py-3 px-4">{{ document.driving_license.url }}</td>
-        </tr>
-        <tr>
-            <td class="py-3 px-4">Vehicle Registration</td>
-            <td class="py-3 px-4">{{ document.vehicle_registration.url }}</td>
-        </tr>
-        <tr>
-            <td class="py-3 px-4">Driver Photo</td>
-            <td class="py-3 px-4">{{ document.driver_photo.url }}</td>
-        </tr>
-        <tr>
-            <td class="py-3 px-4">Vehicle Photo</td>
-            <td class="py-3 px-4">{{ document.vehicle_photo.url }}</td>
-        </tr>
-        <tr>
-            <td class="py-3 px-4">Approval Status</td>
-            <td class="py-3 px-4">
-                {% if document.is_approved %}
-                <span class="text-green-500">Approved</span>
-                {% elif document.is_rejected %}
-                <span class="text-red-500">Rejected</span>
-                <p>Reason: {{ document.rejection_reason }}</p>
-                <a href="{% url 'upload_document' %}" class="text-blue-500 hover:underline">Resubmit</a>
-                {% else %}
-                <span class="text-yellow-500">Pending</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endblock %}
+<!-- driver/document_status.html -->
+{% extends "base.html" %}
+{% block booking %}
+    <h1 class="text-3xl font-bold text-center mt-40">สถานะเอกสาร</h1>
+    <div class="container mx-auto mt-10">
+        <table class="min-w-full bg-white">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="py-2 px-4 border-b">ลำดับ</th>
+                    <th class="py-2 px-4 border-b">วันที่ส่ง</th>
+                    <th class="py-2 px-4 border-b">บัตรประชาชน/ใบขับขี่</th>
+                    <th class="py-2 px-4 border-b">สำเนาทะเบียนรถ</th>
+                    <th class="py-2 px-4 border-b">คนขับคู่กับรถ</th>
+                    <th class="py-2 px-4 border-b">หมายเหตุ</th>
+                    <th class="py-2 px-4 border-b">สถานะ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for document in documents %}
+                <tr class="bg-gray-50 border-b">
+                    <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                    <td class="px-5 py-4 text-center">{{ document.submission_date }}</td>
+                    <td class="px-5 py-4 text-center">
+                        <a href="{{ document.id_card.url }}" data-lightbox="document-{{forloop.counter}}">
+                            <img src="{{ document.id_card.url }}" alt="บัตรประชาชน/ใบขับขี่" class="w-32 h-auto rounded-lg border mx-auto">
+                        </a>
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        <a href="{{ document.car_registration.url }}" data-lightbox="document-{{forloop.counter}}">
+                            <img src="{{ document.car_registration.url }}" alt="สำเนาทะเบียนรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                        </a>
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        <a href="{{ document.driver_with_car.url }}" data-lightbox="document-{{forloop.counter}}">
+                            <img src="{{ document.driver_with_car.url }}" alt="คนขับยืนคู่กับรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                        </a>
+                    </td>
+                    <td class="px-5 py-4 text-center">{{ document.note }}</td>
+                    <td class="text-red-500 font-bold text-center">{{ document.request_status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endblock %}

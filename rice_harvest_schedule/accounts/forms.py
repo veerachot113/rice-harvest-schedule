@@ -1,47 +1,74 @@
 # accounts/forms.py
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import UserFarmer, UserDriver
+from .models import CustomUser
 
 class UserFarmerRegistrationForm(UserCreationForm):
-    first_name = forms.CharField(max_length=100, required=True, label='ชื่อ')  # เพิ่มชื่อ-สกุล
-    last_name = forms.CharField(max_length=100, required=True, label='สกุล')  # สกุล
-    address = forms.CharField(max_length=255, required=True, label='ที่อยู่')  # เพิ่มที่อยู่
-    phone = forms.CharField(max_length=15, required=True, label='เบอร์โทรศัพท์')  # เพิ่มเบอร์โทรศัพท์
+    first_name = forms.CharField(max_length=100, required=True, label='ชื่อ',error_messages={'required': 'กรุณากรอกชื่อ'})
+    last_name = forms.CharField(max_length=100, required=True, label='นามสกุล',error_messages={'required': 'กรุณากรอกนามสกุล'})
+    address = forms.CharField(max_length=255, required=True, label='ที่อยู่',error_messages={'required': 'กรุณากรอกที่อยู่'})
+    phone = forms.CharField(max_length=15, required=True, label='เบอร์',error_messages={'required': 'กรุณากรอกเบอร์โทรศัพท์'})
+    email = forms.EmailField(required=True, label='E-mail',error_messages={    'required': 'กรุณากรอกอีเมล',    'invalid': 'รูปแบบอีเมลไม่ถูกต้อง'})
+    username = forms.CharField(max_length=150, required=True, label='Username',error_messages={    'required': 'กรุณากรอกชื่อผู้ใช้',    'unique': 'ชื่อผู้ใช้นี้มีอยู่แล้ว'})
+    password1 = forms.CharField(label='รหัสผ่าน', widget=forms.PasswordInput,error_messages={    'required': 'กรุณากรอกรหัสผ่าน',})
+    password2 = forms.CharField(label='ยืนยันรหัสผ่าน', widget=forms.PasswordInput,error_messages={    'required': 'กรุณากรอกยืนยันรหัสผ่าน',    'password_mismatch': 'รหัสผ่านไม่ตรงกัน'})
 
     class Meta:
-        model = UserFarmer
-        fields = ['username', 'email', 'password1', 'password2', 'first_name','last_name',  'address', 'phone']
+        model = CustomUser
+        fields = ['username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'address', 'phone']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError('อีเมลนี้มีอยู่แล้วในระบบ')
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if CustomUser.objects.filter(username=username).exists():
+            raise forms.ValidationError('ชื่อผู้ใช้นี้มีอยู่แล้วในระบบ')
+        return username
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError('รหัสผ่านไม่ตรงกัน')
+        return password2
+class UserDriverRegistrationForm(UserCreationForm):
+    first_name = forms.CharField(max_length=100, required=True, label='ชื่อ',error_messages={'required': 'กรุณากรอกชื่อ'})
+    last_name = forms.CharField(max_length=100, required=True, label='นามสกุล',error_messages={'required': 'กรุณากรอกนามสกุล'})
+    address = forms.CharField(max_length=255, required=True, label='ที่อยู่',error_messages={'required': 'กรุณากรอกที่อยู่'})
+    phone = forms.CharField(max_length=15, required=True, label='เบอร์',error_messages={'required': 'กรุณากรอกเบอร์โทรศัพท์'})
+    email = forms.EmailField(required=True, label='E-mail',error_messages={'required': 'กรุณากรอกอีเมล','invalid': 'รูปแบบอีเมลไม่ถูกต้อง'})
+    username = forms.CharField(max_length=150, required=True, label='Username',error_messages={'required': 'กรุณากรอกชื่อผู้ใช้','unique': 'ชื่อผู้ใช้นี้มีอยู่แล้ว'})
+    password1 = forms.CharField(label='รหัสผ่าน', widget=forms.PasswordInput,error_messages={'required': 'กรุณากรอกรหัสผ่าน',})
+    password2 = forms.CharField(label='ยืนยันรหัสผ่าน', widget=forms.PasswordInput,error_messages={'required': 'กรุณากรอกยืนยันรหัสผ่าน','password_mismatch': 'รหัสผ่านไม่ตรงกัน'})
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'address', 'phone']
+
 
 class UserFarmerUpdateForm(UserChangeForm):
-    first_name = forms.CharField(max_length=100, required=True, label='ชื่อ')  # เพิ่มชื่อ-สกุล
-    last_name = forms.CharField(max_length=100, required=True, label='สกุล')  # สกุล
-    address = forms.CharField(max_length=255, required=True, label='ที่อยู่')  # เพิ่มที่อยู่
-    phone = forms.CharField(max_length=15, required=True, label='เบอร์โทรศัพท์')  # เพิ่มเบอร์โทรศัพท์
+    first_name = forms.CharField(max_length=100, required=True, label='ชื่อ')
+    last_name = forms.CharField(max_length=100, required=True, label='นามสกุล')
+    address = forms.CharField(max_length=255, required=True, label='ที่อยู่')
+    phone = forms.CharField(max_length=15, required=True, label='เบอร์โทรศัพท์')
 
     class Meta:
-        model = UserFarmer
-        fields = ['email', 'first_name','last_name', 'address', 'phone']
-
-class UserDriverRegistrationForm(UserCreationForm):
-    first_name = forms.CharField(max_length=100, required=True, label='ชื่อ')  # เพิ่มชื่อ-สกุล
-    last_name = forms.CharField(max_length=100, required=True, label='สกุล')  # สกุล
-    address = forms.CharField(max_length=255, required=True, label='ที่อยู่')  # เพิ่มที่อยู่
-    phone = forms.CharField(max_length=15, required=True, label='เบอร์โทรศัพท์')  # เพิ่มเบอร์โทรศัพท์
-
-    class Meta:
-        model = UserDriver
-        fields = ['username', 'email', 'password1', 'password2', 'first_name','last_name', 'address', 'phone']
+        model = CustomUser
+        fields = ['email', 'first_name', 'last_name', 'address', 'phone']
 
 
 
 class UserDriverUpdateForm(UserChangeForm):
-    first_name = forms.CharField(max_length=100, required=True, label='ชื่อ')  # เพิ่มชื่อ-สกุล
-    last_name = forms.CharField(max_length=100, required=True, label='สกุล')  # สกุล
-    address = forms.CharField(max_length=255, required=True, label='ที่อยู่')  # เพิ่มที่อยู่
-    phone = forms.CharField(max_length=15, required=True, label='เบอร์โทรศัพท์')  # เพิ่มเบอร์โทรศัพท์
+    first_name = forms.CharField(max_length=100, required=True, label='ชื่อ')
+    last_name = forms.CharField(max_length=100, required=True, label='นามสกุล')
+    address = forms.CharField(max_length=255, required=True, label='ที่อยู่')
+    phone = forms.CharField(max_length=15, required=True, label='เบอร์โทรศัพท์')
 
     class Meta:
-        model = UserDriver
-        fields = ['email', 'first_name','last_name', 'address', 'phone']
-        
+        model = CustomUser
+        fields = ['email', 'first_name', 'last_name', 'address', 'phone']
+

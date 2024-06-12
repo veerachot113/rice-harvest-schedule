@@ -4,16 +4,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Booking
 from .forms import BookingForm
-from accounts.models import *
+from accounts.models import CustomUser
+from accounts.decorators import farmer_required, driver_required
+@farmer_required
 @login_required(login_url='login')
 def create_booking(request, vehicle_id):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    # ตรวจสอบกลุ่มของผู้ใช้ ว่าเป็น farmer หรือไม่
-    if not request.user.groups.filter(name='farmer').exists():
-        return redirect('home')  # หรือหน้าที่ต้องการให้ driver หรือผู้ที่ไม่ได้เป็น farmer ไป
-
+    if request.user.user_type != 'farmer':
+        return redirect('home')
 
     vehicle = get_object_or_404(Vehicle, id=vehicle_id)
     if request.method == 'POST':
@@ -79,5 +79,6 @@ def count_pending_rent_request(driver):
         if booking.request_status == "Pending":
             no_of_pending_request += 1
     return no_of_pending_request
+
 
 

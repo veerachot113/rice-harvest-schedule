@@ -1,39 +1,37 @@
 # accounts/backends.py
 
 from django.contrib.auth.backends import ModelBackend
-from .models import UserFarmer, UserDriver
-
+from .models import CustomUser
 
 class UserFarmerBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
-            user = UserFarmer.objects.get(username=username)
-        except UserFarmer.DoesNotExist:
+            user = CustomUser.objects.get(username=username, user_type='farmer')
+        except CustomUser.DoesNotExist:
             return None
 
         if user.check_password(password):
-            user.backend = 'accounts.backends.UserFarmerBackend'  # Set the backend attribute
             return user
 
     def get_user(self, user_id):
         try:
-            return UserFarmer.objects.get(pk=user_id)
-        except UserFarmer.DoesNotExist:
+            return CustomUser.objects.get(pk=user_id, user_type='farmer')
+        except CustomUser.DoesNotExist:
             return None
 
 class UserDriverBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
-            user = UserDriver.objects.get(username=username)
-        except UserDriver.DoesNotExist:
+            user = CustomUser.objects.get(username=username, user_type='driver')
+        except CustomUser.DoesNotExist:
             return None
 
         if user.check_password(password):
-            user.backend = 'accounts.backends.UserDriverBackend'  # Set the backend attribute
             return user
 
     def get_user(self, user_id):
         try:
-            return UserDriver.objects.get(pk=user_id)
-        except UserDriver.DoesNotExist:
+            return CustomUser.objects.get(pk=user_id, user_type='driver')
+        except CustomUser.DoesNotExist:
             return None
+

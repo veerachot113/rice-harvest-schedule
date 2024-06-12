@@ -1,15 +1,10 @@
 #ฺ bookings/admin.py
-
 from django.contrib import admin
 from .models import Booking
 
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ['id','fullname','vehicle','quantity','details', 'address']  # กำหนดฟิลด์ที่ต้องการให้แสดงในรายการ
-    search_fields = ['id', 'vehicle__model', 'appointment_date', 'status']  # เพิ่มช่องค้นหา
-
-
-
-
-
+    list_display = ('farmer', 'vehicle', 'fullname', 'address', 'quantity', 'phone', 'details', 'request_status', 'appointment_start_date', 'appointment_end_date')
+    list_filter = ('request_status', 'appointment_start_date', 'appointment_end_date')
+    search_fields = ('farmer__username', 'vehicle__model', 'fullname', 'address')
 
 admin.site.register(Booking, BookingAdmin)

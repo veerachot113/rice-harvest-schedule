@@ -2,28 +2,31 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 
-class UserFarmer(AbstractUser):
-    groups = models.ManyToManyField(Group, verbose_name="Groups", blank=True, related_name='Accounts_farmer_groups')
-    user_permissions = models.ManyToManyField(Permission, verbose_name="User Permissions", blank=True, related_name='farmer_users_permissions')
+class CustomUser(AbstractUser):
+    USER_TYPE_CHOICES = (
+        ('farmer', 'Farmer'),
+        ('driver', 'Driver'),
+    )
+    groups = models.ManyToManyField(Group, related_name='customuser_set', blank=True)
+    user_permissions = models.ManyToManyField(Permission, related_name='customuser_permissions_set', blank=True)
+    user_type = models.CharField(max_length=6, choices=USER_TYPE_CHOICES, default='farmer')
     first_name = models.CharField(max_length=100, default='')  # เพิ่มชื่อ-สกุล
     last_name = models.CharField(max_length=100, default='')  # เพิ่มชื่อ-สกุล
-    address = models.CharField(max_length=255, default='')  # เพิ่มที่อยู่
-    phone = models.CharField(max_length=15, default='')  # เพิ่มเบอร์โทรศัพท์
-    email = models.EmailField(max_length=255, unique=True)  # Keep email field only
-    is_staff = models.BooleanField(default=False)
-    def __str__(self):
-        return "farmer"   
- 
-class UserDriver(AbstractUser):
-    groups = models.ManyToManyField(Group, verbose_name="Groups", blank=True, related_name='Accounts_driver_groups')
-    user_permissions = models.ManyToManyField(Permission, verbose_name="User Permissions", blank=True, related_name='Accounts_driver_user_permissions')
-    first_name = models.CharField(max_length=100, default='')  # เพิ่มชื่อ-สกุล
-    last_name = models.CharField(max_length=100, default='')  # เพิ่มชื่อ-สกุล
-    address = models.CharField(max_length=255, default='')  # เพิ่มที่อยู่
-    phone = models.CharField(max_length=15, default='')  # เพิ่มเบอร์โทรศัพท์
-    email = models.EmailField(max_length=255, unique=True)  # Keep email field only
-    def __str__(self):
-        return "driver"
-    
+    address = models.CharField(max_length=255, default='')
+    phone = models.CharField(max_length=15, default='')
+    email = models.EmailField(max_length=255, unique=True)
 
+    def __str__(self):
+        return self.username
 
+class Farmer(CustomUser):
+    class Meta:
+        proxy = True
+        verbose_name = 'Farmer'
+        verbose_name_plural = 'Farmers'
+
+class Driver(CustomUser):
+    class Meta:
+        proxy = True
+        verbose_name = 'Driver'
+        verbose_name_plural = 'Drivers'

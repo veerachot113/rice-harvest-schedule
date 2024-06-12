@@ -2,10 +2,10 @@
 from django.utils import timezone  
 from django.db import models
 from drivers.models import Vehicle
-from accounts.models import *
+from accounts.models import CustomUser
 
 class Booking(models.Model):
-    farmer = models.ForeignKey(UserFarmer, on_delete=models.CASCADE, related_name='bookings', default='')
+    farmer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='bookings', limit_choices_to={'user_type': 'farmer'})
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     fullname = models.CharField(max_length=255)
     address = models.TextField()
@@ -19,3 +19,4 @@ class Booking(models.Model):
 
     def __str__(self):
         return f'Booking by {self.farmer.username} for {self.vehicle.model}'
+

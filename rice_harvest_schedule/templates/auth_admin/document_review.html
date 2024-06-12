@@ -1,0 +1,193 @@
+<!-- admin/document_review.html -->
+{% extends "base.html" %}
+{% block booking %}
+<h1 class="text-3xl font-bold text-center mt-40">การตรวจสอบเอกสารคนขับรถ</h1>
+
+<div class="mb-4 border-b border-gray-200 dark:border-gray-700 mx-10">
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-styled-tab"
+        data-tabs-toggle="#default-styled-tab-content"
+        data-tabs-active-classes="text-purple-600 hover:text-purple-600 dark:text-purple-500 dark:hover:text-purple-500 border-purple-600 dark:border-purple-500"
+        data-tabs-inactive-classes="dark:border-transparent text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300"
+        role="tablist">
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg focus:bg-transparent focus:outline-none"
+                id="profile-styled-tab" data-tabs-target="#styled-profile" type="button" role="tab"
+                aria-controls="profile" aria-selected="false">รออนุมัติ</button>
+            <span class="badge badge-primary mx-2">{{ no_of_pending_request }}</span>
+        </li>
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg focus:bg-transparent focus:outline-none"
+                id="dashboard-styled-tab" data-tabs-target="#styled-dashboard" type="button" role="tab"
+                aria-controls="dashboard" aria-selected="false">อนุมัติแล้ว</button>
+        </li>
+        <li class="me-2" role="presentation">
+            <button
+                class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 focus:bg-transparent focus:outline-none"
+                id="settings-styled-tab" data-tabs-target="#styled-settings" type="button" role="tab"
+                aria-controls="settings" aria-selected="false">ปฏิเสธ</button>
+        </li>
+    </ul>
+</div>
+<div id="default-styled-tab-content">
+    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-profile" role="tabpanel"
+        aria-labelledby="profile-tab">
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 border-b">ลำดับ</th>
+                        <th class="py-2 px-4 border-b">ชื่อ-สกุล</th>
+                        <th class="py-2 px-4 border-b">วันที่ส่ง</th>
+                        <th class="py-2 px-4 border-b">บัตรประชาชน/ใบขับขี่</th>
+                        <th class="py-2 px-4 border-b">สำเนาทะเบียนรถ</th>
+                        <th class="py-2 px-4 border-b">คนขับคู่กับรถ</th>
+                        <th class="py-2 px-4 border-b">หมายเหตุ</th>
+                        <th class="py-2 px-4 border-b">สถานะ</th>
+                        <th class="py-2 px-4 border-b">ดำเนินการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                    {% if document.request_status == "Pending" %}
+                    <tr class="bg-gray-50 border-b">
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                        <td class="px-5 py-4 text-center">{{ document.driver.first_name }} {{ document.driver.last_name }}</td>
+                        <td class="px-5 py-4 text-center">{{ document.submission_date }}</td>
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ document.id_card.url }}" data-lightbox="document-{{forloop.counter}}">
+                                <img src="{{ document.id_card.url }}" alt="บัตรประชาชน/ใบขับขี่" class="w-32 h-auto rounded-lg border mx-auto">
+                            </a>
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ document.car_registration.url }}" data-lightbox="document-{{forloop.counter}}">
+                                <img src="{{ document.car_registration.url }}" alt="สำเนาทะเบียนรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                            </a>
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ document.driver_with_car.url }}" data-lightbox="document-{{forloop.counter}}">
+                                <img src="{{ document.driver_with_car.url }}" alt="คนขับยืนคู่กับรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                            </a>
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <form method="post" action="{% url 'process_document' document.id %}">
+                                {% csrf_token %}
+                                <textarea name="note" rows="3" class="w-full border rounded-lg p-2" placeholder="กรอกหมายเหตุถ้ามี..."></textarea>
+                        </td>
+                        <td class="px-5 py-4 text-center">{{ document.request_status }}</td>
+                        <td class="px-5 py-4 text-center">
+                            <div class="flex space-x-2">
+                                <button type="submit" name="action" value="approve" class="bg-green-500 hover:bg-green-700 font-bold py-2 px-4 rounded">อนุมัติ</button>
+                                <button type="submit" name="action" value="decline" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ปฏิเสธ</button>
+                            </div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Add similar sections for Approved and Declined documents -->
+    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-dashboard" role="tabpanel"
+        aria-labelledby="dashboard-tab">
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 border-b">ลำดับ</th>
+                        <th class="py-2 px-4 border-b">ชื่อ-สกุล</th>
+                        <th class="py-2 px-4 border-b">วันที่ส่ง</th>
+                        <th class="py-2 px-4 border-b">บัตรประชาชน/ใบขับขี่</th>
+                        <th class="py-2 px-4 border-b">สำเนาทะเบียนรถ</th>
+                        <th class="py-2 px-4 border-b">คนขับคู่กับรถ</th>
+                        <th class="py-2 px-4 border-b">หมายเหตุ</th>
+                        <th class="py-2 px-4 border-b">สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                    {% if document.request_status == "Approved" %}
+                    <tr class="bg-gray-50 border-b">
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                        <td class="px-5 py-4 text-center">{{ document.driver.first_name }} {{ document.driver.last_name }}</td>
+                        <td class="px-5 py-4 text-center">{{ document.submission_date }}</td>
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ document.id_card.url }}" data-lightbox="document-{{forloop.counter}}">
+                                <img src="{{ document.id_card.url }}" alt="บัตรประชาชน/ใบขับขี่" class="w-32 h-auto rounded-lg border mx-auto">
+                            </a>
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ document.car_registration.url }}" data-lightbox="document-{{forloop.counter}}">
+                                <img src="{{ document.car_registration.url }}" alt="สำเนาทะเบียนรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                            </a>
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ document.driver_with_car.url }}" data-lightbox="document-{{forloop.counter}}">
+                                <img src="{{ document.driver_with_car.url }}" alt="คนขับยืนคู่กับรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                            </a>
+                        </td>
+                        <td class="px-5 py-4 text-center">{{ document.note }}</td>
+                        <td class="text-green-500 font-bold text-center">{{ document.request_status }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-settings" role="tabpanel"
+        aria-labelledby="settings-tab">
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 border-b">ลำดับ</th>
+                        <th class="py-2 px-4 border-b">ชื่อ-สกุล</th>
+                        <th class="py-2 px-4 border-b">วันที่ส่ง</th>
+                        <th class="py-2 px-4 border-b">บัตรประชาชน/ใบขับขี่</th>
+                        <th class="py-2 px-4 border-b">สำเนาทะเบียนรถ</th>
+                        <th class="py-2 px-4 border-b">คนขับคู่กับรถ</th>
+                        <th class="py-2 px-4 border-b">หมายเหตุ</th>
+                        <th class="py-2 px-4 border-b">สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                    {% if document.request_status == "Declined" %}
+                    <tr class="bg-gray-50 border-b">
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                        <td class="px-5 py-4 text-center">{{ document.driver.first_name }} {{ document.driver.last_name }}</td>
+                        <td class="px-5 py-4 text-center">{{ document.submission_date }}</td>
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ document.id_card.url }}" data-lightbox="document-{{forloop.counter}}">
+                                <img src="{{ document.id_card.url }}" alt="บัตรประชาชน/ใบขับขี่" class="w-32 h-auto rounded-lg border mx-auto">
+                            </a>
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ document.car_registration.url }}" data-lightbox="document-{{forloop.counter}}">
+                                <img src="{{ document.car_registration.url }}" alt="สำเนาทะเบียนรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                            </a>
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ document.driver_with_car.url }}" data-lightbox="document-{{forloop.counter}}">
+                                <img src="{{ document.driver_with_car.url }}" alt="คนขับยืนคู่กับรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                            </a>
+                        </td>
+                        <td class="px-5 py-4 text-center">{{ document.note }}</td>
+                        <td class="text-red-500 font-bold text-center">{{ document.request_status }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+
+
+{% endblock %}

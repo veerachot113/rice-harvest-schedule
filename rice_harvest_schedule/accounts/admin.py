@@ -1,15 +1,22 @@
 # accounts/admin.py
 from django.contrib import admin
-from .models import UserFarmer, UserDriver
+from .models import CustomUser, Farmer, Driver
 
-@admin.register(UserFarmer)
-class UserFarmerAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff')
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'first_name', 'last_name', 'user_type', 'is_staff', 'is_active')
+    list_filter = ('user_type', 'is_staff', 'is_active')
     search_fields = ('username', 'email', 'first_name', 'last_name')
-    list_filter = ('is_active', 'is_staff')
+    ordering = ('username',)
 
-@admin.register(UserDriver)
-class UserDriverAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff')
-    search_fields = ('username', 'email', 'first_name', 'last_name')
-    list_filter = ('is_active', 'is_staff')
+class FarmerAdmin(CustomUserAdmin):
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(user_type='farmer')
+
+class DriverAdmin(CustomUserAdmin):
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(user_type='driver')
+admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Farmer, FarmerAdmin)
+admin.site.register(Driver, DriverAdmin)

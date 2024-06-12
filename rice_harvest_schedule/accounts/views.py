@@ -1,42 +1,38 @@
-# Accounts/views.py
-from django.shortcuts import render, redirect
-from django.contrib.auth import login,logout,authenticate
+# accounts/views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
-from .forms import UserFarmerRegistrationForm, UserDriverRegistrationForm
-from .forms import *
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.models import Group 
+from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
+from .forms import UserFarmerRegistrationForm, UserDriverRegistrationForm, UserFarmerUpdateForm, UserDriverUpdateForm
+from .models import CustomUser
 from drivers.models import Vehicle
-from bookings.models import*
-from django.shortcuts import render, get_object_or_404
-from .models import UserDriver
-
+from bookings.models import Booking
+from .decorators import farmer_required, driver_required
+def get_backend(user):
+    if user.user_type == 'farmer':
+        return 'accounts.backends.UserFarmerBackend'
+    elif user.user_type == 'driver':
+        return 'accounts.backends.UserDriverBackend'
+    else:
+        return 'django.contrib.auth.backends.ModelBackend'
+    
 @login_required
 def custom_logout(request):
     logout(request)
-    return redirect('home')  
+    return redirect('home')
 
 @login_required
 def home_driver(request):
     no_of_pending_request = count_pending_rent_request(request.user)
-    vehicles = Vehicle.objects.all()
-    return render(request, 'Driver/home_driver.html',{'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request})
+    vehicles = Vehicle.objects.filter(driver=request.user)
+    return render(request, 'Driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request})
 
 @login_required
 def home_farmer(request):
     vehicles = Vehicle.objects.all()
-    return render(request,'Farmer/home_farmer.html',{'vehicles': vehicles})
-
-# def home(request):
-#     if request.user.is_authenticated:
-#         if request.user.groups.filter(name='farmer').exists():
-#             return redirect('home_farmer')
-#         elif request.user.groups.filter(name='driver').exists():
-#             return redirect('home_driver')
-    
-#     vehicles = Vehicle.objects.all()
-#     return render(request, 'home.html', {'vehicles': vehicles, 'driver_id': request.user.id if request.user.is_authenticated else None})
+    return render(request, 'Farmer/home_farmer.html', {'vehicles': vehicles})
 
 def home(request):
     vehicles = Vehicle.objects.all()
@@ -51,43 +47,46 @@ def home(request):
     return render(request, 'home.html', {'vehicles': vehicles})
 
 def useregister(request):
-     return render(request,'chooserole.html') 
+    return render(request, 'chooserole.html')
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import Group
+from .forms import UserFarmerRegistrationForm, UserDriverRegistrationForm
 
 def register_farmer(request):
     if request.method == 'POST':
         form = UserFarmerRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            
-            # Add the user to the 'driver' group
+            user = form.save(commit=False)
+            user.user_type = 'farmer'
+            user.save()
             farmer_group = Group.objects.get(name='farmer')
             user.groups.add(farmer_group)
-            user.is_customer = True
             user.save()
-
-            return redirect('login')
+            messages.success(request, 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ')
+            return redirect('login')  # เปลี่ยนเป็นหน้าเข้าสู่ระบบหลังจากลงทะเบียนสำเร็จ
+        else:
+            messages.error(request, 'มีข้อผิดพลาดในการสมัครสมาชิก กรุณาตรวจสอบข้อมูลที่กรอก')
     else:
         form = UserFarmerRegistrationForm()
-
     return render(request, 'Farmer/registerfarmer.html', {'form': form})
+
 
 def register_driver(request):
     if request.method == 'POST':
         form = UserDriverRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-
+            user = form.save(commit=False)
+            user.user_type = 'driver'
+            user.save()
             driver_group = Group.objects.get(name='driver')
             user.groups.add(driver_group)
-            user.is_customer = True
             user.save()
-
-            return redirect('login')
+            return redirect('login')  # เปลี่ยนเป็นหน้าเข้าสู่ระบบหลังจากลงทะเบียนสำเร็จ
     else:
         form = UserDriverRegistrationForm()
-
     return render(request, 'Driver/registerdriver.html', {'form': form})
+
 
 
 def user_login(request):
@@ -99,28 +98,21 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-
-                # Additional logging for debugging
-                print(f"User {username} logged in with groups: {[group.name for group in user.groups.all()]}")
-
-                # Check all group names
-                print(f"All group names: {[group.name for group in Group.objects.all()]}")
-
-                # Check the user's role and redirect accordingly
                 if 'farmer' in [group.name for group in user.groups.all()]:
                     return redirect('home_farmer')
                 elif 'driver' in [group.name for group in user.groups.all()]:
                     return redirect('home_driver')
                 else:
-                    return redirect('home')  # Default redirect if not in any group
-
+                    return redirect('home')
             else:
                 messages.error(request, "Invalid username or password.")
     else:
         form = AuthenticationForm()
-    
+    if 'messages' in request.session:
+        for message in request.session['messages']:
+            messages.add_message(request, message.level, message.message)
+        del request.session['messages']
     return render(request, 'Accounts/registration/login.html', {'form': form})
-
 
 @login_required
 def profile_update(request):
@@ -134,7 +126,7 @@ def profile_update(request):
                 return redirect('profile_update')
         else:
             form = UserFarmerUpdateForm(instance=request.user)
-        return render(request, 'profile_farmer.html', {'form': form})  # ปรับเปลี่ยนเพื่อใช้ profile_farmer.html
+        return render(request, 'profile_farmer.html', {'form': form})
     elif 'driver' in [group.name for group in request.user.groups.all()]:
         if request.method == 'POST':
             form = UserDriverUpdateForm(request.POST, instance=request.user)
@@ -145,16 +137,10 @@ def profile_update(request):
             form = UserDriverUpdateForm(instance=request.user)
         return render(request, 'profile_driver.html', {'form': form, 'no_of_pending_request': no_of_pending_request})
 
-
-
 def view_driver_profile(request, driver_id):
     no_of_pending_request = count_pending_rent_request(request.user)
-    driver = get_object_or_404(UserDriver, id=driver_id)
-    
-    is_vehicle_owner = False
-    if hasattr(driver, 'vehicles'):
-        is_vehicle_owner = True
-
+    driver = get_object_or_404(CustomUser, id=driver_id, user_type='driver')
+    is_vehicle_owner = Vehicle.objects.filter(driver=driver).exists()
     context = {
         'driver': driver,
         'is_vehicle_owner': is_vehicle_owner,
@@ -162,8 +148,6 @@ def view_driver_profile(request, driver_id):
     }
     return render(request, 'Driver/driver_profile.html', context)
 
-
-    
 def count_pending_rent_request(user):
     no_of_pending_request = 0
     if 'driver' in [group.name for group in user.groups.all()]:
@@ -172,6 +156,3 @@ def count_pending_rent_request(user):
             if booking.request_status == "Pending":
                 no_of_pending_request += 1
     return no_of_pending_request
- 
-
-

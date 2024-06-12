@@ -1,9 +1,9 @@
 #dirvers/models.py
 from django.db import models
-from accounts.models import UserDriver  
+from accounts.models import CustomUser
 
 class Vehicle(models.Model):
-    driver = models.OneToOneField(UserDriver, on_delete=models.CASCADE, related_name='vehicles')  # Add related_name='vehicles'
+    driver = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='vehicles', limit_choices_to={'user_type': 'driver'})
     model = models.CharField(max_length=100, verbose_name='รุ่น')
     TYPE_CHOICES = (
         ('แบบรองกระสอบ', 'แบบรองกระสอบ'),
@@ -99,26 +99,5 @@ class Vehicle(models.Model):
     def __str__(self):
         return self.model
 
-#modelเพิ่มรายละเอียดรถ
 
-class Detailvehicle(models.Model):
-    driver = models.OneToOneField(UserDriver, on_delete=models.CASCADE, related_name='vehicles_detailvehicle')  # Add related_name='vehicles'
-    power = models.CharField(max_length=100, verbose_name='กำลังเครื่อง')
-    details = models.TextField(verbose_name='รายละเอียด')
-
-    def __str__(self):
-        return self.power
-
-
-# Driver/models.py
-
-from django.db import models
-class CalendarEvent(models.Model):
-    title = models.CharField(max_length=255)
-    start = models.DateTimeField()
-    end = models.DateTimeField()
-    driver = models.ForeignKey(UserDriver, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.title
     

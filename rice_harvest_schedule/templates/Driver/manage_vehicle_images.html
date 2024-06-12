@@ -1,0 +1,30 @@
+<!-- templates/Driver/manage_vehicle_images.html -->
+{% extends "base.html" %}
+{% load static %}
+{% block title %} Manage Vehicle Images - Driver {% endblock %}
+{% block main %}
+<div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">จัดการรูปภาพรถ</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">อัปโหลด</button>
+    </form>
+    <div class="mt-6">
+        <h2 class="text-xl font-bold mb-2">รูปภาพที่เพิ่มแล้ว</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for image in images %}
+            <div class="relative">
+                <img src="{{ image.image.url }}" alt="Vehicle Image" class="w-full h-48 object-cover rounded-lg">
+                <form method="post" action="{% url 'delete_vehicle_image' image.id %}" class="absolute top-0 right-0">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-red-600 text-white rounded-full p-1 m-1">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
