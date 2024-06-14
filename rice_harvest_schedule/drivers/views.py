@@ -1,5 +1,4 @@
-import json
-from django.http import JsonResponse
+#drivers/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import VehicleForm
@@ -46,6 +45,7 @@ def delete_vehicle(request, vehicle_id):
         vehicle.delete()
         return redirect('home_driver')
     return render(request, 'Driver/confirm_delete.html', {'vehicle': vehicle})
+
 
 def count_pending_rent_request(driver):
     no_of_pending_request = 0

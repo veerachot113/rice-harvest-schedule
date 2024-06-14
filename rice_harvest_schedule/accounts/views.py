@@ -82,11 +82,13 @@ def register_driver(request):
             driver_group = Group.objects.get(name='driver')
             user.groups.add(driver_group)
             user.save()
+            messages.success(request, 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ')
             return redirect('login')  # เปลี่ยนเป็นหน้าเข้าสู่ระบบหลังจากลงทะเบียนสำเร็จ
+        else:
+            messages.error(request, 'มีข้อผิดพลาดในการสมัครสมาชิก กรุณาตรวจสอบข้อมูลที่กรอก')
     else:
         form = UserDriverRegistrationForm()
     return render(request, 'Driver/registerdriver.html', {'form': form})
-
 
 
 def user_login(request):
@@ -98,7 +100,9 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                if 'farmer' in [group.name for group in user.groups.all()]:
+                if user.is_superuser:
+                    return redirect('document_review')  # เปลี่ยนเส้นทางไปยังหน้าที่คุณต้องการสำหรับแอดมิน
+                elif 'farmer' in [group.name for group in user.groups.all()]:
                     return redirect('home_farmer')
                 elif 'driver' in [group.name for group in user.groups.all()]:
                     return redirect('home_driver')

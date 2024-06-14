@@ -15,6 +15,7 @@ class CustomUser(AbstractUser):
     address = models.CharField(max_length=255, default='')
     phone = models.CharField(max_length=15, default='')
     email = models.EmailField(max_length=255, unique=True)
+    is_staff = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username

@@ -1,3 +1,4 @@
+# accounts/decorators.py
 from functools import wraps
 from django.shortcuts import redirect
 
