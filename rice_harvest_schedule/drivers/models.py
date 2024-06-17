@@ -99,3 +99,14 @@ class Vehicle(models.Model):
     def __str__(self):
         return self.model
 
+from bookings.models import Booking
+
+class CalendarEvent(models.Model):
+    driver = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    details = models.TextField(blank=True, null=True)
+    start = models.DateField()
+    end = models.DateField()
+
+    def __str__(self):
+        return self.title

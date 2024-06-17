@@ -9,3 +9,7 @@ class VehicleForm(forms.ModelForm):
         model = Vehicle
         fields = ['model', 'type', 'price', 'province', 'image']
 
+class CalendarEventForm(forms.ModelForm):
+    class Meta:
+        model = CalendarEvent
+        fields = ['title', 'details', 'start', 'end']
