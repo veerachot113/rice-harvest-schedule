@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Service Area</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+</head>
+<body style="font-family: 'K2D', sans-serif;">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">เพิ่มพื้นที่ให้บริการ</h2>
+            <form id="service-area-form">
+                <div class="mb-4">
+                    <label for="province" class="block text-sm font-medium text-gray-700">จังหวัด:</label>
+                    <select id="province" name="province" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="">เลือกจังหวัด</option>
+                        {% for province in provinces %}
+                        <option value="{{ province.id }}">{{ province.name_th }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="district" class="block text-sm font-medium text-gray-700">อำเภอ:</label>
+                    <select id="district" name="district" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="">เลือกอำเภอ</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="subdistrict" class="block text-sm font-medium text-gray-700">ตำบล:</label>
+                    <select id="subdistrict" name="subdistrict" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="">เลือกตำบล</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="start_date" class="block text-sm font-medium text-gray-700">วันเริ่มต้น:</label>
+                    <input type="date" id="start_date" name="start_date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" />
+                </div>
+                <div class="mb-4">
+                    <label for="end_date" class="block text-sm font-medium text-gray-700">วันสิ้นสุด:</label>
+                    <input type="date" id="end_date" name="end_date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" />
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:border-blue-300">ยืนยัน</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#province').change(function() {
+                var province_id = $(this).val();
+                $.ajax({
+                    url: '/drivers/get_districts/' + province_id + '/',
+                    success: function(data) {
+                        var districtSelect = $('#district');
+                        districtSelect.empty();
+                        districtSelect.append('<option value="">เลือกอำเภอ</option>');
+                        data.forEach(function(district) {
+                            districtSelect.append(new Option(district.name_th, district.id));
+                        });
+                    }
+                });
+            });
+
+            $('#district').change(function() {
+                var district_id = $(this).val();
+                $.ajax({
+                    url: '/drivers/get_subdistricts/' + district_id + '/',
+                    success: function(data) {
+                        var subdistrictSelect = $('#subdistrict');
+                        subdistrictSelect.empty();
+                        subdistrictSelect.append('<option value="">เลือกตำบล</option>');
+                        data.forEach(function(subdistrict) {
+                            subdistrictSelect.append(new Option(subdistrict.name_th, subdistrict.id));
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

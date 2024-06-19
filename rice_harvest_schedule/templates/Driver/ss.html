@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Service Areas</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body style="font-family: 'K2D', sans-serif;">
+    <div class="max-w-sm mx-auto">
+        <div class="text-xl text-center font-extrabold mt-5 mb-5 bg-green-200 p-3 rounded-md border border-1 border-gray-400 shadow-lg">
+            <i class="fa-solid fa-map-marker-alt"></i>&nbsp;&nbsp; พื้นที่ลงเก็บเกี่ยว
+        </div>
+    </div>
+
+    <div class="max-w-screen-md mx-auto p-4 bg-white mt-5 mb-10 rounded-lg shadow-md border border-gray-500 border-2">
+        <h2 class="text-xl font-bold mb-4">เพิ่มข้อมูลพื้นที่</h2>
+        <form id="service-area-form">
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-medium text-gray-700">วันเริ่มต้น :</label>
+                <input type="date" id="start-date" name="start-date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+            </div>
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-medium text-gray-700">วันสิ้นสุด :</label>
+                <input type="date" id="end-date" name="end-date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+            </div>
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-medium text-gray-700">จังหวัด :</label>
+                <select id="province" name="province" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required>
+                    <option value="">เลือกจังหวัด</option>
+                    <!-- Provinces will be populated dynamically -->
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-medium text-gray-700">อำเภอ :</label>
+                <select id="district" name="district" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required>
+                    <option value="">เลือกอำเภอ</option>
+                    <!-- Districts will be populated dynamically -->
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-medium text-gray-700">ตำบล :</label>
+                <select id="subdistrict" name="subdistrict" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required>
+                    <option value="">เลือกตำบล</option>
+                    <!-- Subdistricts will be populated dynamically -->
+                </select>
+            </div>
+            <div class="flex justify-between">
+                <button type="button" id="cancel-button" class="px-4 py-2 font-bold text-white bg-red-500 rounded-md hover:bg-red-700 focus:outline-none focus:ring focus:border-red-300">ยกเลิก</button>
+                <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:border-blue-300">เพิ่มข้อมูล</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="max-w-screen-md mx-auto p-4 bg-white mt-5 mb-10 rounded-lg shadow-md border border-gray-500 border-2">
+        <h2 class="text-xl font-bold mb-4">พื้นที่ลงเก็บเกี่ยว</h2>
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วัน เดือน</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานที่</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="service-areas-list" class="bg-white divide-y divide-gray-200">
+                <!-- Rows will be added dynamically here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const provinces = {
+                'กรุงเทพมหานคร': {
+                    'เขตพระนคร': ['แขวงพระบรมมหาราชวัง', 'แขวงวังบูรพาภิรมย์'],
+                    'เขตดุสิต': ['แขวงดุสิต', 'แขวงวชิรพยาบาล']
+                },
+                'กระบี่': {
+                    'เมืองกระบี่': ['ปากน้ำ', 'กระบี่ใหญ่'],
+                    'เกาะลันตา': ['ศาลาด่าน', 'เกาะลันตาใหญ่']
+                },
+                // Add more provinces, districts, and subdistricts as needed
+            };
+
+            const provinceSelect = document.getElementById('province');
+            const districtSelect = document.getElementById('district');
+            const subdistrictSelect = document.getElementById('subdistrict');
+
+            // Populate provinces
+            for (const province in provinces) {
+                const option = document.createElement('option');
+                option.value = province;
+                option.textContent = province;
+                provinceSelect.appendChild(option);
+            }
+
+            provinceSelect.addEventListener('change', function() {
+                districtSelect.innerHTML = '<option value="">เลือกอำเภอ</option>';
+                subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
+
+                if (this.value !== '') {
+                    const districts = provinces[this.value];
+                    for (const district in districts) {
+                        const option = document.createElement('option');
+                        option.value = district;
+                        option.textContent = district;
+                        districtSelect.appendChild(option);
+                    }
+                }
+            });
+
+            districtSelect.addEventListener('change', function() {
+                subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
+
+                if (this.value !== '') {
+                    const subdistricts = provinces[provinceSelect.value][this.value];
+                    for (const subdistrict of subdistricts) {
+                        const option = document.createElement('option');
+                        option.value = subdistrict;
+                        option.textContent = subdistrict;
+                        subdistrictSelect.appendChild(option);
+                    }
+                }
+            });
+
+            const form = document.getElementById('service-area-form');
+            const serviceAreasList = document.getElementById('service-areas-list');
+            const cancelButton = document.getElementById('cancel-button');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const startDate = document.getElementById('start-date').value;
+                const endDate = document.getElementById('end-date').value;
+                const province = document.getElementById('province').value;
+                const district = document.getElementById('district').value;
+                const subdistrict = document.getElementById('subdistrict').value;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${startDate} - ${endDate}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">จังหวัด ${province} อำเภอ ${district} ตำบล ${subdistrict}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="text-indigo-600 hover:text-indigo-900">แก้ไข</button>
+                        <button class="text-red-600 hover:text-red-900">ลบ</button>
+                    </td>
+                `;
+
+                serviceAreasList.appendChild(row);
+                form.reset();
+            });
+
+            cancelButton.addEventListener('click', function() {
+                form.reset();
+            });
+        });
+    </script>
+</body>
+</html>

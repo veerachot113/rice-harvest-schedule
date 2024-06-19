@@ -1,11 +1,14 @@
-# bookings/views.py
-from drivers.models import Vehicle
+from datetime import timedelta
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Booking
 from .forms import BookingForm
 from accounts.models import CustomUser
 from accounts.decorators import farmer_required, driver_required
+from django.utils.dateparse import parse_date
+from drivers.models import Vehicle
+
 @farmer_required
 @login_required(login_url='login')
 def create_booking(request, vehicle_id):
@@ -22,29 +25,70 @@ def create_booking(request, vehicle_id):
             booking = form.save(commit=False)
             booking.farmer = request.user
             booking.vehicle = vehicle
+            quantity = form.cleaned_data['quantity']
+            
+            # Calculate the end date based on the quantity and vehicle capacity
+            if quantity <= 30:
+                days_required = 1
+            else:
+                days_required = (quantity // 25) + (1 if quantity % 25 else 0)
+
+            appointment_start_date_str = request.POST.get('appointment_start_date')
+            if appointment_start_date_str:
+                booking.appointment_start_date = parse_date(appointment_start_date_str)
+                booking.appointment_end_date = booking.appointment_start_date + timedelta(days=days_required - 1)
+            else:
+                # Handle the case when appointment_start_date is not provided
+                # You can set a default value or return an error response
+                return JsonResponse({'error': 'Appointment start date is required.'}, status=400)
+            
             booking.save()
             return redirect('farmer_booking_list')
     else:
         form = BookingForm()
     return render(request, 'booking/booking_form.html', {'form': form, 'vehicle': vehicle})
 
-from django.utils.dateparse import parse_datetime
 
+from datetime import datetime, timedelta
+from django.utils.timezone import make_aware
+from drivers.models import Vehicle, CalendarEvent
 @login_required
 def accept_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     if request.method == 'POST':
-        appointment_start_date = request.POST.get('appointment_start_date')
-        appointment_end_date = request.POST.get('appointment_end_date')
-        if appointment_start_date:
-            booking.appointment_start_date = parse_datetime(appointment_start_date)
-        if appointment_end_date:
-            booking.appointment_end_date = parse_datetime(appointment_end_date)
-        booking.request_status = "Accepted"
-        booking.request_responded_by = request.user.username
-        booking.save()
-        return redirect('driver_booking_list')
+        appointment_date = booking.appointment_start_date.date()
+        start_time = request.POST.get('appointment_start_time')
 
+        if start_time:
+            # Combine the date and time to create a datetime object
+            start_datetime = make_aware(datetime.combine(appointment_date, datetime.strptime(start_time, '%H:%M').time()))
+
+            booking.appointment_start_date = start_datetime
+
+            quantity = booking.quantity
+            if quantity <= 30:
+                days_required = 1
+            else:
+                days_required = (quantity // 25) + (1 if quantity % 25 else 0)
+
+            booking.appointment_end_date = booking.appointment_start_date + timedelta(days=days_required - 1)
+            booking.request_status = "Accepted"
+            booking.request_responded_by = request.user.username
+            booking.save()
+
+            # เพิ่มกิจกรรมลงในปฏิทิน
+            CalendarEvent.objects.create(
+                driver=request.user,
+                title=f"Booking: {booking.fullname}",
+                details=booking.details,
+                start=booking.appointment_start_date,
+                end=booking.appointment_end_date
+            )
+
+            return redirect('driver_booking_list')
+        else:
+            # Handle case where start_time is None
+            return redirect('driver_booking_list')  # or show an error message
 @login_required
 def decline_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
@@ -64,7 +108,7 @@ def cancel_booking(request, booking_id):
 @login_required
 def farmer_booking_list(request):
     bookings = Booking.objects.filter(farmer=request.user)
-    return render(request, 'Farmer/booking_famerlist.html', {'bookings': bookings})
+    return render(request, 'Farmer/booking_farmerlist.html', {'bookings': bookings})
 
 @login_required
 def driver_booking_list(request):
@@ -79,6 +123,3 @@ def count_pending_rent_request(driver):
         if booking.request_status == "Pending":
             no_of_pending_request += 1
     return no_of_pending_request
-
-
-
