@@ -18,10 +18,13 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
+# from auth_admin.admin import admin_site  # Import the custom admin site
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('accounts.urls')),
+    path('admin/', admin.site.urls),  # Use the custom admin site
+    # path("accounts/", include("allauth.urls")),
+    path('accounts/', include('accounts.urls')),
+    
     path('drivers/', include('drivers.urls')),
     path('bookings/', include('bookings.urls')),
     path('authadmin/', include('auth_admin.urls')),

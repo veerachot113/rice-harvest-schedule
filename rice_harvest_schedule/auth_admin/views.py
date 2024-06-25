@@ -60,4 +60,45 @@ def process_document(request, document_id):
     return redirect('document_review')
 
 
+@user_passes_test(lambda u: u.is_superuser)
+def user_list(request, user_type):
+    no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()
+    if user_type == 'farmer':
+        users = CustomUser.objects.filter(user_type='farmer')
+    elif user_type == 'driver':
+        users = CustomUser.objects.filter(user_type='driver')
+    else:
+        messages.error(request, 'Invalid user type.')
+        return redirect('home')
+    
+    return render(request, 'auth_admin/user_list.html', {'users': users, 'user_type': user_type,'no_of_pending_documents': no_of_pending_documents})
 
+@user_passes_test(lambda u: u.is_superuser)
+def delete_user(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+    user.delete()
+    messages.success(request, 'ผู้ใช้ได้ถูกลบเรียบร้อยแล้ว')
+    return redirect(request.META.get('HTTP_REFERER', 'home'))
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def view_driver_document(request, user_id):
+    no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()
+    driver = get_object_or_404(CustomUser, id=user_id, user_type='driver')
+    documents = DriverDocument.objects.filter(driver=driver)
+    return render(request, 'auth_admin/view_driver_document.html', {'driver': driver, 'documents': documents,'no_of_pending_documents': no_of_pending_documents})
+
+@user_passes_test(lambda u: u.is_superuser)
+def delete_document(request, document_id):
+    document = get_object_or_404(DriverDocument, id=document_id)
+    document.delete()
+    messages.success(request, 'เอกสารได้ถูกลบเรียบร้อยแล้ว')
+    return redirect(request.META.get('HTTP_REFERER', 'home'))
+
+@user_passes_test(lambda u: u.is_superuser)
+def delete_all_documents(request, user_id):
+    driver = get_object_or_404(CustomUser, id=user_id, user_type='driver')
+    documents = DriverDocument.objects.filter(driver=driver)
+    documents.delete()
+    messages.success(request, 'เอกสารทั้งหมดของผู้ใช้ได้ถูกลบเรียบร้อยแล้ว')
+    return redirect('view_driver_document', user_id=user_id)

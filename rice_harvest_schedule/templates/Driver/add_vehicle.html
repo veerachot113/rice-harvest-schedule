@@ -1,7 +1,9 @@
+<!-- driver/add_vehicle.html-->
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
 {% block content %}
+
 <h2 class="text-center text-xl font-semibold mb-4">{{ existing_vehicle|yesno:"Update Vehicle,Add Vehicle" }}</h2>
 <div class="flex justify-center items-center h-screen">
     <div class="bg-white rounded-3xl shadow-lg p-6 max-w-md w-full mx-auto justify-center mt-3">

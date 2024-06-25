@@ -38,16 +38,28 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     'accounts',
     'auth_admin',
     'drivers',
     'bookings',
     "crispy_forms",
     "crispy_tailwind",
+    "allauth",
+    "allauth.account",
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'djangoprojectubu@gmail.com'
+EMAIL_HOST_PASSWORD = 'pwaidjfqooukawrk'
+
+# from_email = 'djangoprojectubu@gmail.com'
 
 
 MIDDLEWARE = [
@@ -58,6 +70,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = "rice_harvest_schedule.urls"
@@ -65,7 +78,7 @@ ROOT_URLCONF = "rice_harvest_schedule.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ['templates'],
+        "DIRS": ['templates', 'auth_admin/templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -84,23 +97,23 @@ WSGI_APPLICATION = "rice_harvest_schedule.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'rice_harvestdb',
-        'USER': 'root',
-        'PASSWORD': 'veerachot2545',
-        'HOST':'localhost',
-        'PORT':'3306',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'rice_harvestdb',
+#         'USER': 'root',
+#         'PASSWORD': 'veerachot2545',
+#         'HOST':'localhost',
+#         'PORT':'3306',
+#     }
+# }
 
 
 # Password validation
@@ -147,22 +160,42 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATICFILES_DIRS = [
- os.path.join(BASE_DIR, 'static')
- ]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_URL = "static/"
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = 'media/'
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+SITE_ID = 1
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+DEFAULT_FROM_EMAIL = "djangoprojectubu@gmail.com"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'accounts.backends.UserFarmerBackend',
-    'accounts.backends.UserDriverBackend',
-]
+# AUTHENTICATION_BACKENDS = [
+#     'django.contrib.auth.backends.ModelBackend',
+#     'accounts.backends.UserFarmerBackend',
+#     'accounts.backends.UserDriverBackend',
+#     'allauth.account.auth_backends.AuthenticationBackend',
+
+# ]
+# LOGIN_REDIRECT_URL = '/authadmin/document_review/'
+# LOGOUT_REDIRECT_URL = '/authadmin/document_review/'
+
+
+
+
+# from django.core.mail import send_mail
+# send_mail(
+#     'Test Subject',
+#     'Here is the message.',
+#     'djangoprojectubu@gmail.com',  # อีเมลที่จะส่งจาก
+#     ['veerachot113@gmail.com'],    # อีเมลที่จะส่งถึง
+#     fail_silently=False,
+# )

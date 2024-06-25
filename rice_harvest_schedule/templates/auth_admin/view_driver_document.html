@@ -1,0 +1,83 @@
+<!-- auth_admin/templates/auth_admin/view_driver_document.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-center mt-40">เอกสารยืนยันตัวตนของ {{ driver.first_name }} {{ driver.last_name }}</h1>
+
+<div class="flex justify-end mb-4 mx-10">
+    <form method="post" action="{% url 'delete_all_documents' driver.id %}">
+        {% csrf_token %}
+        <button type="submit" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ลบเอกสารทั้งหมด</button>
+    </form>
+</div>
+
+<div class="overflow-x-auto mx-10">
+    <table class="min-w-full bg-white text-sm">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="py-2 px-4 border-b">ลำดับ</th>
+                <th class="py-2 px-4 border-b">ประเภทเอกสาร</th>
+                <th class="py-2 px-4 border-b">เอกสาร</th>
+                <th class="py-2 px-4 border-b">วันที่ส่ง</th>
+                <th class="py-2 px-4 border-b">สถานะ</th>
+                <th class="py-2 px-4 border-b">ดำเนินการ</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for document in documents %}
+            <tr class="bg-gray-50 border-b">
+                <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                <td class="px-5 py-4 text-center">บัตรประชาชน/ใบขับขี่</td>
+                <td class="px-5 py-4 text-center">
+                    <a href="{{ document.id_card.url }}" data-lightbox="document-{{forloop.counter}}">
+                        <img src="{{ document.id_card.url }}" alt="บัตรประชาชน/ใบขับขี่" class="w-32 h-auto rounded-lg border mx-auto">
+                    </a>
+                </td>
+                <td class="px-5 py-4 text-center">{{ document.submission_date }}</td>
+                <td class="px-5 py-4 text-center">{{ document.request_status }}</td>
+                <td class="px-5 py-4 text-center">
+                    <form method="post" action="{% url 'delete_document' document.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ลบเอกสาร</button>
+                    </form>
+                </td>
+            </tr>
+            <tr class="bg-gray-50 border-b">
+                <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                <td class="px-5 py-4 text-center">สำเนาทะเบียนรถ</td>
+                <td class="px-5 py-4 text-center">
+                    <a href="{{ document.car_registration.url }}" data-lightbox="document-{{forloop.counter}}">
+                        <img src="{{ document.car_registration.url }}" alt="สำเนาทะเบียนรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                    </a>
+                </td>
+                <td class="px-5 py-4 text-center">{{ document.submission_date }}</td>
+                <td class="px-5 py-4 text-center">{{ document.request_status }}</td>
+                <td class="px-5 py-4 text-center">
+                    <form method="post" action="{% url 'delete_document' document.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ลบเอกสาร</button>
+                    </form>
+                </td>
+            </tr>
+            <tr class="bg-gray-50 border-b">
+                <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                <td class="px-5 py-4 text-center">คนขับคู่กับรถ</td>
+                <td class="px-5 py-4 text-center">
+                    <a href="{{ document.driver_with_car.url }}" data-lightbox="document-{{forloop.counter}}">
+                        <img src="{{ document.driver_with_car.url }}" alt="คนขับคู่กับรถ" class="w-32 h-auto rounded-lg border mx-auto">
+                    </a>
+                </td>
+                <td class="px-5 py-4 text-center">{{ document.submission_date }}</td>
+                <td class="px-5 py-4 text-center">{{ document.request_status }}</td>
+                <td class="px-5 py-4 text-center">
+                    <form method="post" action="{% url 'delete_document' document.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ลบเอกสาร</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

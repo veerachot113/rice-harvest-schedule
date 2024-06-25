@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
+
+from auth_admin.models import DriverDocument
 from .forms import UserFarmerRegistrationForm, UserDriverRegistrationForm, UserFarmerUpdateForm, UserDriverUpdateForm
 from .models import CustomUser
 from drivers.models import Vehicle
@@ -27,7 +29,8 @@ def custom_logout(request):
 def home_driver(request):
     no_of_pending_request = count_pending_rent_request(request.user)
     vehicles = Vehicle.objects.filter(driver=request.user)
-    return render(request, 'Driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request})
+    # no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()
+    return render(request, 'Driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request ,})
 
 @login_required
 def home_farmer(request):
@@ -82,6 +85,14 @@ def register_driver(request):
             driver_group = Group.objects.get(name='driver')
             user.groups.add(driver_group)
             user.save()
+            
+            subject = 'ยืนยันการลงทะเบียน'
+            message = f'ยินดีต้อนรับ \n\n คุณ{user.first_name} {user.last_name} \n\n ชื่อผู้ใช้ของคุณ: {user.username}!'
+            from_email = 'หมาแมวคาเฟ่@Dogcat.com'
+            recipient_list = [user.email]
+            
+            send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
             messages.success(request, 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ')
             return redirect('login')  # เปลี่ยนเป็นหน้าเข้าสู่ระบบหลังจากลงทะเบียนสำเร็จ
         else:
@@ -101,7 +112,7 @@ def user_login(request):
             if user is not None:
                 login(request, user)
                 if user.is_superuser:
-                    return redirect('document_review')  # เปลี่ยนเส้นทางไปยังหน้าที่คุณต้องการสำหรับแอดมิน
+                    return redirect('document_review')
                 elif 'farmer' in [group.name for group in user.groups.all()]:
                     return redirect('home_farmer')
                 elif 'driver' in [group.name for group in user.groups.all()]:
@@ -109,14 +120,37 @@ def user_login(request):
                 else:
                     return redirect('home')
             else:
-                messages.error(request, "Invalid username or password.")
+                messages.error(request, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.")
+        else:
+            messages.error(request, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.")
     else:
         form = AuthenticationForm()
-    if 'messages' in request.session:
-        for message in request.session['messages']:
-            messages.add_message(request, message.level, message.message)
-        del request.session['messages']
-    return render(request, 'Accounts/registration/login.html', {'form': form})
+    return render(request, 'accounts/registration/login.html', {'form': form})
+
+# from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+# from django.urls import reverse_lazy
+# from django.core.mail import send_mail
+# class ForgotPasswordView(PasswordResetView):
+#     template_name = 'accounts/forgot_password.html'  # ตรวจสอบ path ให้ตรงกับโครงสร้างโปรเจกต์ของคุณ
+#     email_template_name = 'Accounts/forgot_password_email.html'
+#     success_url = reverse_lazy('login')  # ตรวจสอบให้แน่ใจว่า 'login' ตรงกับชื่อ URL สำหรับหน้าเข้าสู่ระบบ
+  
+
+# class PasswordResetConfirmView(PasswordResetConfirmView):
+#     template_name = 'accounts/reset_password_confirm.html'
+#     success_url = reverse_lazy('login')  # เปลี่ยนเส้นทางไปยังหน้าเข้าสู่ระบบหลังจากเปลี่ยนรหัสผ่านสำเร็จ
+
+# class ForgotPasswordView(PasswordResetView):
+#     template_name = 'forgot_password.html'
+#     email_template_name = 'forgot_password_email.html'
+#     success_url = reverse_lazy('login')  
+
+# class PasswordResetConfirmView(PasswordResetConfirmView):
+#     template_name = 'reset_password_confirm.html'
+#     success_url = reverse_lazy('login') 
+
+
+
 
 @login_required
 def profile_update(request):

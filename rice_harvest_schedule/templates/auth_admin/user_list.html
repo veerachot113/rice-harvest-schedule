@@ -1,0 +1,47 @@
+<!-- auth_admin/templates/auth_admin/user_list.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-center mt-40">รายชื่อ {{ user_type|title }}</h1>
+
+<div class="overflow-x-auto mx-10">
+    <table class="min-w-full bg-white text-sm">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="py-2 px-4 border-b">ลำดับ</th>
+                <th class="py-2 px-4 border-b">ชื่อผู้ใช้</th>
+                <th class="py-2 px-4 border-b">ชื่อ-สกุล</th>
+                <th class="py-2 px-4 border-b">อีเมล</th>
+                <th class="py-2 px-4 border-b">เบอร์โทร</th>
+                <th class="py-2 px-4 border-b">ที่อยู่</th>
+                <th class="py-2 px-4 border-b">ดำเนินการ</th>
+            </tr>
+        </thead>
+        <tbody>
+
+           >
+            {% for user in users %}
+            <tr class="bg-gray-50 border-b">
+                <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                <td class="px-5 py-4 text-center">{{ user.username }}</td>
+                <td class="px-5 py-4 text-center">{{ user.first_name }} {{ user.last_name }}</td>
+                <td class="px-5 py-4 text-center">{{ user.email }}</td>
+                <td class="px-5 py-4 text-center">{{ user.phone }}</td>
+                <td class="px-5 py-4 text-center">{{ user.address }}</td>
+                <td class="px-5 py-4 text-center">
+                        <form method="post" action="{% url 'delete_user' user.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ลบผู้ใช้</button>
+                            {% if user.user_type == 'driver' %}
+                            <a href="{% url 'view_driver_document' user.id %}" class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded">ดูเอกสาร</a>
+                            {% endif %}
+                        </form>
+                      
+                   
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

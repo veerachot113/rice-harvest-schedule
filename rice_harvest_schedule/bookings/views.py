@@ -123,3 +123,5 @@ def count_pending_rent_request(driver):
         if booking.request_status == "Pending":
             no_of_pending_request += 1
     return no_of_pending_request
+
+

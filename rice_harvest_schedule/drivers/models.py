@@ -11,6 +11,7 @@ class Vehicle(models.Model):
     )
     type = models.CharField(max_length=100,verbose_name='ประเภทรถ', choices=TYPE_CHOICES)
     price = models.DecimalField(max_digits=10, decimal_places=0, verbose_name='ราคา')
+    
     PROVINCE_CHOICES = [
     ('กระบี่', 'กระบี่'),
     ('กรุงเทพมหานคร', 'กรุงเทพมหานคร'),
@@ -94,6 +95,8 @@ class Vehicle(models.Model):
 ]
     province = models.CharField(max_length=200, verbose_name='จังหวัดที่ลงพื้นที่',choices=PROVINCE_CHOICES)
     image = models.ImageField(upload_to='vehicle_images/',null=True, blank=True, verbose_name='รูปภาพรถ')
+    min_acres = models.IntegerField(default=10, verbose_name='ขั้นต่ำที่รับเกี่ยว (ไร่)')
+    max_acres_per_day = models.IntegerField(default=25, verbose_name='จำนวนไร่สูงสุดที่เกี่ยวได้ต่อวัน (ไร่)')
 
 
     def __str__(self):
