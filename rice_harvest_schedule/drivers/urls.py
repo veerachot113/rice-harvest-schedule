@@ -12,5 +12,4 @@ urlpatterns = [
     path('delete_calendar_event/<int:event_id>/', delete_calendar_event, name='delete_calendar_event'),
     path('schedule/<int:driver_id>/', driver_schedule, name='driver_schedule'),
  
-
 ]

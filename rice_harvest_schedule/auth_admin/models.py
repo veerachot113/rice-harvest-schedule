@@ -11,7 +11,6 @@ class DriverDocument(models.Model):
     driver_with_car = models.ImageField(upload_to='documents/driver_with_car/')
     note = models.TextField(blank=True, null=True)
     request_status = models.CharField(max_length=30, default="Pending")
-    
 
     def __str__(self):
         return f'{self.driver.username} - {self.request_status}'

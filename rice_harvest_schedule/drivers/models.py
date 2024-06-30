@@ -2,6 +2,7 @@
 from django.db import models
 from accounts.models import CustomUser
 
+
 class Vehicle(models.Model):
     driver = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='vehicles', limit_choices_to={'user_type': 'driver'})
     model = models.CharField(max_length=100, verbose_name='รุ่น')
@@ -101,8 +102,6 @@ class Vehicle(models.Model):
 
     def __str__(self):
         return self.model
-
-from bookings.models import Booking
 
 class CalendarEvent(models.Model):
     driver = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

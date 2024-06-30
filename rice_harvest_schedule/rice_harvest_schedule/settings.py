@@ -38,15 +38,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.sites",
+    # "django.contrib.sites",
     'accounts',
     'auth_admin',
     'drivers',
     'bookings',
     "crispy_forms",
     "crispy_tailwind",
-    "allauth",
-    "allauth.account",
+    # "allauth",
+    # "allauth.account",
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
@@ -57,21 +57,35 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'djangoprojectubu@gmail.com'
-EMAIL_HOST_PASSWORD = 'pwaidjfqooukawrk'
+EMAIL_HOST_PASSWORD = 'rugmfuokyxkslmwf'
+DEFAULT_FORM_EMAIL = 'djangoprojectubu@gmail.com'
+from_email = 'djangoprojectubu@gmail.com'
 
-# from_email = 'djangoprojectubu@gmail.com'
-
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'allauth.account.middleware.AccountMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = "rice_harvest_schedule.urls"
 
@@ -170,32 +184,23 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-SITE_ID = 1
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_UNIQUE_EMAIL = True
-DEFAULT_FROM_EMAIL = "djangoprojectubu@gmail.com"
+# SITE_ID = 1
+# ACCOUNT_USERNAME_REQUIRED = False
+# ACCOUNT_AUTHENTICATION_METHOD = "email"
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_UNIQUE_EMAIL = True
+# DEFAULT_FROM_EMAIL = "djangoprojectubu@gmail.com"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-# AUTHENTICATION_BACKENDS = [
-#     'django.contrib.auth.backends.ModelBackend',
-#     'accounts.backends.UserFarmerBackend',
-#     'accounts.backends.UserDriverBackend',
-#     'allauth.account.auth_backends.AuthenticationBackend',
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'accounts.backends.UserFarmerBackend',
+    'accounts.backends.UserDriverBackend',
+#    'allauth.account.auth_backends.AuthenticationBackend',
 
-# ]
+]
 # LOGIN_REDIRECT_URL = '/authadmin/document_review/'
 # LOGOUT_REDIRECT_URL = '/authadmin/document_review/'
+LOGIN_URL = 'login'
 
 
-
-
-# from django.core.mail import send_mail
-# send_mail(
-#     'Test Subject',
-#     'Here is the message.',
-#     'djangoprojectubu@gmail.com',  # อีเมลที่จะส่งจาก
-#     ['veerachot113@gmail.com'],    # อีเมลที่จะส่งถึง
-#     fail_silently=False,
-# )

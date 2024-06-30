@@ -23,8 +23,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),  # Use the custom admin site
     # path("accounts/", include("allauth.urls")),
-    path('accounts/', include('accounts.urls')),
-    
+    path('', include('accounts.urls')),
     path('drivers/', include('drivers.urls')),
     path('bookings/', include('bookings.urls')),
     path('authadmin/', include('auth_admin.urls')),

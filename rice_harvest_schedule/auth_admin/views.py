@@ -59,7 +59,6 @@ def process_document(request, document_id):
         messages.success(request, f'เอกสารได้ถูก{action}เรียบร้อยแล้ว')
     return redirect('document_review')
 
-
 @user_passes_test(lambda u: u.is_superuser)
 def user_list(request, user_type):
     no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()

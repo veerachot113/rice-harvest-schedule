@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>กรอกที่อยู่ของประเทศไทย</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <form id="addressForm" class="space-y-4">
+            <div>
+                <label for="province" class="block text-sm font-medium text-gray-700">จังหวัด:</label>
+                <select id="province" name="province" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="">เลือกจังหวัด</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="district" class="block text-sm font-medium text-gray-700">อำเภอ:</label>
+                <select id="district" name="district" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" disabled>
+                    <option value="">เลือกอำเภอ</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="subdistrict" class="block text-sm font-medium text-gray-700">ตำบล:</label>
+                <select id="subdistrict" name="subdistrict" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" disabled>
+                    <option value="">เลือกตำบล</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="postalcode" class="block text-sm font-medium text-gray-700">รหัสไปรษณีย์:</label>
+                <input type="text" id="postalcode" name="postalcode" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" readonly>
+            </div>
+
+            <button type="submit" class="mt-4 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Submit</button>
+        </form>
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            let provinces, districts, subdistricts;
+
+            // Load JSON data
+            $.when(
+                $.getJSON('https://raw.githubusercontent.com/thailand-geography-data/thailand-geography-json/main/src/provinces.json', function(data) { provinces = data; }),
+                $.getJSON('https://raw.githubusercontent.com/thailand-geography-data/thailand-geography-json/main/src/districts.json', function(data) { districts = data; }),
+                $.getJSON('https://raw.githubusercontent.com/thailand-geography-data/thailand-geography-json/main/src/subdistricts.json', function(data) { subdistricts = data; })
+            ).then(function() {
+                // ตรวจสอบข้อมูลที่ดึงมา
+                console.log(provinces);
+                console.log(districts);
+                console.log(subdistricts);
+
+                // Populate province select box
+                let provinceSelect = $('#province');
+                provinces.forEach(function(province) {
+                    provinceSelect.append(new Option(province.provinceNameTh, province.provinceCode));
+                });
+
+                // On province change
+                $('#province').change(function() {
+                    let provinceId = $(this).val();
+                    if (provinceId) {
+                        let filteredDistricts = districts.filter(d => d.provinceCode == provinceId);
+                        let districtSelect = $('#district');
+                        districtSelect.empty().append(new Option('เลือกอำเภอ', ''));
+                        filteredDistricts.forEach(function(district) {
+                            districtSelect.append(new Option(district.districtNameTh, district.districtCode));
+                        });
+                        $('#district').prop('disabled', false);
+                    } else {
+                        $('#district').empty().append(new Option('เลือกอำเภอ', '')).prop('disabled', true);
+                        $('#subdistrict').empty().append(new Option('เลือกตำบล', '')).prop('disabled', true);
+                    }
+                });
+
+                // On district change
+                $('#district').change(function() {
+                    let districtId = $(this).val();
+                    if (districtId) {
+                        let filteredSubdistricts = subdistricts.filter(s => s.districtCode == districtId);
+                        let subdistrictSelect = $('#subdistrict');
+                        subdistrictSelect.empty().append(new Option('เลือกตำบล', ''));
+                        filteredSubdistricts.forEach(function(subdistrict) {
+                            subdistrictSelect.append(new Option(subdistrict.subdistrictNameTh, subdistrict.subdistrictCode));
+                        });
+                        $('#subdistrict').prop('disabled', false);
+                    } else {
+                        $('#subdistrict').empty().append(new Option('เลือกตำบล', '')).prop('disabled', true);
+                    }
+                });
+
+                // On subdistrict change
+                $('#subdistrict').change(function() {
+                    let subdistrictId = $(this).val();
+                    if (subdistrictId) {
+                        let selectedSubdistrict = subdistricts.find(s => s.subdistrictCode == subdistrictId);
+                        $('#postalcode').val(selectedSubdistrict.postalCode);
+                    } else {
+                        $('#postalcode').val('');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

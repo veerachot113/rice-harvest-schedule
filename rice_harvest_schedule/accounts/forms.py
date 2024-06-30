@@ -1,7 +1,21 @@
 # accounts/forms.py
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm,PasswordResetForm,SetPasswordForm
 from .models import CustomUser
+from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
+
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(label="Email", max_length=254, required=True)
+
+    def get_users(self, email):
+        active_users = CustomUser._default_manager.filter(
+            email__iexact=email, is_active=True)
+        return (u for u in active_users if u.has_usable_password())
+
+class CustomSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(label='รหัสผ่านใหม่', widget=forms.PasswordInput)
+    new_password2 = forms.CharField(label='ยืนยันรหัสผ่านใหม่', widget=forms.PasswordInput)
 
 class UserFarmerRegistrationForm(UserCreationForm):
     first_name = forms.CharField(max_length=100, required=True, label='ชื่อ',error_messages={'required': 'กรุณากรอกชื่อ'})
@@ -49,7 +63,6 @@ class UserDriverRegistrationForm(UserCreationForm):
         model = CustomUser
         fields = ['username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'address', 'phone']
 
-
 class UserFarmerUpdateForm(UserChangeForm):
     first_name = forms.CharField(max_length=100, required=True, label='ชื่อ')
     last_name = forms.CharField(max_length=100, required=True, label='นามสกุล')
@@ -59,8 +72,6 @@ class UserFarmerUpdateForm(UserChangeForm):
     class Meta:
         model = CustomUser
         fields = ['email', 'first_name', 'last_name', 'address', 'phone']
-
-
 
 class UserDriverUpdateForm(UserChangeForm):
     first_name = forms.CharField(max_length=100, required=True, label='ชื่อ')

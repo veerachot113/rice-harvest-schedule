@@ -1,5 +1,4 @@
 #drivers/views.py
-import json
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -7,8 +6,10 @@ from .forms import *
 from .models import *
 from accounts.models import *
 from bookings.models import Booking
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.dateparse import parse_datetime
+from django.contrib.auth.decorators import login_required
 
-# Function to check if a user is a staff
 def check_is_staff(user):
     return user.is_staff
 
@@ -58,19 +59,10 @@ def count_pending_rent_request(driver):
     return no_of_pending_request
 
 
-
-
 @login_required(login_url='login')
 def driver_schedule(request, driver_id):
     driver = get_object_or_404(CustomUser, id=driver_id)
     return render(request, 'Driver/driver_schedule.html', {'driver': driver})
-import json
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.dateparse import parse_datetime
-from .models import CalendarEvent
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
 
 @login_required
 def calendar_view(request):
@@ -100,7 +92,6 @@ def add_calendar_event(request):
         start = parse_datetime(request.POST.get('start'))
         end = parse_datetime(request.POST.get('end'))
 
-        # ตรวจสอบการทับซ้อนของวันที่
         if CalendarEvent.objects.filter(driver=request.user, start__lt=end, end__gt=start).exists():
             return JsonResponse({'status': 'error', 'message': 'ช่วงเวลานี้มีงานแล้ว'})
 
@@ -123,7 +114,6 @@ def edit_calendar_event(request, event_id):
         start = parse_datetime(request.POST.get('start'))
         end = parse_datetime(request.POST.get('end'))
 
-        # ตรวจสอบการทับซ้อนของวันที่ โดยไม่รวม event ที่กำลังแก้ไข
         if CalendarEvent.objects.filter(driver=request.user, start__lt=end, end__gt=start).exclude(id=event_id).exists():
             return JsonResponse({'status': 'error', 'message': 'ช่วงเวลานี้มีงานแล้ว'})
 

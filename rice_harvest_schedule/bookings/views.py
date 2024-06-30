@@ -26,8 +26,7 @@ def create_booking(request, vehicle_id):
             booking.farmer = request.user
             booking.vehicle = vehicle
             quantity = form.cleaned_data['quantity']
-            
-            # Calculate the end date based on the quantity and vehicle capacity
+
             if quantity <= 30:
                 days_required = 1
             else:
@@ -38,8 +37,6 @@ def create_booking(request, vehicle_id):
                 booking.appointment_start_date = parse_date(appointment_start_date_str)
                 booking.appointment_end_date = booking.appointment_start_date + timedelta(days=days_required - 1)
             else:
-                # Handle the case when appointment_start_date is not provided
-                # You can set a default value or return an error response
                 return JsonResponse({'error': 'Appointment start date is required.'}, status=400)
             
             booking.save()
@@ -58,25 +55,19 @@ def accept_booking(request, booking_id):
     if request.method == 'POST':
         appointment_date = booking.appointment_start_date.date()
         start_time = request.POST.get('appointment_start_time')
-
         if start_time:
-            # Combine the date and time to create a datetime object
             start_datetime = make_aware(datetime.combine(appointment_date, datetime.strptime(start_time, '%H:%M').time()))
-
             booking.appointment_start_date = start_datetime
-
             quantity = booking.quantity
             if quantity <= 30:
                 days_required = 1
             else:
                 days_required = (quantity // 25) + (1 if quantity % 25 else 0)
-
             booking.appointment_end_date = booking.appointment_start_date + timedelta(days=days_required - 1)
             booking.request_status = "Accepted"
             booking.request_responded_by = request.user.username
             booking.save()
 
-            # เพิ่มกิจกรรมลงในปฏิทิน
             CalendarEvent.objects.create(
                 driver=request.user,
                 title=f"Booking: {booking.fullname}",
@@ -87,8 +78,7 @@ def accept_booking(request, booking_id):
 
             return redirect('driver_booking_list')
         else:
-            # Handle case where start_time is None
-            return redirect('driver_booking_list')  # or show an error message
+            return redirect('driver_booking_list')
 @login_required
 def decline_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)

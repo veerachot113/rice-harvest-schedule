@@ -5,13 +5,18 @@ from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
-
+from django.core.mail import send_mail
 from auth_admin.models import DriverDocument
-from .forms import UserFarmerRegistrationForm, UserDriverRegistrationForm, UserFarmerUpdateForm, UserDriverUpdateForm
+from .forms import UserFarmerRegistrationForm, UserDriverRegistrationForm, UserFarmerUpdateForm, UserDriverUpdateForm,CustomPasswordResetForm, CustomSetPasswordForm
 from .models import CustomUser
 from drivers.models import Vehicle
 from bookings.models import Booking
 from .decorators import farmer_required, driver_required
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.urls import reverse_lazy
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+
 def get_backend(user):
     if user.user_type == 'farmer':
         return 'accounts.backends.UserFarmerBackend'
@@ -27,10 +32,11 @@ def custom_logout(request):
 
 @login_required
 def home_driver(request):
+    
+    no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()
     no_of_pending_request = count_pending_rent_request(request.user)
     vehicles = Vehicle.objects.filter(driver=request.user)
-    # no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()
-    return render(request, 'Driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request ,})
+    return render(request, 'Driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request ,'no_of_pending_documents': no_of_pending_documents})
 
 @login_required
 def home_farmer(request):
@@ -52,10 +58,6 @@ def home(request):
 def useregister(request):
     return render(request, 'chooserole.html')
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.models import Group
-from .forms import UserFarmerRegistrationForm, UserDriverRegistrationForm
-
 def register_farmer(request):
     if request.method == 'POST':
         form = UserFarmerRegistrationForm(request.POST)
@@ -66,6 +68,14 @@ def register_farmer(request):
             farmer_group = Group.objects.get(name='farmer')
             user.groups.add(farmer_group)
             user.save()
+            
+            # subject = 'ยืนยันการลงทะเบียน'
+            # message = f'ยินดีต้อนรับ \n\n คุณ{user.first_name} {user.last_name} \n\n ชื่อผู้ใช้ของคุณ: {user.username}!'
+            # from_email = 'จองง่ายได้เกี่ยว@rice.com'
+            # recipient_list = [user.email]
+            
+            # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+            
             messages.success(request, 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ')
             return redirect('login')  # เปลี่ยนเป็นหน้าเข้าสู่ระบบหลังจากลงทะเบียนสำเร็จ
         else:
@@ -86,12 +96,12 @@ def register_driver(request):
             user.groups.add(driver_group)
             user.save()
             
-            subject = 'ยืนยันการลงทะเบียน'
-            message = f'ยินดีต้อนรับ \n\n คุณ{user.first_name} {user.last_name} \n\n ชื่อผู้ใช้ของคุณ: {user.username}!'
-            from_email = 'หมาแมวคาเฟ่@Dogcat.com'
-            recipient_list = [user.email]
+            # subject = 'ยืนยันการลงทะเบียน'
+            # message = f'ยินดีต้อนรับ \n\n คุณ{user.first_name} {user.last_name} \n\n ชื่อผู้ใช้ของคุณ: {user.username}!'
+            # from_email = 'จองง่ายได้เกี่ยว@rice.com'
+            # recipient_list = [user.email]
             
-            send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+            # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
             messages.success(request, 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ')
             return redirect('login')  # เปลี่ยนเป็นหน้าเข้าสู่ระบบหลังจากลงทะเบียนสำเร็จ
@@ -127,29 +137,31 @@ def user_login(request):
         form = AuthenticationForm()
     return render(request, 'accounts/registration/login.html', {'form': form})
 
-# from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
-# from django.urls import reverse_lazy
-# from django.core.mail import send_mail
-# class ForgotPasswordView(PasswordResetView):
-#     template_name = 'accounts/forgot_password.html'  # ตรวจสอบ path ให้ตรงกับโครงสร้างโปรเจกต์ของคุณ
-#     email_template_name = 'Accounts/forgot_password_email.html'
-#     success_url = reverse_lazy('login')  # ตรวจสอบให้แน่ใจว่า 'login' ตรงกับชื่อ URL สำหรับหน้าเข้าสู่ระบบ
-  
 
-# class PasswordResetConfirmView(PasswordResetConfirmView):
-#     template_name = 'accounts/reset_password_confirm.html'
-#     success_url = reverse_lazy('login')  # เปลี่ยนเส้นทางไปยังหน้าเข้าสู่ระบบหลังจากเปลี่ยนรหัสผ่านสำเร็จ
+class CustomPasswordResetView(PasswordResetView):
+    form_class = CustomPasswordResetForm
+    template_name = 'accounts/forgot_password.html'
+    email_template_name = 'accounts/forgot_password_email.html'
+    success_url = reverse_lazy('password_reset_done')
 
-# class ForgotPasswordView(PasswordResetView):
-#     template_name = 'forgot_password.html'
-#     email_template_name = 'forgot_password_email.html'
-#     success_url = reverse_lazy('login')  
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    form_class = CustomSetPasswordForm
+    template_name = 'accounts/reset_password_confirm.html'
+    success_url = reverse_lazy('login')
 
-# class PasswordResetConfirmView(PasswordResetConfirmView):
-#     template_name = 'reset_password_confirm.html'
-#     success_url = reverse_lazy('login') 
-
-
+    def dispatch(self, *args, **kwargs):
+        uidb64 = kwargs.get('uidb64')
+        self.user = self.get_user(uidb64)
+        if self.user is None:
+            return self.render_to_response(self.get_context_data())
+        return super().dispatch(*args, **kwargs)
+    
+    def get_user(self, uidb64):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            return CustomUser._default_manager.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+            return None
 
 
 @login_required

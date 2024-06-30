@@ -5,6 +5,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
 {% endblock %}
 {% block booking %}
 
@@ -44,7 +45,8 @@
                         </a>
                     </td>
                     <td class="px-5 py-4 text-center">{{ document.note }}</td>
-                    <td class="text-red-500 font-bold text-center">{{ document.request_status }}</td>
+                    <td class="text-center font-bold {% if document.request_status == 'Approved' %}text-green-500{% else %}text-red-500{% endif %}">{{ document.request_status }}</td>
+
                 </tr>
                 {% endfor %}
             </tbody>
