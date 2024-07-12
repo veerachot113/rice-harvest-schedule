@@ -135,10 +135,10 @@
                             <p class="text-gray-600">ประเภท : {{ vehicle.type }}</p>
                             <p class="text-gray-600 ">ราคา : {{ vehicle.price }}</p>
                             <p class="text-gray-600 ">ขั้นต่ำที่รับเกี่ยว : {{ vehicle.min_acres }} ไร่</p>
-                            <p class="text-gray-600 ">จำนวนไร่สูงสุดที่เกี่ยวได้ต่อวัน : {{ vehicle.max_acres_per_day }} ไร่</p>
-                            <p class="text-gray-600 mb-4">จังหวัด : {{ vehicle.province }}</p>
+                            <!-- <p class="text-gray-600 ">จำนวนไร่ที่เกี่ยวได้ต่อวัน : {{ vehicle.max_acres_per_day }} ไร่</p>
+                            <p class="text-gray-600 mb-4">จังหวัด : {{ vehicle.province }}</p> -->
                             <!-- Booking Buttons -->
-                            <div class="flex justify-center space-x-16 items-center">
+                            <div class="flex justify-center space-x-16 items-center mt-3">
                                 <a href="{% url 'driver_schedule' driver_id=vehicle.driver.id %}" class="w-28 h-10 bg-blue-500 text-white text-xs font-bold uppercase rounded flex justify-center items-center hover:transform hover:scale-110 duration-300">ตารางการจอง</a>
                                 <a href="{% url 'create_booking' vehicle_id=vehicle.id %}" class="w-28 h-10 bg-green-500 text-white text-xs font-bold uppercase rounded flex justify-center items-center hover:transform hover:scale-110 duration-300">จองทันที</a>
                             </div>

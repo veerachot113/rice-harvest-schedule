@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+Accept Booking
+{% endblock %}
+{% block main %}
+<div class="container mx-auto p-2 mt-36">
+    <div class="flex flex-col max-w-7xl mx-auto bg-white border border-gray-300 rounded-lg shadow-lg">
+        <h1 class="text-4xl text-center mb-8 mt-7">อนุมัติการจอง</h1>
+        <div class="w-full md:flex">
+            <div class="md:w-1/2 p-6">
+                <h2 class="text-2xl mb-4">รายละเอียดการจอง</h2>
+                <p><strong>ชื่อ-สกุล:</strong> {{ booking.fullname }}</p>
+                <p><strong>ที่อยู่:</strong> {{ booking.address }}</p>
+                <p><strong>จำนวนไร่:</strong> {{ booking.quantity }}</p>
+                <p><strong>เบอร์ติดต่อ:</strong> {{ booking.phone }}</p>
+                <p><strong>รายละเอียด:</strong> {{ booking.details }}</p>
+                <p><strong>วันเริ่มต้น:</strong> {{ booking.appointment_start_date }}</p>
+                <p><strong>วันสิ้นสุด:</strong> {{ booking.appointment_end_date }}</p>
+            </div>
+            <div class="md:w-1/2 p-4">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">อนุมัติ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

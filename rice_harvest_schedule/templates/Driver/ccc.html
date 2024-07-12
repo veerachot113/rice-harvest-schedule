@@ -1,3 +1,5 @@
+ล่าสุด
+
 {% extends "base.html" %}
 {% load static %}
 {% block title %}
@@ -101,16 +103,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const year = date.getFullYear();
         return `${day}/${month}/${year}`;
     }
-
     function calculateEndDate() {
     const quantity = parseInt(quantityInput.value, 10);
     const startDate = new Date(startDateInput.value);
 
     if (!isNaN(quantity) && startDate instanceof Date && !isNaN(startDate.getTime())) {
-        // ปรับการคำนวณวันสิ้นสุดตามจำนวนไร่และจำนวนไร่สูงสุดต่อวัน
-        let daysRequired = Math.ceil(quantity / maxAcresPerDay);
+        let daysRequired;
+        if (quantity <= maxAcresPerDay + threshold) {
+            daysRequired = 1;
+        } else {
+            daysRequired = Math.ceil((quantity - threshold) / maxAcresPerDay) ;
+        }
+
         const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + daysRequired - 1);  // ลบ 1 เพื่อนับรวมวันเริ่มต้น
+        endDate.setDate(startDate.getDate() + daysRequired );
 
         const formattedEndDate = formatDateToDDMMYYYY(endDate);
         endDateDisplay.value = formattedEndDate;

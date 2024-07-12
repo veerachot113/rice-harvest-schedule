@@ -8,7 +8,8 @@ from accounts.models import *
 from bookings.models import Booking
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_datetime
-from django.contrib.auth.decorators import login_required
+from django.utils.timezone import make_aware
+from datetime import datetime
 
 def check_is_staff(user):
     return user.is_staff
@@ -58,11 +59,26 @@ def count_pending_rent_request(driver):
             no_of_pending_request += 1
     return no_of_pending_request
 
-
 @login_required(login_url='login')
 def driver_schedule(request, driver_id):
     driver = get_object_or_404(CustomUser, id=driver_id)
     return render(request, 'Driver/driver_schedule.html', {'driver': driver})
+
+@login_required
+def get_calendar_events_for_farmer(request):
+    farmer_id = request.GET.get('farmer_id', request.user.id)
+    events = CalendarEvent.objects.filter(farmer_id=farmer_id).values('id', 'title', 'details', 'start', 'end', 'farmer_id')
+    events_list = []
+    for event in events:
+        events_list.append({
+            'id': event['id'],
+            'title': event['title'],
+            'start': event['start'].isoformat(),  # ส่งค่า start ในรูปแบบ ISO string
+            'end': event['end'].isoformat(),      # ส่งค่า end ในรูปแบบ ISO string
+            'details': event['details'],
+            'farmer_id': event['farmer_id'],      # เพิ่ม farmer_id เพื่อใช้ในการกำหนดสี
+        })
+    return JsonResponse(events_list, safe=False)
 
 @login_required
 def calendar_view(request):
@@ -71,17 +87,19 @@ def calendar_view(request):
 @login_required
 def get_calendar_events(request):
     driver_id = request.GET.get('driver_id', request.user.id)
-    events = CalendarEvent.objects.filter(driver_id=driver_id).values('id', 'title', 'details', 'start', 'end')
+    events = CalendarEvent.objects.filter(driver_id=driver_id).values('id', 'title', 'details', 'start', 'end', 'farmer_id')
     events_list = []
     for event in events:
         events_list.append({
             'id': event['id'],
             'title': event['title'],
-            'start': event['start'].strftime('%Y-%m-%dT%H:%M:%S'),
-            'end': event['end'].strftime('%Y-%m-%dT%H:%M:%S'),
+            'start': event['start'].isoformat(),  # ส่งค่า start ในรูปแบบ ISO string
+            'end': event['end'].isoformat(),      # ส่งค่า end ในรูปแบบ ISO string
             'details': event['details'],
+            'farmer_id': event['farmer_id'],      # เพิ่ม farmer_id เพื่อใช้ในการกำหนดสี
         })
     return JsonResponse(events_list, safe=False)
+
 
 @csrf_exempt
 @login_required
@@ -89,8 +107,9 @@ def add_calendar_event(request):
     if request.method == 'POST':
         title = request.POST.get('title')
         details = request.POST.get('details')
-        start = parse_datetime(request.POST.get('start'))
-        end = parse_datetime(request.POST.get('end'))
+        start = datetime.fromisoformat(request.POST.get('start'))
+        end = datetime.fromisoformat(request.POST.get('end'))
+        farmer_id = request.POST.get('farmer')
 
         if CalendarEvent.objects.filter(driver=request.user, start__lt=end, end__gt=start).exists():
             return JsonResponse({'status': 'error', 'message': 'ช่วงเวลานี้มีงานแล้ว'})
@@ -100,9 +119,12 @@ def add_calendar_event(request):
             title=title,
             details=details,
             start=start,
-            end=end
+            end=end,
+            farmer_id=farmer_id
         )
         return JsonResponse({'status': 'success'})
+
+from django.utils.dateparse import parse_datetime
 
 @csrf_exempt
 @login_required
@@ -122,7 +144,51 @@ def edit_calendar_event(request, event_id):
         event.start = start
         event.end = end
         event.save()
+
+        # อัพเดทการจองที่เกี่ยวข้อง
+        booking = Booking.objects.filter(
+            vehicle__driver=request.user,
+            appointment_start_date__lte=event.start,
+            appointment_end_date__gte=event.end,
+            farmer=event.farmer
+        ).first()
+        if booking:
+            booking.appointment_start_date = event.start
+            booking.appointment_end_date = event.end
+            booking.save()
+
         return JsonResponse({'status': 'success'})
+    
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+@login_required
+def update_booking_dates(request, event_id):
+    if request.method == 'POST':
+        event = get_object_or_404(CalendarEvent, id=event_id)
+        start = parse_datetime(request.POST.get('start'))
+        end = parse_datetime(request.POST.get('end'))
+
+        # Update event dates
+        event.start = start
+        event.end = end
+        event.save()
+
+        # Update the related booking dates
+        booking = Booking.objects.filter(
+            vehicle__driver=request.user,
+            farmer=event.farmer
+        ).first()
+
+        if booking:
+            booking.appointment_start_date = start
+            booking.appointment_end_date = end
+            booking.save()
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'No matching booking found.'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 
 @csrf_exempt
@@ -133,4 +199,5 @@ def delete_calendar_event(request, event_id):
         event.delete()
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
 

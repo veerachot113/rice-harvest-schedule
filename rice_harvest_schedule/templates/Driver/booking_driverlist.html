@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% block flowbite %}
 <!-- Flowbite -->
@@ -34,7 +33,7 @@
     </ul>
 </div>
 <div id="default-styled-tab-content">
-    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-profile" role="tabpanel"
+    <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-profile" role="tabpanel"
         aria-labelledby="profile-tab">
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white">
@@ -49,7 +48,6 @@
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
                         <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
-                        <th class="py-2 px-4 border-b">เวลาเริ่มงาน</th>
                         <th class="py-2 px-4 border-b">ดำเนินการ</th>
                     </tr>
                 </thead>
@@ -67,14 +65,8 @@
                         <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
                         <td class="px-5 py-4 text-center">
-                            <form method="post" action="{% url 'accept_booking' booking.id %}">
-                                {% csrf_token %}
-                                <input type="time" name="appointment_start_time" required class="w-36">
-                        </td>
-                        <td class="px-5 py-4 text-center">
-                                <button type="submit" class="bg-green-500 hover:bg-green-700 font-bold py-2 px-4 rounded">Accept</button>
-                                <a href="{% url 'decline_booking' booking.id %}" class="bg-red-500 hover:bg-green-700 font-bold py-2 px-4 rounded">Decline</a>
-                            </form>
+                            <button type="button" class="bg-green-500 hover:bg-green-700 font-bold py-2 px-4 rounded open-accept-modal" data-id="{{ booking.id }}">อนุมัติ</button>
+                            <a href="{% url 'decline_booking' booking.id %}" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ปฏิเสธ</a>
                         </td>
                     </tr>
                     {% endif %}
@@ -84,7 +76,7 @@
         </div>
     </div>
 
-    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-dashboard" role="tabpanel"
+    <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-dashboard" role="tabpanel"
         aria-labelledby="dashboard-tab">
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white text-sm">
@@ -125,7 +117,7 @@
         </div>
     </div>
 
-    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-settings" role="tabpanel"
+    <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-settings" role="tabpanel"
         aria-labelledby="settings-tab">
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white text-sm">
@@ -166,4 +158,105 @@
         </div>
     </div>
 </div>
+
+<!-- Popup Modal -->
+<div class="fixed z-10 inset-0 overflow-y-auto hidden" id="event-modal">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 relative">
+                <div class="absolute top-0 right-0 pt-4 pr-4">
+                    <button type="button" class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" id="close-modal">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">เพิ่มตารางงาน</h3>
+                        <form id="event-form">
+                            <input type="hidden" id="event-id" name="id">
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">ชื่อกิจกรรม :</label>
+                                <input type="text" id="event-title" name="title" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">รายละเอียด :</label>
+                                <textarea id="event-details" name="details" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">เวลาเริ่มต้น :</label>
+                                <input type="time" id="event-start-time" name="start_time" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                            </div>
+                            <div class="mb-6">
+                                <label class="block mb-2 text-sm font-medium text-gray-700">เวลาเสร็จสิ้น :</label>
+                                <input type="time" id="event-end-time" name="end_time" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                            </div>
+                            <div class="flex justify-between">
+                                <button type="button" id="cancel-button" class="px-4 py-2 font-bold text-white bg-red-500 rounded-md hover:bg-red-700 focus:outline-none focus:ring focus:border-red-300">ยกเลิก</button>
+                                <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:border-blue-300">ยืนยัน</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Open modal
+    $('.open-accept-modal').on('click', function() {
+        var bookingId = $(this).data('id');
+        $('#event-id').val(bookingId);
+        $('#event-title').val('');
+        $('#event-details').val('');
+        $('#event-start-time').val('');
+        $('#event-end-time').val('');
+        $('#event-modal').removeClass('hidden');
+    });
+
+    // Close modal
+    $('#close-modal, #cancel-button').on('click', function() {
+        $('#event-modal').addClass('hidden');
+    });
+
+    // Handle form submission
+    $('#event-form').on('submit', function(e) {
+        e.preventDefault();
+        var bookingId = $('#event-id').val();
+        var title = $('#event-title').val();
+        var details = $('#event-details').val();
+        var startTime = $('#event-start-time').val();
+        var endTime = $('#event-end-time').val();
+
+        $.ajax({
+            url: `/bookings/accept/${bookingId}/`,
+            type: 'POST',
+            data: {
+                title: title,
+                details: details,
+                appointment_start_time: startTime,
+                appointment_end_time: endTime,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            }
+        });
+    });
+});
+
+</script>
+
 {% endblock %}

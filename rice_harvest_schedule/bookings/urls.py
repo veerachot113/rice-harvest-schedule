@@ -9,4 +9,5 @@ urlpatterns = [
     path('cancel/<int:booking_id>/', cancel_booking, name='cancel_booking'),
     path('farmer/', farmer_booking_list, name='farmer_booking_list'),
     path('driver/', driver_booking_list, name='driver_booking_list'),
+    
 ]

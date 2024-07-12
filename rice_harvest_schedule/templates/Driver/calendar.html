@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
-
 </head>
 <body style="font-family: 'K2D', sans-serif;">
     <div class="max-w-sm mx-auto">
@@ -30,23 +29,15 @@
             
             <!-- Ongoing Events Section -->
             <div id="ongoing-events" class="w-1/3 ml-4 mt-5">
-                <div class="bg-white p-4 rounded-lg shadow-md border border-gray-500 border-2">
+                <div class="bg-white p-4 rounded-lg shadow-md border border-gray-500 border-2" style="max-height: 600px; overflow-y: auto;">
                     <h3 class="text-xl font-bold mb-4 text-center">กิจกรรมที่กำลังดำเนินการอยู่</h3>
-                    <div id="event-list" class="space-y-4">
+                    <div id="event-list" class="space-y-4 max-h-[500px] overflow-y-auto">
                         <!-- Event items will be appended here -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-
-    <!-- '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' -->
-
-
-
-
-    
 
     <!-- Modal -->
     <div class="fixed z-10 inset-0 overflow-y-auto hidden" id="event-modal">
@@ -72,24 +63,25 @@
                                 <input type="hidden" id="event-id" name="id">
                                 <div class="mb-4">
                                     <label class="block mb-2 text-sm font-medium text-gray-700">ชื่อกิจกรรม :</label>
-                                    <input type="text" id="event-title" name="title" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                                    <input type="text" id="event-title" name="title" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required disabled />
                                 </div>
                                 <div class="mb-4">
                                     <label class="block mb-2 text-sm font-medium text-gray-700">รายละเอียด :</label>
-                                    <textarea id="event-details" name="details" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required></textarea>
+                                    <textarea id="event-details" name="details" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required disabled></textarea>
                                 </div>
                                 <div class="mb-4">
                                     <label class="block mb-2 text-sm font-medium text-gray-700">วันเริ่มต้น :</label>
-                                    <input type="datetime-local" id="event-start" name="start" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                                    <input type="datetime-local" id="event-start" name="start" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required disabled />
                                 </div>
                                 <div class="mb-6">
                                     <label class="block mb-2 text-sm font-medium text-gray-700">วันสิ้นสุด :</label>
-                                    <input type="datetime-local" id="event-end" name="end" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                                    <input type="datetime-local" id="event-end" name="end" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required disabled />
                                 </div>
-                                <div class="flex justify-between">
-                                    <button type="button" id="cancel-button" class="px-4 py-2 font-bold text-white bg-red-500 rounded-md hover:bg-red-700 focus:outline-none focus:ring focus:border-red-300">ยกเลิก</button>
+                                
+                                <div class="flex justify-end space-x-2">
+                                    <button type="button" id="edit-button" class="px-4 py-2 font-bold text-white bg-yellow-500 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring focus:border-yellow-300 hidden">แก้ไข</button>
                                     <button type="button" id="delete-button" class="px-4 py-2 font-bold text-white bg-red-600 rounded-md hover:bg-red-800 focus:outline-none focus:ring focus:border-red-300 hidden">ลบ</button>
-                                    <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:border-blue-300">ยืนยัน</button>
+                                    <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:border-blue-300" disabled>ยืนยัน</button>
                                 </div>
                             </form>
                         </div>
@@ -101,127 +93,198 @@
     <!-- /Modal -->
 
     <script>
-        $(document).ready(function() {
-            function updateOngoingEvents() {
-                $.ajax({
-                    url: '/drivers/get_calendar_events/',
-                    type: 'GET',
-                    data: {
-                        driver_id: '{{ user.id }}'
-                    },
-                    success: function(events) {
-                        var eventList = $('#event-list');
-                        eventList.empty();
-                        events.forEach(function(event, index) {
-                            var eventItem = `
-                                <div class="p-4 bg-blue-100 rounded-lg shadow">
-                                    <h4 class="text-lg font-semibold">${index + 1}. ${event.title}</h4>
-                                    <p>${event.details}</p>
-                                    <p><strong>เริ่มต้น:</strong> ${event.start}</p>
-                                    <p><strong>สิ้นสุด:</strong> ${event.end}</p>
-                                </div>
-                            `;
-                            eventList.append(eventItem);
-                        });
+$(document).ready(function() {
+    function updateOngoingEvents() {
+        $.ajax({
+            url: '/drivers/get_calendar_events/',
+            type: 'GET',
+            data: {
+                driver_id: '{{ user.id }}'
+            },
+            success: function(events) {
+                var currentDate = new Date();  // วันที่ปัจจุบัน
+                var eventList = $('#event-list');
+                eventList.empty();
+                
+                // กรองและจัดเรียงกิจกรรมตามวันที่ใกล้ที่สุด
+                var ongoingEvents = events.filter(function(event) {
+                    return new Date(event.start) >= currentDate;
+                }).sort(function(a, b) {
+                    return new Date(a.start) - new Date(b.start);
+                });
+                
+                // แสดงผลกิจกรรมที่กำลังดำเนินการอยู่
+                ongoingEvents.forEach(function(event, index) {
+                    var eventItem = `
+                        <div class="p-4 bg-blue-100 rounded-lg shadow-md mb-4 hover:bg-blue-200 transition duration-300 ease-in-out">
+                            <h4 class="text-lg font-semibold mb-2"><strong>ลำดับรายการ:</strong> ${index + 1}</h4>
+                            <p class="text-xl font-bold mb-1"><strong>หัวข้องาน:</strong> ${event.title}</p>
+                            <p class="text-base text-gray-700 mb-2"><strong>รายละเอียด:</strong> ${event.details}</p>
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm text-gray-600"><strong>เริ่มต้น:</strong> ${new Date(event.start).toLocaleString()}</p>
+                                <p class="text-sm text-gray-600"><strong>สิ้นสุด:</strong> ${new Date(event.end).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    `;
+                    eventList.append(eventItem);
+                });             
+            }
+        });
+    }
+
+    var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'dayGridMonth',
+        locale: 'th',
+        selectable: true,
+        timeZone: 'UTC',
+        select: function(info) {
+            $('#event-id').val('');
+            $('#event-title').val('');
+            $('#event-details').val('');
+            $('#event-start').val(info.startStr + 'T08:00');
+            $('#event-end').val(info.endStr + 'T17:00');
+            $('#modal-title').text('Add New Event');
+            $('#edit-button').addClass('hidden');
+            $('#delete-button').addClass('hidden');
+            $('#event-title').prop('disabled', false);
+            $('#event-details').prop('disabled', false);
+            $('#event-start').prop('disabled', false);
+            $('#event-end').prop('disabled', false);
+            $('button[type="submit"]').prop('disabled', false);
+            $('#event-modal').removeClass('hidden');
+        },
+        eventClick: function(info) {
+            $('#event-id').val(info.event.id);
+            $('#event-title').val(info.event.title);
+            $('#event-details').val(info.event.extendedProps.details);
+            $('#event-start').val(info.event.start.toISOString().slice(0, 16));  // แปลงเวลาที่ดึงมาให้อยู่ในรูปแบบที่ถูกต้อง
+            $('#event-end').val(info.event.end ? info.event.end.toISOString().slice(0, 16) : info.event.start.toISOString().slice(0, 16));  // แปลงเวลาที่ดึงมาให้อยู่ในรูปแบบที่ถูกต้อง
+            $('#modal-title').text('Edit Event');
+            $('#edit-button').removeClass('hidden');
+            $('#delete-button').removeClass('hidden');
+            $('#event-title').prop('disabled', true);
+            $('#event-details').prop('disabled', true);
+            $('#event-start').prop('disabled', true);
+            $('#event-end').prop('disabled', true);
+            $('button[type="submit"]').prop('disabled', true);
+            $('#event-modal').removeClass('hidden');
+        },
+        events: {
+            url: '/drivers/get_calendar_events/',
+            extraParams: function() {
+                return {
+                    driver_id: '{{ user.id }}'
+                };
+            },
+            success: function(events) {
+                return events.map(function(event) {
+                    if (event.farmer_id === '{{ user.id }}') {
+                        event.color = 'green';  // สีของงานของตัวเอง
+                    } else {
+                        event.color = 'blue';  // สีของงานอื่น
                     }
+                    return event;
                 });
             }
-
-            var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth',
-                locale: 'th',
-                selectable: true,
-                select: function(info) {
-                    $('#event-id').val('');
-                    $('#event-title').val('');
-                    $('#event-details').val('');
-                    $('#event-start').val(info.startStr + 'T00:00');
-                    $('#event-end').val(info.endStr + 'T00:00');
-                    $('#modal-title').text('Add New Event');
-                    $('#delete-button').addClass('hidden');
-                    $('#event-modal').removeClass('hidden');
-                },
-                eventClick: function(info) {
-                    $('#event-id').val(info.event.id);
-                    $('#event-title').val(info.event.title);
-                    $('#event-details').val(info.event.extendedProps.details);
-                    $('#event-start').val(info.event.start.toISOString().slice(0, 16));
-                    $('#event-end').val(info.event.end ? info.event.end.toISOString().slice(0, 16) : info.event.start.toISOString().slice(0, 16));
-                    $('#modal-title').text('Edit Event');
-                    $('#delete-button').removeClass('hidden');
-                    $('#event-modal').removeClass('hidden');
-                },
-                events: '/drivers/get_calendar_events/',
-                eventDidMount: function() {
-                    updateOngoingEvents();
-                }
-            });
-
-            calendar.render();
-
-            $('#event-form').on('submit', function(e) {
-                e.preventDefault();
-
-                var id = $('#event-id').val();
-                var title = $('#event-title').val();
-                var details = $('#event-details').val();
-                var start = $('#event-start').val();
-                var end = $('#event-end').val();
-
-                // Add one day to end date
-                end = new Date(new Date(end).getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
-
-                $.ajax({
-                    url: id ? `/drivers/edit_calendar_event/${id}/` : `/drivers/add_calendar_event/`,
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        title: title,
-                        details: details,
-                        start: start,
-                        end: end,
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    },
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            calendar.refetchEvents();
-                            $('#event-modal').addClass('hidden');
-                            updateOngoingEvents();
-                        } else {
-                            alert(response.message);
-                        }
-                    }
-                });
-            });
-
-            $('#cancel-button, #close-modal').on('click', function() {
-                $('#event-modal').addClass('hidden');
-            });
-
-            $('#delete-button').on('click', function() {
-                var id = $('#event-id').val();
-                if (id) {
-                    $.ajax({
-                        url: `/drivers/delete_calendar_event/${id}/`,
-                        type: 'POST',
-                        data: {
-                            csrfmiddlewaretoken: '{{ csrf_token }}'
-                        },
-                        success: function(response) {
-                            if (response.status === 'success') {
-                                calendar.refetchEvents();
-                                $('#event-modal').addClass('hidden');
-                                updateOngoingEvents();
-                            } else {
-                                alert(response.message);
-                            }
-                        }
-                    });
-                }
-            });
-
+        },
+        eventDidMount: function() {
             updateOngoingEvents();
+        }
+    });
+
+    calendar.render();
+
+    $('#event-form').on('submit', function(e) {
+    e.preventDefault();
+
+    var id = $('#event-id').val();
+    var title = $('#event-title').val();
+    var details = $('#event-details').val();
+    var start = $('#event-start').val();
+    var end = $('#event-end').val();
+
+    $.ajax({
+        url: id ? `/drivers/edit_calendar_event/${id}/` : `/drivers/add_calendar_event/`,
+        type: 'POST',
+        data: {
+            id: id,
+            title: title,
+            details: details,
+            start: start,
+            end: end,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                // Call updateBookingDates after successful event update
+                if (id) {
+                    updateBookingDates(id, start, end);
+                }
+                calendar.refetchEvents();
+                $('#event-modal').addClass('hidden');
+                updateOngoingEvents();
+            } else {
+                alert(response.message);
+            }
+        }
+    });
+});
+
+
+    function updateBookingDates(eventId, start, end) {
+        $.ajax({
+            url: `/drivers/update_booking_dates/${eventId}/`,
+            type: 'POST',
+            data: {
+                start: start,
+                end: end,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.status !== 'success') {
+                    alert(response.message);
+                }
+            }
         });
+    }
+
+    $('#edit-button').on('click', function() {
+        $('#event-title').prop('disabled', false);
+        $('#event-details').prop('disabled', false);
+        $('#event-start').prop('disabled', false);
+        $('#event-end').prop('disabled', false);
+        $('button[type="submit"]').prop('disabled', false);
+        $(this).addClass('hidden');
+    });
+
+    $('#close-modal').on('click', function() {
+        $('#event-modal').addClass('hidden');
+    });
+
+    $('#delete-button').on('click', function() {
+        var id = $('#event-id').val();
+        if (id) {
+            $.ajax({
+                url: `/drivers/delete_calendar_event/${id}/`,
+                type: 'POST',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        calendar.refetchEvents();
+                        $('#event-modal').addClass('hidden');
+                        updateOngoingEvents();
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        }
+    });
+
+    updateOngoingEvents();
+});
     </script>
 </body>
 </html>

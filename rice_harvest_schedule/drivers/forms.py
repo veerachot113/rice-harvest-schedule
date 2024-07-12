@@ -12,6 +12,4 @@ class VehicleForm(forms.ModelForm):
 class CalendarEventForm(forms.ModelForm):
     class Meta:
         model = CalendarEvent
-        fields = ['title', 'details', 'start', 'end']
-
-
+        fields = ['title', 'details','start','end']
