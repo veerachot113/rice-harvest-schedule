@@ -1,4 +1,5 @@
 #dirvers/models.py
+from datetime import datetime
 from django.db import models
 from accounts.models import CustomUser
 from django.conf import settings
@@ -114,6 +115,15 @@ class CalendarEvent(models.Model):
     def __str__(self):
         return self.title
 
+class HarvestArea(models.Model):
+    driver = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField()   # Added end_date field
+    province = models.CharField(max_length=100)
+    district = models.CharField(max_length=100)
+    subdistrict = models.CharField(max_length=100)
+    details = models.TextField(blank=True, null=True)
 
-
+    def __str__(self):
+        return f'{self.province} - {self.district} - {self.subdistrict}'
 

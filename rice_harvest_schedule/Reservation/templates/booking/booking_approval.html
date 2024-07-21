@@ -1,0 +1,24 @@
+<!-- booking/templates/booking/manage_bookings.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Approval</title>
+</head>
+<body>
+    <h2>Booking Approval</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="action">Action:</label>
+        <select name="action" id="action">
+            <option value="approve">Approve</option>
+            <option value="reject">Reject</option>
+        </select><br>
+        <label for="appointment_date">Appointment Date:</label>
+        <input type="date" id="appointment_date" name="appointment_date"><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+

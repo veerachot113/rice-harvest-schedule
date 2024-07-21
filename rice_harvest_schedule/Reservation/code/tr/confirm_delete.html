@@ -1,0 +1,16 @@
+<!-- templates/Driver/confirm_delete.html -->
+
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-5 rounded-lg shadow-lg mt-5">
+    <h2 class="text-center text-2xl font-semibold mb-4">ลบรถ</h2>
+    <p class="text-center mb-4">คุณแน่ใจหรือว่าต้องการลบรถ "{{ vehicle.model }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="flex justify-center">
+            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mr-2">ลบ</button>
+            <a href="{% url 'home_driver' %}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">ยกเลิก</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

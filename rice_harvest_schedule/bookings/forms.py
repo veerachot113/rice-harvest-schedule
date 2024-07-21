@@ -5,7 +5,7 @@ from .models import Booking
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['fullname', 'address', 'quantity', 'appointment_start_date', 'phone', 'details']
+        fields = ['fullname', 'address', 'quantity', 'appointment_start_date', 'phone', 'details', 'province', 'district', 'subdistrict']
         widgets = {
-            'details': forms.Textarea(attrs={'required': False}),  # Ensure the field is optional
+            'details': forms.Textarea(attrs={'required': False}),
         }

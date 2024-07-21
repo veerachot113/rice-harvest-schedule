@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางรถเกี่ยวข้าว</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-6">
+        <header class="mb-6">
+            <h1 class="text-3xl font-bold text-center">ตารางรถเกี่ยวข้าว</h1>
+        </header>
+
+        <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <div id="calendar"></div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">พื้นที่ลงเก็บเกี่ยว</h2>
+            <table class="w-full border-collapse border border-gray-200">
+                <thead>
+                    <tr>
+                        <th class="border border-gray-200 px-4 py-2">วัน/เดือน</th>
+                        <th class="border border-gray-200 px-4 py-2">สถานที่</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border border-gray-200 px-4 py-2">พฤศจิกายน</td>
+                        <td class="border border-gray-200 px-4 py-2">บ้านกระโพธิ์ห่างฝั่ง, บ้านโพธิ์สาม, บ้านตราด (หมู่บ้านใกล้เกี่ยว)</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-200 px-4 py-2">ธันวาคม</td>
+                        <td class="border border-gray-200 px-4 py-2">บ้านปัง, บ้านค้นจับ, บ้านตราชงลาย</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'th',
+                events: [
+                    {
+                        title: 'เก็บเกี่ยว',
+                        start: '2023-11-18',
+                        end: '2023-11-19',
+                        color: 'red'
+                    },
+                    {
+                        title: 'เก็บเกี่ยว',
+                        start: '2023-11-24',
+                        end: '2023-11-26',
+                        color: 'red'
+                    }
+                ]
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>

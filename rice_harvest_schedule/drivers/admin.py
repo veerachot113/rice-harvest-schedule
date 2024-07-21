@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Vehicle, CalendarEvent
+from .models import Vehicle, CalendarEvent,HarvestArea
 
 class VehicleAdmin(admin.ModelAdmin):
     list_display = ('model', 'type', 'price', 'province', 'driver')
@@ -11,5 +11,11 @@ class CalendarEventAdmin(admin.ModelAdmin):
     search_fields = ('title', 'driver__username')
     list_filter = ('start', 'end')
 
+class HarvestAreaAdmin(admin.ModelAdmin):
+    list_display = ('start_date', 'province', 'district', 'subdistrict', 'driver')
+    list_filter = ('province', 'district', 'subdistrict')
+    search_fields = ('province', 'district', 'subdistrict', 'details')
+
 admin.site.register(Vehicle, VehicleAdmin)
 admin.site.register(CalendarEvent, CalendarEventAdmin)
+admin.site.register(HarvestArea, HarvestAreaAdmin)

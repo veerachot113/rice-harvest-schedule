@@ -13,3 +13,10 @@ class CalendarEventForm(forms.ModelForm):
     class Meta:
         model = CalendarEvent
         fields = ['title', 'details','start','end']
+
+
+
+class HarvestAreaForm(forms.ModelForm):
+    class Meta:
+        model = HarvestArea
+        fields = ['start_date', 'end_date', 'province', 'district', 'subdistrict', 'details']

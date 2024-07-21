@@ -1,97 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driver Schedule</title>
+    <title>Calendar</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
-</head>
-<body class="bg-gray-100 h-screen">
-    <div class="container mx-auto px-4 py-2 md:py-24">
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div id="calendar"></div>
-        </div>
-    </div>
+    <style>
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
 
-    <script>
-        $(document).ready(function() {
-            var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth',
-                locale: 'th',
-                events: `/drivers/get_calendar_events/?driver_id={{ driver.id }}`
-            });
-
-            calendar.render();
-        });
-    </script>
-</body>
-</html>
-
-
-<!-- html.html -->
-<!doctype html>
-<html lang="th">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.css" />
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/th.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/html5-qrcode@2.0.9/dist/html5-qrcode.min.css" rel="stylesheet">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=K2D:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,700;1,800&display=swap"rel="stylesheet">
-        
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-
-    {% load humanize %}
-
-</head>
-
+        .truncate-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body style="font-family: 'K2D', sans-serif;">
-
-
-
-    <div class="max-w-sm mx-auto">
-        <div
-            class="text-xl text-center font-extrabold mt-5 mb-5 bg-green-200 p-3 rounded-md border border-1 border-gray-400 shadow-lg">
-            <i class="fa-solid fa-calendar-days"></i>&nbsp;&nbsp; ตารางรถเกี่ยวนวดข้าว
+    <div class="container mx-auto px-2 py-2 ">
+        <div class="text-center">
+            <div class="text-2xl font-extrabold mb-2 bg-green-200 p-2 rounded-md border border-gray-400 shadow-lg">
+                <i class="fa-solid fa-calendar-days"></i>&nbsp;&nbsp; ตารางรถเกี่ยวนวดข้าว
+            </div>
+        </div>
+    
+        <div class="container mx-auto px-4 ">
+            <div class="flex ">
+                <div id="calendar" class="w-2/3 p-4 bg-white mt-5 mb-10 rounded-lg shadow-md border border-gray-500 border-2"></div>
+                <div class="w-2/4 ml-4 mt-5 flex flex-col">
+                    <div id="ongoing-events" class="bg-white p-4 mb-5 rounded-lg shadow-md border border-gray-500 border-2" style="max-height: 600px; overflow-y: auto;">
+                        <h3 class="text-xl font-bold mb-4 text-center">กิจกรรมที่กำลังดำเนินการอยู่</h3>
+                        <div id="event-list" class="space-y-4">
+                        </div>
+                    </div>
+                    <div id="harvest-area" class="bg-white mt-56 p-4 rounded-lg shadow-md border border-gray-500 border-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold">พื้นที่ลงเก็บเกี่ยว</h2>
+                            <button id="toggle-form" class="px-2 py-1 font-bold text-white text-xs bg-blue-500 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:border-blue-300">เพิ่มกิจกรรม</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วัน เดือน</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานที่</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รายละเอียด</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">การจัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="service-areas-list" class="bg-white divide-y divide-gray-200">
+                                    <!-- Rows will be added dynamically here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Modal for Data Entry -->
+        <div id="data-entry-modal" class="fixed z-10 inset-0 overflow-y-auto hidden">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+                    <div class="bg-white px-2 pt-2 pb-2 sm:p-2 sm:pb-2">
+                        <div class="max-w-screen-sm mx-auto p-4 bg-white rounded-lg shadow-md border border-gray-500 border-2">
+                            <div class="mt-3 text-center sm:mt-0 sm:text-left">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4 text-center">เพิ่มข้อมูลกิจกรรม</h3>
+                                <form id="activity-form" class="space-y-4">
+                                    <input type="hidden" id="edit-index" />
+                                    <div class="mb-4">
+                                        <label class="block mb-2 text-sm font-medium text-gray-700">วันเริ่มต้น :</label>
+                                        <input type="date" id="start-date" name="start-date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block mb-2 text-sm font-medium text-gray-700">วันสิ้นสุด :</label>
+                                        <input type="date" id="end-date" name="end-date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="province" class="block mb-2 text-sm font-medium text-gray-700">จังหวัด :</label>
+                                        <select id="province" name="province" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required>
+                                            <option value="">เลือกจังหวัด</option>
+                                            <!-- Provinces will be populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block mb-2 text-sm font-medium text-gray-700">อำเภอ :</label>
+                                        <select id="district" name="district" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required>
+                                            <option value="">เลือกอำเภอ</option>
+                                            <!-- Districts will be populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block mb-2 text-sm font-medium text-gray-700">ตำบล :</label>
+                                        <div id="subdistrict-checkboxes" class="border rounded-md p-2">
+                                            <!-- Subdistrict checkboxes will be populated dynamically -->
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block mb-2 text-sm font-medium text-gray-700">รายละเอียด :</label>
+                                        <textarea id="details" name="details" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" rows="3"></textarea>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <button type="button" id="cancel-button" class="px-4 py-2 font-bold text-white bg-red-500 rounded-md hover:bg-red-700 focus:outline-none focus:ring focus:border-red-300">ยกเลิก</button>
+                                        <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:border-blue-300">เพิ่มข้อมูล</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Removed the close button here -->
+                </div>
+            </div>
         </div>
     </div>
-
-    <div id="calendar"
-        class="max-w-screen-md mx-auto p-4 bg-white mt-5 mb-10 rounded-lg shadow-md border border-gray-500 border-2">
-    </div>
-
+    
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        $(document).ready(function () {
+            $('#toggle-form').on('click', function () {
+                $('#data-entry-modal').removeClass('hidden');
+            });
 
-            moment.locale('th');
+            $('#cancel-button').on('click', function () {
+                $('#data-entry-modal').addClass('hidden');
+                $('#activity-form')[0].reset();
+            });
 
-            $('#calendar').fullCalendar({
-                events: '/calendar-events/',
+            function updateOngoingEvents() {
+                $.ajax({
+                    url: '/drivers/get_calendar_events/',
+                    type: 'GET',
+                    data: {
+                        driver_id: '{{ user.id }}'
+                    },
+                    success: function (events) {
+                        var eventList = $('#event-list');
+                        eventList.empty();
+                        events.forEach(function (event, index) {
+                            var eventItem = `
+                                <div class="p-4 bg-blue-100 rounded-lg shadow">
+                                    <h4 class="text-lg font-semibold">${index + 1}. ${event.title}</h4>
+                                    <p>${event.details}</p>
+                                    <p><strong>เริ่มต้น:</strong> ${event.start}</p>
+                                    <p><strong>สิ้นสุด:</strong> ${event.end}</p>
+                                </div>
+                            `;
+                            eventList.append(eventItem);
+                        });
+                    }
+                });
+            }
+
+            var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                initialView: 'dayGridMonth',
                 locale: 'th',
-
-                eventRender: function (event, element) {
-
-
+                selectable: true,
+                select: function (info) {
+                    $('#event-id').val('');
+                    $('#event-title').val('');
+                    $('#event-details').val('');
+                    $('#event-start').val(info.startStr + 'T00:00');
+                    $('#event-end').val(info.endStr + 'T00:00');
+                    $('#event-modal').removeClass('hidden');
+                },
+                eventClick: function (info) {
+                    $('#event-id').val(info.event.id);
+                    $('#event-title').val(info.event.title);
+                    $('#event-details').val(info.event.extendedProps.details);
+                    $('#event-start').val(info.event.start.toISOString().slice(0, 16));
+                    $('#event-end').val(info.event.end ? info.event.end.toISOString().slice(0, 16) : info.event.start.toISOString().slice(0, 16));
+                    $('#event-modal').removeClass('hidden');
+                },
+                events: '/drivers/get_calendar_events/',
+                eventDidMount: function () {
+                    updateOngoingEvents();
                 }
             });
+
+            calendar.render();
+
+            function addActivityToTable(activity) {
+                var row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${activity.start} - ${activity.end}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate-text" data-fulltext="จ.${activity.province}, อ.${activity.district}, ต.${activity.subdistrict}">จ.${activity.province}, อ.${activity.district}, ต.${activity.subdistrict}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate-text" data-fulltext="${activity.details}">${activity.details}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <button class="text-blue-600 hover:text-blue-900 edit-button">แก้ไข</button>
+                            <button class="text-red-600 hover:text-red-900 delete-button">ลบ</button>
+                        </td>
+                    </tr>
+                `;
+                $('#service-areas-list').append(row);
+            }
+
+            $('#activity-form').on('submit', function (e) {
+                e.preventDefault();
+
+                var start = $('#start-date').val();
+                var end = $('#end-date').val();
+                var province = $('#province option:selected').text();
+                var district = $('#district option:selected').text();
+                var subdistrict = $('#subdistrict-checkboxes input[name="subdistricts"]:checked').map(function () {
+                    return $(this).val();
+                }).get().join(', ');
+                var details = $('#details').val();
+
+                var activity = {
+                    start: start,
+                    end: end,
+                    province: province,
+                    district: district,
+                    subdistrict: subdistrict,
+                    details: details
+                };
+
+                addActivityToTable(activity);
+                $('#data-entry-modal').addClass('hidden');
+                $('#activity-form')[0].reset();
+            });
+
+            $('#service-areas-list').on('click', '.delete-button', function () {
+                $(this).closest('tr').remove();
+            });
+
+            $('#service-areas-list').on('click', '.edit-button', function () {
+                let row = $(this).closest('tr');
+                let cells = row.children('td');
+
+                let dates = cells.eq(0).text().split(' - ');
+                let startDate = dates[0].trim();
+                let endDate = dates[1].trim();
+
+                let location = cells.eq(1).data('fulltext').split(', ');
+                let province = location[0].trim().replace('จ.', '');
+                let district = location[1].trim().replace('อ.', '');
+                let subdistrict = location.slice(2).join(', ').trim().replace('ต.', '');
+                let details = cells.eq(2).data('fulltext').trim();
+
+                $('#start-date').val(startDate);
+                $('#end-date').val(endDate);
+                $('#province').val(province).change();
+                $('#district').val(district).change();
+
+                setTimeout(() => {
+                    $('#subdistrict-checkboxes input[name="subdistricts"]').each(function () {
+                        if (subdistrict.split(', ').includes($(this).val())) {
+                            $(this).prop('checked', true);
+                        }
+                    });
+                }, 500);
+
+                $('#details').val(details);
+                $('#edit-index').val(row.index());
+                $('#data-entry-modal').removeClass('hidden');
+            });
+
+            $('#service-areas-list').on('click', '.truncate-text', function () {
+                let fullText = $(this).data('fulltext');
+                $('#modal-title').text('ข้อมูลเพิ่มเติม');
+                $('#modal-content').text(fullText);
+                $('#info-modal').removeClass('hidden');
+            });
+
+            let provinces, districts, subdistricts;
+
+            $.when(
+                $.getJSON('https://raw.githubusercontent.com/thailand-geography-data/thailand-geography-json/main/src/provinces.json', function (data) { provinces = data; }),
+                $.getJSON('https://raw.githubusercontent.com/thailand-geography-data/thailand-geography-json/main/src/districts.json', function (data) { districts = data; }),
+                $.getJSON('https://raw.githubusercontent.com/thailand-geography-data/thailand-geography-json/main/src/subdistricts.json', function (data) { subdistricts = data; })
+            ).then(function () {
+                let provinceSelect = $('#province');
+                provinces.forEach(function (province) {
+                    provinceSelect.append(new Option(province.provinceNameTh, province.provinceCode));
+                });
+
+                $('#province').change(function () {
+                    let provinceId = $(this).val();
+                    if (provinceId) {
+                        let filteredDistricts = districts.filter(d => d.provinceCode == provinceId);
+                        let districtSelect = $('#district');
+                        districtSelect.empty().append(new Option('เลือกอำเภอ', ''));
+                        filteredDistricts.forEach(function (district) {
+                            districtSelect.append(new Option(district.districtNameTh, district.districtCode));
+                        });
+                        $('#district').prop('disabled', false);
+                    } else {
+                        $('#district').empty().append(new Option('เลือกอำเภอ', '')).prop('disabled', true);
+                        $('#subdistrict-checkboxes').empty().prop('disabled', true);
+                    }
+                });
+
+                $('#district').change(function () {
+                    let districtId = $(this).val();
+                    if (districtId) {
+                        let filteredSubdistricts = subdistricts.filter(s => s.districtCode == districtId);
+                        let subdistrictCheckboxes = $('#subdistrict-checkboxes');
+                        subdistrictCheckboxes.empty();
+                        filteredSubdistricts.forEach(function (subdistrict) {
+                            subdistrictCheckboxes.append(`
+                                <div class="flex items-center mb-2">
+                                    <input type="checkbox" id="subdistrict-${subdistrict.subdistrictCode}" name="subdistricts" value="${subdistrict.subdistrictNameTh}" class="mr-2">
+                                    <label for="subdistrict-${subdistrict.subdistrictCode}" class="text-sm text-gray-700">${subdistrict.subdistrictNameTh}</label>
+                                </div>
+                            `);
+                        });
+                        $('#subdistrict-checkboxes').prop('disabled', false);
+                    } else {
+                        $('#subdistrict-checkboxes').empty().prop('disabled', true);
+                    }
+                });
+            });
+
+            updateOngoingEvents();
         });
     </script>
-
-
+</body>
 
 </html>

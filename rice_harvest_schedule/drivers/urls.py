@@ -10,8 +10,13 @@ urlpatterns = [
     path('add_calendar_event/', add_calendar_event, name='add_calendar_event'),
     path('edit_calendar_event/<int:event_id>/', edit_calendar_event, name='edit_calendar_event'),
     path('delete_calendar_event/<int:event_id>/', delete_calendar_event, name='delete_calendar_event'),
-    path('schedule/<int:driver_id>/', driver_schedule, name='driver_schedule'),
-    path('get_calendar_events/', get_calendar_events_for_farmer, name='get_calendar_events_for_farmer'),
+    path('schedule/<int:driver_id>/', get_schedule, name='get_schedule'),
     path('update_booking_dates/<int:event_id>/', update_booking_dates, name='update_booking_dates'),
- 
+    path('add_harvest_area/', add_harvest_area, name='add_harvest_area'),
+    path('get_harvest_areas/', get_harvest_areas, name='get_harvest_areas'),
+    path('update_harvest_area/<int:area_id>/', update_harvest_area, name='update_harvest_area'),
+    path('delete_harvest_area/<int:area_id>/', delete_harvest_area, name='delete_harvest_area'),
 ]
+
+ 
+

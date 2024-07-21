@@ -59,32 +59,19 @@ def count_pending_rent_request(driver):
             no_of_pending_request += 1
     return no_of_pending_request
 
-@login_required(login_url='login')
-def driver_schedule(request, driver_id):
-    driver = get_object_or_404(CustomUser, id=driver_id)
-    return render(request, 'Driver/driver_schedule.html', {'driver': driver})
 
-@login_required
-def get_calendar_events_for_farmer(request):
-    farmer_id = request.GET.get('farmer_id', request.user.id)
-    events = CalendarEvent.objects.filter(farmer_id=farmer_id).values('id', 'title', 'details', 'start', 'end', 'farmer_id')
-    events_list = []
-    for event in events:
-        events_list.append({
-            'id': event['id'],
-            'title': event['title'],
-            'start': event['start'].isoformat(),  # ส่งค่า start ในรูปแบบ ISO string
-            'end': event['end'].isoformat(),      # ส่งค่า end ในรูปแบบ ISO string
-            'details': event['details'],
-            'farmer_id': event['farmer_id'],      # เพิ่ม farmer_id เพื่อใช้ในการกำหนดสี
-        })
-    return JsonResponse(events_list, safe=False)
+def get_schedule(request, driver_id):
+    driver = get_object_or_404(CustomUser, id=driver_id)
+    return render(request, 'Farmer/schedule.html', {'driver': driver})
 
 @login_required
 def calendar_view(request):
-    return render(request, 'Driver/calendar.html')
+    harvest_areas = HarvestArea.objects.filter(driver=request.user)
+    return render(request, 'Driver/calendar.html', {'harvest_areas': harvest_areas})
 
-@login_required
+
+
+
 def get_calendar_events(request):
     driver_id = request.GET.get('driver_id', request.user.id)
     events = CalendarEvent.objects.filter(driver_id=driver_id).values('id', 'title', 'details', 'start', 'end', 'farmer_id')
@@ -93,13 +80,12 @@ def get_calendar_events(request):
         events_list.append({
             'id': event['id'],
             'title': event['title'],
-            'start': event['start'].isoformat(),  # ส่งค่า start ในรูปแบบ ISO string
-            'end': event['end'].isoformat(),      # ส่งค่า end ในรูปแบบ ISO string
+            'start': event['start'].isoformat(),
+            'end': event['end'].isoformat(),
             'details': event['details'],
-            'farmer_id': event['farmer_id'],      # เพิ่ม farmer_id เพื่อใช้ในการกำหนดสี
+            'farmer_id': event['farmer_id'],
         })
     return JsonResponse(events_list, safe=False)
-
 
 @csrf_exempt
 @login_required
@@ -124,8 +110,6 @@ def add_calendar_event(request):
         )
         return JsonResponse({'status': 'success'})
 
-from django.utils.dateparse import parse_datetime
-
 @csrf_exempt
 @login_required
 def edit_calendar_event(request, event_id):
@@ -145,7 +129,7 @@ def edit_calendar_event(request, event_id):
         event.end = end
         event.save()
 
-        # อัพเดทการจองที่เกี่ยวข้อง
+        # อัพเดทการจองที่เกี่ยวข้อง (ถ้ามี)
         booking = Booking.objects.filter(
             vehicle__driver=request.user,
             appointment_start_date__lte=event.start,
@@ -158,9 +142,6 @@ def edit_calendar_event(request, event_id):
             booking.save()
 
         return JsonResponse({'status': 'success'})
-    
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 @login_required
@@ -175,7 +156,7 @@ def update_booking_dates(request, event_id):
         event.end = end
         event.save()
 
-        # Update the related booking dates
+        # Update the related booking dates (if exists)
         booking = Booking.objects.filter(
             vehicle__driver=request.user,
             farmer=event.farmer
@@ -187,9 +168,8 @@ def update_booking_dates(request, event_id):
             booking.save()
             return JsonResponse({'status': 'success'})
         else:
-            return JsonResponse({'status': 'error', 'message': 'No matching booking found.'})
+            return JsonResponse({'status': 'success'})  # Even if no matching booking, return success
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
-
 
 @csrf_exempt
 @login_required
@@ -197,6 +177,95 @@ def delete_calendar_event(request, event_id):
     if request.method == 'POST':
         event = get_object_or_404(CalendarEvent, id=event_id)
         event.delete()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+
+from .forms import HarvestAreaForm
+from .models import HarvestArea
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+
+@login_required
+def get_harvest_areas(request):
+    harvest_areas = HarvestArea.objects.filter(driver=request.user).values(
+        'id', 'start_date', 'end_date', 'province', 'district', 'subdistrict', 'details'
+    )
+    return JsonResponse(list(harvest_areas), safe=False)
+@csrf_exempt
+@login_required
+def add_harvest_area(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        province = data.get('province')
+        district = data.get('district')
+        subdistrict = data.get('subdistrict')
+        details = data.get('details')
+
+        # Check for overlapping dates
+        overlapping_areas = HarvestArea.objects.filter(
+            driver=request.user,
+            start_date__lte=end_date,
+            end_date__gte=start_date
+        )
+        if overlapping_areas.exists():
+            return JsonResponse({'status': 'error', 'message': 'ช่วงเวลานี้มีพื้นที่ลงเก็บเกี่ยวแล้ว'})
+
+        harvest_area = HarvestArea.objects.create(
+            driver=request.user,
+            start_date=start_date,
+            end_date=end_date,
+            province=province,
+            district=district,
+            subdistrict=subdistrict,
+            details=details
+        )
+
+        return JsonResponse({'status': 'success', 'id': harvest_area.id})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+@csrf_exempt
+@login_required
+def update_harvest_area(request, area_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        province = data.get('province')
+        district = data.get('district')
+        subdistrict = data.get('subdistrict')
+        details = data.get('details')
+
+        harvest_area = get_object_or_404(HarvestArea, id=area_id, driver=request.user)
+        
+        overlapping_areas = HarvestArea.objects.filter(
+            driver=request.user,
+            start_date__lte=end_date,
+            end_date__gte=start_date
+        ).exclude(id=area_id)
+        if overlapping_areas.exists():
+            return JsonResponse({'status': 'error', 'message': 'ช่วงเวลานี้มีพื้นที่ลงเก็บเกี่ยวแล้ว'})
+
+        harvest_area.start_date = start_date
+        harvest_area.end_date = end_date
+        harvest_area.province = province
+        harvest_area.district = district
+        harvest_area.subdistrict = subdistrict
+        harvest_area.details = details
+        harvest_area.save()
+
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+@csrf_exempt
+@login_required
+def delete_harvest_area(request, area_id):
+    if request.method == 'POST':
+        harvest_area = get_object_or_404(HarvestArea, id=area_id, driver=request.user)
+        harvest_area.delete()
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 

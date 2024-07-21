@@ -1,0 +1,41 @@
+<!-- profile_driver.html -->
+{% extends "components/base.html" %}
+{% load static %}
+{% block title %}
+    Update Profile - Driver
+{% endblock %}   
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+{% endblock %}  
+
+{% block main %}
+            {% include "components/slider_driver.html" %}
+
+    <div class="edit-container">
+        <div class="form">
+            <h2>ข้อมูลส่วนตัว</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <label for="first_name">ชื่อ :</label>
+                <input type="text" id="first_name" name="first_name" placeholder="ชื่อ" value="{{ user.first_name }}" required>
+
+                <label for="last_name">นามสกุล :</label>
+                <input type="text" id="last_name" name="last_name" placeholder="นามสกุล" value="{{ user.last_name }}" required>
+
+                <label for="address">ที่อยู่ :</label>
+                <input type="text" id="address" name="address" placeholder="ที่อยู่" value="{{ user.address }}" required>
+            
+                <label for="phone">เบอร์ :</label>
+                <input type="text" id="phone" name="phone" placeholder="เบอร์" value="{{ user.phone }}" required>
+            
+                <label for="email">E-mail :</label>
+                <input type="email" id="email" name="email" placeholder="E-mail" value="{{ user.email }}" required>
+            
+                <input type="submit" class="button" value="แก้ไขข้อมูลส่วนตัว">
+            </form>
+        </div>
+    </div>
+    
+
+{% endblock %}

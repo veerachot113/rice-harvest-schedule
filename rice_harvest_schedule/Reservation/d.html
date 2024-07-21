@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} {% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/0.7.4/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://kit.fontawesome.com/541087f5af.js" crossorigin="anonymous"></script>
+
+    <style>
+        .slow-moves {
+            transition: 0.3s;
+        }
+
+        .sidebar-inactive {
+            transform: translateX(-100%);
+        }
+    </style>
+</head>
+
+<body class="bg-grey-light h-screen overflow-hidden"> 
+    <nav class="bg-gray-800 p-4">
+        <div class="max-w-7xl mx-auto flex justify-end items-center">
+
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition duration-300">Login</a>
+                <a href="#" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition duration-300">Sign Up</a>
+            </div>
+            <div class="md:hidden flex items-center">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <div class="flex flex-col items-center space-y-4 pt-4">>
+                <a href="#" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition duration-300">Login</a>
+                <a href="#" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition duration-300">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+    
+    <script>
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+    
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+
+</body>
+
+</html>

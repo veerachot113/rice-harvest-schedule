@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายการสินค้าที่จอง</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* กำหนดความกว้างของเซลล์ที่มีข้อความยาว */
+        .long-text {
+            width: 800px; /* ปรับค่าตามที่ต้องการ */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="my-4">รายการสินค้าที่จอง</h1>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>รูป</th>
+                    <th>ชื่อผู้จอง</th>
+                    <th>ชื่อคนขับ</th>
+                    <th>ประเภท</th>
+                    <th>จำนวนไร่</th>
+                    <th>ที่อยู่</th>
+                    <th>รายละเอียด</th>
+                    <th>เบอร์โทร</th>
+                    <th>วันที่</th>
+                    <th>เวลา</th>
+                    <th>สถานะ</th>
+                    <th>ตารางเกี่ยว</th>
+                    <th>ดำเนินการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- วนลูปแสดงข้อมูลสินค้าที่จอง -->
+                {% for b in booking %}
+                <tr>
+                    <td>{{ b.id }}</td>
+                    <td><img src="{{ b.vehicle.image.url }}" alt="Product Image" width="100"></td>
+                    <td class="long-text">{{ b.name }}</td>
+                    <td class="long-text">{{ b.vehicle.driver }}</td>
+                    <td class="long-text">{{ b.vehicle.type }}</td>
+                    <td class="long-text">{{ b.quantity }}</td>
+                    <td class="long-text" style="width: 1000px;">{{ b.address }}</td>
+                    <td class="long-text">{{ b.details }}</td>
+                    <td class="long-text">{{ b.phone }}</td>
+                    <td class="long-text">{{ b.date }}</td>
+                    <td class="long-text">{{ b.time }}</td>
+                    <td class="long-text">{{ b.status }}</td>
+                    <td class="long-text">ตารางเกี่ยว</td>
+                    <td>
+                        <!-- ปุ่มดำเนินการ -->
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-primary">แก้ไข</button>
+                            <button type="button" class="btn btn-danger">ลบ</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                <!-- สิ้นสุดวนลูป -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

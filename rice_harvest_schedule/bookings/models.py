@@ -1,7 +1,6 @@
 # bookings/models.py
-from django.utils import timezone  
 from django.db import models
-from drivers.models import Vehicle
+from drivers.models import Vehicle, HarvestArea
 from accounts.models import CustomUser
 
 class Booking(models.Model):
@@ -11,11 +10,13 @@ class Booking(models.Model):
     address = models.TextField()
     quantity = models.IntegerField()
     phone = models.CharField(max_length=15)
-    details = models.TextField(blank=True, null=True) 
+    details = models.TextField(blank=True, null=True)
     request_status = models.CharField(max_length=30, default="Pending")
     appointment_start_date = models.DateTimeField(null=True, blank=True)
     appointment_end_date = models.DateTimeField(null=True, blank=True)
+    province = models.CharField(max_length=100, default='')
+    district = models.CharField(max_length=100, default='')
+    subdistrict = models.CharField(max_length=100, default='')
 
     def __str__(self):
         return f'Booking by {self.farmer.username} for {self.vehicle.model}'
-

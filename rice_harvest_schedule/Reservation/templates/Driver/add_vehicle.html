@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h2 class="text-center text-xl font-semibold mb-4">{{ existing_vehicle|yesno:"Update Vehicle,Add Vehicle" }}</h2>
+<div class="flex justify-center items-center h-screen">
+    <div class="bg-white rounded-3xl shadow-lg p-6 max-w-md w-full mx-auto justify-center mt-3">
+        <div class="form">
+            <h1 class="text-center text-xl font-semibold mb-4">{{ existing_vehicle|yesno:"อัปเดตรถ,เพิ่มรถ" }}</h1>
+            <div class="w-full h-36 border border-dashed border-gray-300 rounded-lg flex justify-center items-center mb-3">
+                <img id="preview" src="{% if existing_vehicle and existing_vehicle.image %}{{ existing_vehicle.image.url }}{% else %}#{% endif %}" alt="Preview" class="object-contain object-center max-w-full max-h-full">
+
+            </div>
+            <form enctype="multipart/form-data" method="POST">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <button type="submit" class="button bg-emerald-600 text-white py-1 px-3 rounded-md hover:bg-green-700 transition duration-300 w-full">{{ existing_vehicle|yesno:"อัปเดตรถ,เพิ่มรถ" }}</button>
+            </form>
+            {% if existing_vehicle %}
+            <form method="POST" action="{% url 'delete_vehicle' existing_vehicle.id %}" class="mt-3">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded-md transition duration-300 w-full">ลบรถ</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener("load",()=>{
+        document.getElementById("id_image").addEventListener("change", showImg)
+    })
+    function showImg(e){
+        let preview_cover = document.getElementById("preview");
+        let img = e.target.files[0]
+        preview_cover.src = URL.createObjectURL(img);
+    }
+</script>
+
+{% endblock %}

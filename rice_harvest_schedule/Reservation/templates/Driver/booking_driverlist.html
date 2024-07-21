@@ -1,0 +1,170 @@
+<!-- driver/booking_driverlist.html -->
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="text-3xl font-bold text-center mt-36">รายการคำขอ</h1>
+
+<div class="mb-4 border-b border-gray-200 dark:border-gray-700 mx-10">
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-styled-tab"
+        data-tabs-toggle="#default-styled-tab-content"
+        data-tabs-active-classes="text-purple-600 hover:text-purple-600 dark:text-purple-500 dark:hover:text-purple-500 border-purple-600 dark:border-purple-500"
+        data-tabs-inactive-classes="dark:border-transparent text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300"
+        role="tablist">
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg focus:bg-transparent focus:outline-none"
+                id="profile-styled-tab" data-tabs-target="#styled-profile" type="button" role="tab"
+                aria-controls="profile" aria-selected="false">รออนุมัติ</button>
+            <span class="badge badge-primary mx-2">{{ no_of_pending_request }}</span>
+        </li>
+        <li class="me-2" role="presentation">
+            <button class="inline-block p-4 border-b-2 rounded-t-lg focus:bg-transparent focus:outline-none"
+                id="dashboard-styled-tab" data-tabs-target="#styled-dashboard" type="button" role="tab"
+                aria-controls="dashboard" aria-selected="false">อนุมัติแล้ว</button>
+        </li>
+        <li class="me-2" role="presentation">
+            <button
+                class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 focus:bg-transparent focus:outline-none"
+                id="settings-styled-tab" data-tabs-target="#styled-settings" type="button" role="tab"
+                aria-controls="settings" aria-selected="false">ปฏิเสธ</button>
+        </li>
+    </ul>
+</div>
+
+<div id="default-styled-tab-content">
+    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-profile" role="tabpanel"
+        aria-labelledby="profile-tab">
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 border-b">#</th>
+                        <th class="py-2 px-4 border-b">ชื่อผู้จอง</th>
+                        <th class="py-2 px-4 border-b">ประเภทรถ</th>
+                        <th class="py-2 px-4 border-b">จำนวนไร่</th>
+                        <th class="py-2 px-4 border-b">ที่อยู่</th>
+                        <th class="py-2 px-4 border-b">รายละเอียด</th>
+                        <th class="py-2 px-4 border-b">เบอร์โทร</th>
+                        <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
+                        <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
+                        <th class="py-2 px-4 border-b">สถานะคำขอ</th>
+                        <th class="py-2 px-4 border-b">ดำเนินการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    {% if booking.request_status == "Pending" %}
+                    <tr class="bg-gray border-b">
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
+                        </th>
+                        <td class="px-5 py-4 text-center">{{ booking.fullname }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.vehicle.type }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.quantity }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.address }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.details }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.phone }}</td>
+                        <td class="px-5 py-4 text-center">
+                            <form method="post" action="{% url 'accept_booking' booking.id %}">
+                                {% csrf_token %}
+                                <input type="datetime-local" name="appointment_start_date" required class="w-36">
+                                <td class="px-5 py-4 text-center">
+                                <input type="datetime-local" name="appointment_end_date" required class="w-36"></td>
+                        </td>
+                        <td class="px-5 py-4 text-center">{{ booking.request_status }}</td>
+                        <td class="px-5 py-4 text-center">
+                                <button type="submit" class="bg-green-500 hover:bg-green-700 font-bold py-2 px-4 rounded">Accept</button>
+                                <button type="submit" class="bg-red-500 hover:bg-green-700 font-bold py-2 px-4 rounded">Decline</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-dashboard" role="tabpanel"
+        aria-labelledby="dashboard-tab">
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 border-b">#</th>
+                        <th class="py-2 px-4 border-b">ชื่อผู้จอง</th>
+                        <th class="py-2 px-4 border-b">ประเภทรถ</th>
+                        <th class="py-2 px-4 border-b">จำนวนไร่</th>
+                        <th class="py-2 px-4 border-b">ที่อยู่</th>
+                        <th class="py-2 px-4 border-b">รายละเอียด</th>
+                        <th class="py-2 px-4 border-b">เบอร์โทร</th>
+                        <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
+                        <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
+                        <th class="py-2 px-4 border-b">สถานะคำขอ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    {% if booking.request_status == "Accepted" %}
+                    <tr class="bg-gray border-b">
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
+                        </th>
+                        <td class="px-5 py-4 text-center">{{ booking.fullname }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.vehicle.type }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.quantity }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.address }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.details }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.phone }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
+                        <td class="text-green-500 font-bold text-center">{{ booking.request_status }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-settings" role="tabpanel"
+        aria-labelledby="settings-tab">
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 border-b">#</th>
+                        <th class="py-2 px-4 border-b">ชื่อผู้จอง</th>
+                        <th class="py-2 px-4 border-b">ประเภทรถ</th>
+                        <th class="py-2 px-4 border-b">จำนวนไร่</th>
+                        <th class="py-2 px-4 border-b">ที่อยู่</th>
+                        <th class="py-2 px-4 border-b">รายละเอียด</th>
+                        <th class="py-2 px-4 border-b">เบอร์โทร</th>
+                        <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
+                        <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
+                        <th class="text-red-500 font-bold text-center">สถานะคำขอ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    {% if booking.request_status == "Declined" %}
+                    <tr class="bg-gray border-b">
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
+                        </th>
+                        <td class="px-5 py-4 text-center">{{ booking.fullname }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.vehicle.type }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.quantity }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.address }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.details }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.phone }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
+                        <td class="text-red-500 font-bold text-center">{{ booking.request_status }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

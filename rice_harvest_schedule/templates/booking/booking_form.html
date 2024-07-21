@@ -1,4 +1,3 @@
-<!-- bookinf_forms.html -->
 {% extends "base.html" %}
 {% load static %}
 {% block title %}
@@ -6,46 +5,59 @@ Create Booking - Farmer
 {% endblock %}
 {% block main %}
 <div class="container mx-auto p-2" style="margin-top: 6rem;">
-
-    <div class="flex flex-col max-w-7xl mx-auto  bg-white border border-gray-300 rounded-lg shadow-lg" >
+    <div class="flex flex-col max-w-7xl mx-auto bg-white border border-gray-300 rounded-lg shadow-lg">
         <h1 class="text-4xl text-center mb-8 mt-7">กรอกรายละเอียดการจอง</h1>
         <div class="w-full md:flex">
             <div class="md:w-1/2 p-6">
-                <img class="mx-auto md:justify-center object-cover md:w-3/4 h-auto rounded-xl overflow-hidden"
-                    src="{{ vehicle.image.url }}" alt="Vehicle">
+                <img class="mx-auto md:justify-center object-cover md:w-3/4 h-auto rounded-xl overflow-hidden" src="{{ vehicle.image.url }}" alt="Vehicle">
                 <div class="mx-auto md:justify-center object-cover md:w-3/4 h-auto mt-10 rounded-xl overflow-hidden">
                     <div class="mb-3 grid grid-cols-2 mr-24">
                         <label for="driver" class="form-label">ชื่อคนขับ:</label>
-                        <span class="col span-1"> {{ vehicle.driver.first_name }} {{ vehicle.driver.last_name }}</span>
+                        <span class="col span-1">{{ vehicle.driver.first_name }} {{ vehicle.driver.last_name }}</span>
                     </div>
                     <div class="mb-3 grid grid-cols-2 mr-24">
-                        <label for="type" class="form-label">ประเภทรถ: </label>
+                        <label for="type" class="form-label">ประเภทรถ:</label>
                         <span class="col span-1">{{ vehicle.type }}</span>
                     </div>
                     <div class="mb-3 grid grid-cols-2 mr-24">
-                        <label for="price" class="form-label">ราคาต่อไร่: </label>
-                        <span class="col span-1 ">{{ vehicle.price }} บาท</span>
+                        <label for="price" class="form-label">ราคาต่อไร่:</label>
+                        <span class="col span-1">{{ vehicle.price }} บาท</span>
                     </div>
                     <div class="mb-3 grid grid-cols-2 mr-24">
-                        <label for="province" class="form-label">จังหวัด: </label>
+                        <label for="province" class="form-label">จังหวัด:</label>
                         <span class="col span-1 mr-3">{{ vehicle.province }}</span>
                     </div>
                     <div class="mb-3 grid grid-cols-2 mr-24">
-                        <label for="min_acres" class="form-label">ขั้นต่ำที่รับเกี่ยว: </label>
+                        <label for="min_acres" class="form-label">ขั้นต่ำที่รับเกี่ยว:</label>
                         <span class="col span-1 mr-3">{{ vehicle.min_acres }} ไร่</span>
                     </div>
                     <div class="mb-3 grid grid-cols-2 mr-24">
-                        <label for="max_acres_per_day" class="form-label">จำนวนไร่ที่เกี่ยวได้ต่อวัน: </label>
+                        <label for="max_acres_per_day" class="form-label">จำนวนไร่ที่เกี่ยวได้ต่อวัน:</label>
                         <span class="col span-1 mr-3">{{ vehicle.max_acres_per_day }} ไร่</span>
                     </div>
                 </div>
             </div>
-            <div class="md:w-1/2 p-4" data-min-acres="{{ vehicle.min_acres }}" data-max-acres-per-day="{{ vehicle.max_acres_per_day }}">
+            <div class="md:w-1/2 p-4" data-min-acres="{{ vehicle.min_acres }}" data-max-acres-per-day="{{ vehicle.max_acres_per_day }}" data-price="{{ vehicle.price }}">
                 <form method="post" action="" onsubmit="return validateForm();">
                     {% csrf_token %}
                     <div class="mb-4">
                         <label for="fullname" class="block text-sm font-medium text-gray-700">ชื่อ-สกุล:</label>
                         <input type="text" id="fullname" name="fullname" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-100 focus:border-indigo-500 sm:text-xl">
+                    </div>
+                    <div class="mb-4">
+                        <label for="location" class="block text-sm font-medium text-gray-700">เลือกที่ตั้ง:</label>
+                        <select id="province" name="province" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xl">
+                            <option value="">เลือกจังหวัด</option>
+                            {% for province in unique_provinces %}
+                                <option value="{{ province }}">{{ province }}</option>
+                            {% endfor %}
+                        </select>
+                        <select id="district" name="district" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xl" disabled>
+                            <option value="">เลือกอำเภอ</option>
+                        </select>
+                        <select id="subdistrict" name="subdistrict" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xl" disabled>
+                            <option value="">เลือกตำบล</option>
+                        </select>
                     </div>
                     <div class="mb-4">
                         <label for="address" class="block text-sm font-medium text-gray-700">ที่อยู่:</label>
@@ -55,6 +67,10 @@ Create Booking - Farmer
                         <label for="quantity" class="block text-sm font-medium text-gray-700">จำนวนไร่:</label>
                         <input type="number" id="quantity" name="quantity" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xl">
                         <p id="quantity-warning" class="text-red-500 hidden">จำนวนไร่ที่คุณกรอกไม่ถูกต้องตามที่กำหนด</p>
+                    </div>
+                    <div class="mb-4">
+                        <label for="total_price" class="block text-sm font-medium text-gray-700">ราคาที่ต้องจ่าย:</label>
+                        <input type="text" id="total_price" name="total_price" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xl" readonly>
                     </div>
                     <div class="mb-4">
                         <label for="appointment_start_date" class="block text-sm font-medium text-gray-700">วันเริ่มต้น:</label>
@@ -82,86 +98,173 @@ Create Booking - Farmer
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
+<!-- Your existing HTML -->
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // const eventDates = JSON.parse('{{ event_dates|escapejs }}');
-    const eventDates = {{ event_dates|safe }};
-    flatpickr(".flatpickr", {
-        enableTime: false,
-        dateFormat: "Y-m-d",
-        locale: "th",
-        disable: eventDates
-    });
-
-    const quantityInput = document.getElementById('quantity');
-    const startDateInput = document.getElementById('appointment_start_date');
-    const endDateDisplay = document.getElementById('appointment_end_date_display');
-    const endDateInput = document.getElementById('appointment_end_date');
-    const submitButton = document.getElementById('submit-button');
-    const quantityWarning = document.getElementById('quantity-warning');
-    const maxAcresPerDay = parseInt(document.querySelector('[data-max-acres-per-day]').getAttribute('data-max-acres-per-day'), 10);
-    const minAcres = parseInt(document.querySelector('[data-min-acres]').getAttribute('data-min-acres'), 10);
-    const threshold = 5;
-
-    function formatDateToDDMMYYYY(date) {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    }
-
-    function calculateEndDate() {
-        const quantity = parseInt(quantityInput.value, 10);
-        const startDate = new Date(startDateInput.value);
-
-        if (!isNaN(quantity) && startDate instanceof Date && !isNaN(startDate.getTime())) {
-            let daysRequired = 0;
-            if (quantity <= maxAcresPerDay + threshold) {
-                daysRequired = 1;
-            } else {
-                daysRequired = Math.ceil((quantity - threshold) / maxAcresPerDay);
+    document.addEventListener('DOMContentLoaded', function () {
+        const eventDates = {{ event_dates|safe }};
+        const flatpickrInstance = flatpickr(".flatpickr", {
+            enableTime: false,
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: 'd/m/Y',
+            locale: "th",
+            disable: eventDates,
+            onReady: function(selectedDates, dateStr, instance) {
+                instance.set('enable', []);
             }
-
-            const endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + daysRequired - 1);
-
-            const formattedEndDate = formatDateToDDMMYYYY(endDate);
-            endDateDisplay.value = formattedEndDate;
-            endDateInput.value = endDate.toISOString().slice(0, 10);
-        } else {
-            endDateDisplay.value = '';
-            endDateInput.value = '';
+        });
+    
+        const quantityInput = document.getElementById('quantity');
+        const startDateInput = document.getElementById('appointment_start_date');
+        const endDateDisplay = document.getElementById('appointment_end_date_display');
+        const endDateInput = document.getElementById('appointment_end_date');
+        const submitButton = document.getElementById('submit-button');
+        const quantityWarning = document.getElementById('quantity-warning');
+        const totalPriceInput = document.getElementById('total_price');
+        const maxAcresPerDay = parseInt(document.querySelector('[data-max-acres-per-day]').getAttribute('data-max-acres-per-day'), 10);
+        const minAcres = parseInt(document.querySelector('[data-min-acres]').getAttribute('data-min-acres'), 10);
+        const pricePerAcre = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
+        const threshold = 5;
+    
+        function formatDateToDDMMYYYY(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
         }
-    }
-
-    function validateQuantity() {
-        const quantity = parseInt(quantityInput.value, 10);
-        if (quantity < minAcres) {
-            quantityWarning.classList.remove('hidden');
-            submitButton.disabled = true;
-        } else {
-            quantityWarning.classList.add('hidden');
-            submitButton.disabled = false;
+    
+        function calculateEndDate() {
+            const quantity = parseInt(quantityInput.value, 10);
+            const startDate = new Date(startDateInput.value);
+    
+            if (!isNaN(quantity) && startDate instanceof Date && !isNaN(startDate.getTime())) {
+                let daysRequired = 0;
+                if (quantity <= maxAcresPerDay + threshold) {
+                    daysRequired = 1;
+                } else {
+                    daysRequired = Math.ceil((quantity - threshold) / maxAcresPerDay);
+                }
+    
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + daysRequired - 1);
+    
+                const formattedEndDate = formatDateToDDMMYYYY(endDate);
+                endDateDisplay.value = formattedEndDate;
+                endDateInput.value = endDate.toISOString().slice(0, 10);
+            } else {
+                endDateDisplay.value = '';
+                endDateInput.value = '';
+            }
         }
-    }
-
-    quantityInput.addEventListener('input', function () {
-        calculateEndDate();
-        validateQuantity();
+    
+        function calculateTotalPrice() {
+            const quantity = parseInt(quantityInput.value, 10);
+            if (!isNaN(quantity) && quantity >= minAcres) {
+                const totalPrice = quantity * pricePerAcre;
+                totalPriceInput.value = `${totalPrice.toLocaleString()} บาท`;
+            } else {
+                totalPriceInput.value = '';
+            }
+        }
+    
+        function validateQuantity() {
+            const quantity = parseInt(quantityInput.value, 10);
+            if (quantity < minAcres) {
+                quantityWarning.classList.remove('hidden');
+                submitButton.disabled = true;
+            } else {
+                quantityWarning.classList.add('hidden');
+                submitButton.disabled = false;
+            }
+        }
+    
+        quantityInput.addEventListener('input', function () {
+            calculateEndDate();
+            calculateTotalPrice();
+            validateQuantity();
+        });
+        startDateInput.addEventListener('input', calculateEndDate);
+    
+        window.validateForm = function() {
+            const quantity = parseInt(quantityInput.value, 10);
+            if (quantity < minAcres) {
+                quantityWarning.classList.remove('hidden');
+                return false;
+            }
+            return true;
+        };
+    
+        document.getElementById('province').addEventListener('change', function() {
+            const province = this.value;
+            const districtSelect = document.getElementById('district');
+            const subdistrictSelect = document.getElementById('subdistrict');
+    
+            districtSelect.innerHTML = '<option value="">เลือกอำเภอ</option>';
+            subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
+            subdistrictSelect.disabled = true;
+    
+            if (province) {
+                fetch(`/bookings/get_districts/?province=${encodeURIComponent(province)}`)
+                    .then(response => response.json())
+                    .then(districts => {
+                        districts.forEach(district => {
+                            const option = document.createElement('option');
+                            option.value = district;
+                            option.textContent = district;
+                            districtSelect.appendChild(option);
+                        });
+                        districtSelect.disabled = false;
+                    });
+            } else {
+                districtSelect.disabled = true;
+            }
+        });
+    
+        document.getElementById('district').addEventListener('change', function() {
+            const district = this.value;
+            const subdistrictSelect = document.getElementById('subdistrict');
+    
+            subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
+    
+            if (district) {
+                fetch(`/bookings/get_subdistricts/?district=${encodeURIComponent(district)}`)
+                    .then(response => response.json())
+                    .then(subdistricts => {
+                        const uniqueSubdistricts = new Set();
+                        subdistricts.forEach(subdistrict => {
+                            const subdistrictsArray = subdistrict.split(',');
+                            subdistrictsArray.forEach(sub => {
+                                const trimmedSub = sub.trim();
+                                if (!uniqueSubdistricts.has(trimmedSub)) {
+                                    uniqueSubdistricts.add(trimmedSub);
+                                    const option = document.createElement('option');
+                                    option.value = trimmedSub;
+                                    option.textContent = trimmedSub;
+                                    subdistrictSelect.appendChild(option);
+                                }
+                            });
+                        });
+                        subdistrictSelect.disabled = false;
+                    });
+            } else {
+                subdistrictSelect.disabled = true;
+            }
+        });
+    
+        document.getElementById('subdistrict').addEventListener('change', function() {
+            const province = document.getElementById('province').value;
+            const district = document.getElementById('district').value;
+            const subdistrict = this.value;
+    
+            if (province && district && subdistrict) {
+                fetch(`/bookings/get_available_dates/?province=${encodeURIComponent(province)}&district=${encodeURIComponent(district)}&subdistrict=${encodeURIComponent(subdistrict)}`)
+                    .then(response => response.json())
+                    .then(availableDates => {
+                        flatpickrInstance.set('enable', availableDates);
+                        flatpickrInstance.setDate([]); // Clear selected date
+                    });
+            }
+        });
     });
-    startDateInput.addEventListener('input', calculateEndDate);
-
-    // Add form validation before submission
-    window.validateForm = function() {
-        const quantity = parseInt(quantityInput.value, 10);
-        if (quantity < minAcres) {
-            quantityWarning.classList.remove('hidden');
-            return false;  // Prevent form submission
-        }
-        return true;  // Allow form submission
-    };
-});
-
 </script>
-
 {% endblock %}
