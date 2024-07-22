@@ -185,17 +185,28 @@ def get_available_dates(request):
         district=district
     )
 
-    available_dates = []
+    available_dates = set()
     for area in areas:
         subdistricts = [s.strip() for s in area.subdistrict.split(',')]
         if subdistrict in subdistricts:
             current_date = area.start_date
             end_date = area.end_date
             while current_date <= end_date:
-                available_dates.append(current_date.strftime("%Y-%m-%d"))
+                available_dates.add(current_date.strftime("%Y-%m-%d"))
                 current_date += timedelta(days=1)
 
-    return JsonResponse(available_dates, safe=False)
+    # ดึงกิจกรรมที่มีอยู่ใน CalendarEvent และปิดวันที่ที่มีงานแล้ว
+    driver_id = request.GET.get('driver_id')  # รับ driver_id จาก request
+    if driver_id:
+        existing_events = CalendarEvent.objects.filter(driver_id=driver_id).values_list('start', 'end')
+        for start, end in existing_events:
+            current_date = start.date()
+            end_date = end.date()
+            while current_date <= end_date:
+                available_dates.discard(current_date.strftime("%Y-%m-%d"))  # ลบวันที่ที่มีงานออกจาก available_dates
+                current_date += timedelta(days=1)
+
+    return JsonResponse(list(available_dates), safe=False)
 
 
 def count_pending_rent_request(driver):

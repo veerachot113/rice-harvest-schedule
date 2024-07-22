@@ -101,7 +101,9 @@ Create Booking - Farmer
 <!-- Your existing HTML -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const eventDates = {{ event_dates|safe }};
+        const driver_id = "{{ vehicle.driver.id }}";  // กำหนด driver_id จาก vehicle driver
+
+        const eventDates = JSON.parse('{{ event_dates|escapejs }}');
         const flatpickrInstance = flatpickr(".flatpickr", {
             enableTime: false,
             dateFormat: "Y-m-d",
@@ -113,7 +115,7 @@ Create Booking - Farmer
                 instance.set('enable', []);
             }
         });
-    
+
         const quantityInput = document.getElementById('quantity');
         const startDateInput = document.getElementById('appointment_start_date');
         const endDateDisplay = document.getElementById('appointment_end_date_display');
@@ -125,18 +127,18 @@ Create Booking - Farmer
         const minAcres = parseInt(document.querySelector('[data-min-acres]').getAttribute('data-min-acres'), 10);
         const pricePerAcre = parseFloat(document.querySelector('[data-price]').getAttribute('data-price'));
         const threshold = 5;
-    
+
         function formatDateToDDMMYYYY(date) {
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
         }
-    
+
         function calculateEndDate() {
             const quantity = parseInt(quantityInput.value, 10);
             const startDate = new Date(startDateInput.value);
-    
+
             if (!isNaN(quantity) && startDate instanceof Date && !isNaN(startDate.getTime())) {
                 let daysRequired = 0;
                 if (quantity <= maxAcresPerDay + threshold) {
@@ -144,10 +146,10 @@ Create Booking - Farmer
                 } else {
                     daysRequired = Math.ceil((quantity - threshold) / maxAcresPerDay);
                 }
-    
+
                 const endDate = new Date(startDate);
                 endDate.setDate(endDate.getDate() + daysRequired - 1);
-    
+
                 const formattedEndDate = formatDateToDDMMYYYY(endDate);
                 endDateDisplay.value = formattedEndDate;
                 endDateInput.value = endDate.toISOString().slice(0, 10);
@@ -156,7 +158,7 @@ Create Booking - Farmer
                 endDateInput.value = '';
             }
         }
-    
+
         function calculateTotalPrice() {
             const quantity = parseInt(quantityInput.value, 10);
             if (!isNaN(quantity) && quantity >= minAcres) {
@@ -166,7 +168,7 @@ Create Booking - Farmer
                 totalPriceInput.value = '';
             }
         }
-    
+
         function validateQuantity() {
             const quantity = parseInt(quantityInput.value, 10);
             if (quantity < minAcres) {
@@ -177,14 +179,14 @@ Create Booking - Farmer
                 submitButton.disabled = false;
             }
         }
-    
+
         quantityInput.addEventListener('input', function () {
             calculateEndDate();
             calculateTotalPrice();
             validateQuantity();
         });
         startDateInput.addEventListener('input', calculateEndDate);
-    
+
         window.validateForm = function() {
             const quantity = parseInt(quantityInput.value, 10);
             if (quantity < minAcres) {
@@ -193,16 +195,16 @@ Create Booking - Farmer
             }
             return true;
         };
-    
+
         document.getElementById('province').addEventListener('change', function() {
             const province = this.value;
             const districtSelect = document.getElementById('district');
             const subdistrictSelect = document.getElementById('subdistrict');
-    
+
             districtSelect.innerHTML = '<option value="">เลือกอำเภอ</option>';
             subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
             subdistrictSelect.disabled = true;
-    
+
             if (province) {
                 fetch(`/bookings/get_districts/?province=${encodeURIComponent(province)}`)
                     .then(response => response.json())
@@ -219,13 +221,13 @@ Create Booking - Farmer
                 districtSelect.disabled = true;
             }
         });
-    
+
         document.getElementById('district').addEventListener('change', function() {
             const district = this.value;
             const subdistrictSelect = document.getElementById('subdistrict');
-    
+
             subdistrictSelect.innerHTML = '<option value="">เลือกตำบล</option>';
-    
+
             if (district) {
                 fetch(`/bookings/get_subdistricts/?district=${encodeURIComponent(district)}`)
                     .then(response => response.json())
@@ -250,14 +252,14 @@ Create Booking - Farmer
                 subdistrictSelect.disabled = true;
             }
         });
-    
+
         document.getElementById('subdistrict').addEventListener('change', function() {
             const province = document.getElementById('province').value;
             const district = document.getElementById('district').value;
             const subdistrict = this.value;
-    
+
             if (province && district && subdistrict) {
-                fetch(`/bookings/get_available_dates/?province=${encodeURIComponent(province)}&district=${encodeURIComponent(district)}&subdistrict=${encodeURIComponent(subdistrict)}`)
+                fetch(`/bookings/get_available_dates/?province=${encodeURIComponent(province)}&district=${encodeURIComponent(district)}&subdistrict=${encodeURIComponent(subdistrict)}&driver_id=${driver_id}`)
                     .then(response => response.json())
                     .then(availableDates => {
                         flatpickrInstance.set('enable', availableDates);
@@ -267,4 +269,5 @@ Create Booking - Farmer
         });
     });
 </script>
+
 {% endblock %}
