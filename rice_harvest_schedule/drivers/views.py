@@ -11,6 +11,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware
 from datetime import datetime
 
+import json
 def check_is_staff(user):
     return user.is_staff
 
@@ -62,7 +63,9 @@ def count_pending_rent_request(driver):
 
 def get_schedule(request, driver_id):
     driver = get_object_or_404(CustomUser, id=driver_id)
-    return render(request, 'Farmer/schedule.html', {'driver': driver})
+    harvest_areas = HarvestArea.objects.filter(driver=driver)
+    return render(request, 'Farmer/schedule.html', {'driver': driver, 'harvest_areas': harvest_areas})
+
 
 @login_required
 def calendar_view(request):
@@ -74,7 +77,7 @@ def calendar_view(request):
 
 def get_calendar_events(request):
     driver_id = request.GET.get('driver_id', request.user.id)
-    events = CalendarEvent.objects.filter(driver_id=driver_id).values('id', 'title', 'details', 'start', 'end', 'farmer_id')
+    events = CalendarEvent.objects.filter(driver_id=driver_id).values('id', 'title', 'details', 'start', 'end', 'farmer_id', 'driver_id')
     events_list = []
     for event in events:
         events_list.append({
@@ -84,8 +87,10 @@ def get_calendar_events(request):
             'end': event['end'].isoformat(),
             'details': event['details'],
             'farmer_id': event['farmer_id'],
+            'driver_id': event['driver_id'],
         })
     return JsonResponse(events_list, safe=False)
+
 
 @csrf_exempt
 @login_required
@@ -181,12 +186,6 @@ def delete_calendar_event(request, event_id):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 
-from .forms import HarvestAreaForm
-from .models import HarvestArea
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-import json
-
 @login_required
 def get_harvest_areas(request):
     harvest_areas = HarvestArea.objects.filter(driver=request.user).values(
@@ -270,3 +269,113 @@ def delete_harvest_area(request, area_id):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 
+
+from django.shortcuts import render
+from django.utils import timezone
+from bookings.models import Booking
+from drivers.models import CalendarEvent
+from datetime import datetime, timedelta
+from auth_admin.models import DriverDocument
+
+
+
+
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
+def driver_dashboard(request):
+    no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()
+    no_of_pending_request = count_pending_rent_request(request.user)
+    driver = request.user
+
+    # Count pending booking requests
+    pending_bookings_count = Booking.objects.filter(vehicle__driver=driver, request_status="Pending").count()
+
+    # Get current date and time
+    now = timezone.now()
+
+    # Get current month start and end dates
+    current_month_start = now.replace(day=1)
+    next_month_start = (current_month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+    current_month_end = next_month_start - timedelta(seconds=1)
+
+    # Count events in the current month and that are not past
+    events = CalendarEvent.objects.filter(driver=driver, start__gte=current_month_start, end__lte=current_month_end, end__gt=now)
+    events_count = events.count()
+
+    context = {
+        'pending_bookings_count': pending_bookings_count,
+        'events_count': events_count,
+        'events': events, 
+        'no_of_pending_request': no_of_pending_request ,
+        'no_of_pending_documents': no_of_pending_documents}
+
+    return render(request, 'Driver/dashboard.html', context)
+
+@login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
+def booking_detail(request, event_id):
+    event = get_object_or_404(CalendarEvent, id=event_id)
+    try:
+        booking = Booking.objects.get(
+            appointment_start_date=event.start,
+            appointment_end_date=event.end,
+            farmer_id=event.farmer_id,
+            vehicle__driver=request.user
+        )
+        return render(request, 'booking/booking_detail.html', {'booking': booking, 'event': event})
+    except Booking.DoesNotExist:
+        return render(request, 'booking/booking_detail.html', {'event': event})
+    
+
+@login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
+def vehicle_detail(request):
+    vehicle = get_object_or_404(Vehicle, driver=request.user)
+    try:
+        detail = VehicleDetail.objects.get(vehicle=vehicle)
+    except VehicleDetail.DoesNotExist:
+        detail = None
+
+    try:
+        harvest_area = HarvestArea.objects.filter(driver=request.user)
+    except HarvestArea.DoesNotExist:
+        harvest_area = None
+
+    if request.method == 'POST':
+        if detail:
+            form = VehicleDetailForm(request.POST, request.FILES, instance=detail)
+        else:
+            form = VehicleDetailForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            new_detail = form.save(commit=False)
+            new_detail.vehicle = vehicle
+            new_detail.save()
+            return redirect('vehicle_detail')
+    else:
+        if detail:
+            form = VehicleDetailForm(instance=detail)
+        else:
+            form = VehicleDetailForm()
+
+    return render(request, 'Driver/add_vehicle_detail.html', {
+        'vehicle': vehicle,
+        'detail': detail,
+        'harvest_areas': harvest_area,
+        'form': form
+    })
+
+@login_required
+def view_vehicle_detail(request, driver_id):
+    vehicle = get_object_or_404(Vehicle, driver_id=driver_id)
+    try:
+        detail = VehicleDetail.objects.get(vehicle=vehicle)
+    except VehicleDetail.DoesNotExist:
+        detail = None
+
+    harvest_areas = HarvestArea.objects.filter(driver_id=driver_id)
+
+    return render(request, 'Farmer/view_vehicle_detail.html', {
+        'vehicle': vehicle,
+        'detail': detail,
+        'harvest_areas': harvest_areas
+    })

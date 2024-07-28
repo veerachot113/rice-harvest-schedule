@@ -1,0 +1,33 @@
+<!-- booking/booking_detail.html -->
+
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+รายละเอียดการจอง
+{% endblock %}
+{% block main %}
+<body class="bg-gray-400">
+    <div class="container mx-auto px-4 py-8 mt-20">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">รายละเอียดการจอง</h1>
+        <div class="bg-white shadow-md rounded-lg p-6">
+            {% if booking %}
+                <p><strong>ชื่อผู้จอง:</strong> {{ booking.farmer.fullname }}</p>
+                <p><strong>ประเภทรถ:</strong> {{ booking.vehicle.type }}</p>
+                <p><strong>จำนวนไร่:</strong> {{ booking.quantity }}</p>
+                <p><strong>ที่อยู่:</strong> {{ booking.address }}</p>
+                <p><strong>รายละเอียด:</strong> {{ booking.details }}</p>
+                <p><strong>เบอร์โทร:</strong> {{ booking.phone }}</p>
+                <p><strong>วันที่เริ่มต้น:</strong> {{ booking.appointment_start_date }}</p>
+                <p><strong>วันที่สิ้นสุด:</strong> {{ booking.appointment_end_date }}</p>
+            {% else %}
+                <p><strong>ชื่อกิจกรรม:</strong> {{ event.title }}</p>
+                <p><strong>รายละเอียด:</strong> {{ event.details }}</p>
+                <p><strong>วันเริ่มต้น:</strong> {{ event.start }}</p>
+                <p><strong>วันสิ้นสุด:</strong> {{ event.end }}</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+
+{% endblock %}

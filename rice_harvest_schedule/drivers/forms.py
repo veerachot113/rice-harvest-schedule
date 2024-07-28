@@ -20,3 +20,8 @@ class HarvestAreaForm(forms.ModelForm):
     class Meta:
         model = HarvestArea
         fields = ['start_date', 'end_date', 'province', 'district', 'subdistrict', 'details']
+
+class VehicleDetailForm(forms.ModelForm):
+    class Meta:
+        model = VehicleDetail
+        fields = ['power', 'image1', 'image2', 'image3', 'details']

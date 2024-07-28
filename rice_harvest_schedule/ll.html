@@ -1,143 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <title>{% block title %}{% endblock %}</title>
+    {% block base_scripts %}
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=K2D:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://kit.fontawesome.com/541087f5af.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/0.7.4/tailwind.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    {% endblock %}
+    {% block flowbite %}{% endblock %}
+    {% block extra_scripts %}{% endblock %}   
+    <style>
+        .slow-moves {
+            transition: 0.3s;
+        }
+
+        .sidebar-inactive {
+            transform: translateX(-100%);
+        }
+
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+    </style>
 </head>
-<body style="font-family: 'K2D', sans-serif;">
-    <div class="max-w-sm mx-auto">
-        <div class="text-xl text-center font-extrabold mt-28 mb-5 bg-green-200 p-3 rounded-md border border-1 border-gray-400 shadow-lg">
-            <i class="fa-solid fa-calendar-days"></i>&nbsp;&nbsp; ตารางรถเกี่ยวนวดข้าว
-        </div>
-    </div>
 
-    <div class="container mx-96 px-44">
-        <div class="flex">
-            <!-- Calendar Section -->
-            <div id="calendar" class="max-w-screen-md p-4 bg-white mt-2 mb-10 rounded-lg shadow-md border border-gray-500 border-2 flex-grow"></div>
-    
-            <!-- Ongoing Events Section -->
-            <div id="ongoing-events" class="w-1/3 ml-auto mt-5">
-                <div class="bg-white p-4 rounded-lg shadow-md border border-gray-500 border-2">
-                    <h3 class="text-xl font-bold mb-4 text-center">กิจกรรมที่กำลังดำเนินการอยู่</h3>
-                    <div id="event-list" class="space-y-4">
-                        <!-- Event items will be appended here -->
-                    </div>
-                    <!-- Add Area Button -->
-                    <button id="add-area-button" class="px-4 py-2 font-bold text-white bg-green-500 rounded-md hover:bg-green-700 focus:outline-none focus:ring focus:border-green-300 mt-5">เพิ่มพื้นที่</button>
-                </div>
+<body class="bg-light h-screen overflow-hidden ">
+    <div id="main" class="w-full min-h-full absolute pin-r flex flex-col overflow-y-auto max-h-screen">
+        <nav id="navbar" class="fixed top-0 left-0 z-50 w-full border-b text-lg p-6 bg-white shadow-md flex flex-wrap justify-between items-center">         
+            {% if user.is_authenticated %}
+            <button id="menu-switch" class="focus:outline-none">
+                <span class="fa fa-bars"></span>
+            </button>
+            {% endif %}
+            <div class="flex-grow"></div>
+            {% if user.is_authenticated %}
+            <button id="profile-menu" class="focus:outline-none flex items-center ">
+                <span class="fa fa-user-circle"></span>
+                <span class="ml-2">{{ user.username }}</span>
+            </button>
+            <div id="dropdown-profile" class="hidden absolute right-5 mt-32 w-48 py-2 bg-white rounded-lg shadow-xl z-10 border border-black">
+                <a href="{% url 'profile_update' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลส่วนตัว</a>
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ออกจากระบบ</a>
             </div>
-        </div>
+            {% else %}
+            <div class="mt-2 sm:mt-0 sm:flex md:order-2 ml-auto" style="margin-right: 80px;">
+                <a href="{% url 'login' %}" class="rounde mr-3 hidden border border-blue-700 py-1.5 px-6 text-center text-sm font-medium text-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 md:inline-block rounded-lg">เข้าสู่ระบบ</a>
+                <a href="{% url 'chooserole' %}" class="rounde mr-3 hidden bg-blue-700 py-1.5 px-6 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 md:mr-0 md:inline-block rounded-lg">สมัครสมาชิก</a>
+            </div>
+            <div class="md:hidden flex items-center">
+                <button data-collapse-toggle="navbar-sticky" type="button" class="inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 md:hidden" aria-controls="navbar-sticky" aria-expanded="false">
+                    <span class="sr-only">Open main menu</span>
+                    <svg class="h-6 w-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            {% endif %}
+            <div id="navbar-sticky" class="hidden md:hidden w-full items-center justify-between md:order-1  ">
+                <ul class="mt-4 flex flex-col text-center rounded-lg border border-gray-100 bg-gray-50 p-4 md:mt-0 md:flex-row md:space-x-8 md:border-0 md:bg-white md:text-sm md:font-medium">
+                    <li>
+                        <a href="{% url 'login' %}" class="block rounded bg-blue-700 py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 md:text-blue-700" aria-current="page">เข้าสู่ระบบ</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'chooserole' %}" class="block rounded py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-100 md:p-0 md:hover:bg-transparent md:hover:text-blue-700">สมัครสมาชิก</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        {% block main %}{% block content %} {% block car %} {% block booking %}
+        {% endblock %} {% endblock %}{% endblock %}{% endblock %}
     </div>
-    
-    <!-- Form Modal -->
-    <div id="area-modal" class="fixed z-10 inset-0 overflow-y-auto hidden">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">เพิ่มข้อมูลพื้นที่</h3>
-                    <form id="area-form">
-                        <div class="mb-4">
-                            <label class="block mb-2 text-sm font-medium text-gray-700">วันเริ่มต้น :</label>
-                            <input type="date" id="start-date" name="start-date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
-                        </div>
-                        <div class="mb-4">
-                            <label class="block mb-2 text-sm font-medium text-gray-700">วันสิ้นสุด :</label>
-                            <input type="date" id="end-date" name="end-date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
-                        </div>
-                        <div class="mb-4">
-                            <label for="province" class="block mb-2 text-sm font-medium text-gray-700">จังหวัด :</label>
-                            <select id="province" name="province" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required>
-                                <option value="">เลือกจังหวัด</option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="block mb-2 text-sm font-medium text-gray-700">อำเภอ :</label>
-                            <select id="district" name="district" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required>
-                                <option value="">เลือกอำเภอ</option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="block mb-2 text-sm font-medium text-gray-700">ตำบล :</label>
-                            <div id="subdistrict-checkboxes" class="border rounded-md p-2">
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <label class="block mb-2 text-sm font-medium text-gray-700">รายละเอียด :</label>
-                            <textarea id="details" name="details" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" rows="3"></textarea>
-                        </div>
-                        <div class="flex justify-between">
-                            <button type="button" id="cancel-button" class="px-4 py-2 font-bold text-white bg-red-500 rounded-md hover:bg-red-700 focus:outline-none focus:ring focus:border-red-300">ยกเลิก</button>
-                            <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:border-blue-300">เพิ่มข้อมูล</button>
-                        </div>
-                    </form>
+    <aside id="sidebar" class="fixed z-30 pin-y bg-grey-lightest shadow-md w-full sm:w-1/3 lg:w-1/6 sidebar-inactive">
+        <h1 class="text-xl p-6 bg-grey-lighter border-grey-light border-b text-grey-darkest">จองง่ายได้เกี่ยว</h1>
+        <ul class="list-reset mt-6">
+            {% if user.is_authenticated %}
+            {% if user.is_superuser %}
+            <li class="hover:bg-teal">
+                <a href="{% url 'document_review' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-file-alt"></span>
+                    ตรวจสอบเอกสาร
+                    <span class="bg-yellow-300 text-black text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">{{ no_of_pending_documents }}</span>
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'user_list' 'driver' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-users"></span>
+                    รายชื่อคนขับ
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'user_list' 'farmer' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-users"></span>
+                    รายชื่อชาวนา
+                </a>
+            </li>
+            {% endif %}
+            {% for group in user.groups.all %}
+            {% if group.name == 'farmer' %}
+            <li class="hover:bg-teal">
+                <a href="{% url 'home_farmer' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    หน้าแรก
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'farmer_booking_list' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-newspaper"></span>
+                    ข้อมูลจองรถเกี่ยวนวดข้าว
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'profile_update' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa-solid fa-user"></span>
+                    ข้อมูลส่วนตัว
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'logout' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-cogs"></span>
+                    ออกจากระบบ
+                </a>
+            </li>
+            {% elif group.name == 'driver' %}
+            <li class="hover:bg-teal">
+                <a href="{% url 'driver_dashboard' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-grip-horizontal"></span>
+                    แผงควบคุม
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'home_driver' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-truck"></span>
+                    หน้าแรก
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'add_vehicle' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-newspaper"></span>
+                    เพิ่มรถเกี่ยว
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'calendar_view' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa-solid fa-calendar-days"></span>
+                    เพิ่มตารางรถเกี่ยว
+                </a>
+            </li>  
+            <li class="hover:bg-teal">
+                <a href="{% url 'driver_booking_list' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-envelope"></span>
+                    ข้อมูลจองรถเกี่ยวนวดข้าว
+                    <span class="bg-yellow-300 text-black text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">{{ no_of_pending_request }}</span>
+                </a>
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'vehicle_detail' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-cogs"></span>
+                    เพิ่มข้อมูลรถ
+                </a>
+            </li>     
+            <li class="hover:bg-teal">
+                <a href="{% url 'profile_update' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa-solid fa-user"></span>
+                    ข้อมูลส่วนตัว
+                </a>
+            </li>
+
+            <li class="hover:bg-teal relative">
+                <button id="dropdownButton" data-dropdown-toggle="dropdownMenu" class="w-full text-grey-darkest font-bold text-left text-sm no-underline flex items-center justify-between px-6 py-4 hover:text-white focus:outline-none" onclick="toggleDropdown('dropdownMenu', this)">
+                    <span class="fa fa-file-alt"></span>
+                    <span>ตรวจสอบสถานะเอกสาร</span>
+                    <span class="bg-yellow-300 text-black text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">{{ no_of_pending_documents }}</span>
+                    <i class="fa fa-chevron-down ml-2"></i>
+                </button>
+                <!-- Dropdown menu -->
+                <div id="dropdownMenu" class="hidden z-10 w-full bg-white rounded-lg shadow">
+                    <ul class="py-2 text-sm text-gray-700 dark:text-gray-200">
+                        <li class="hover:bg-teal">
+                            <a href="{% url 'document_status' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                <span class="fa fa-file-alt"></span> สถานะเอกสาร
+                                <span class="bg-yellow-300 text-black text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">{{ no_of_pending_documents }}</span>
+                            </a>
+                        </li>
+                        <li class="hover:bg-teal">
+                            <a href="{% url 'upload_document' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                <span class="fa fa-upload"></span> เอกสารใหม่
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-            </div>
-        </div>
-    </div>
-    
+            </li>
+            <li class="hover:bg-teal">
+                <a href="{% url 'logout' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-cogs"></span>
+                    ออกจากระบบ
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if user.is_superuser %}
+            <li class="hover:bg-teal">
+                <a href="{% url 'admin:index' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
+                    <span class="fa fa-cog"></span>
+                    การจัดการไซต์ (Admin)
+                </a>
+            </li>
+            {% endif %}
+            {% endif %}
+        </ul>
+    </aside>
     <script>
-        $(document).ready(function() {
-            // Show form modal on button click
-            $('#add-area-button').on('click', function() {
-                $('#area-modal').removeClass('hidden');
-            });
+        (function () {
+            let menuSwitch = document.querySelector("#menu-switch"),
+                sidebar = document.querySelector("#sidebar"),
+                main = document.querySelector("#main"),
+                profileMenu = document.querySelector("#profile-menu"),
+                dropdownProfile = document.querySelector("#dropdown-profile");
 
-            // Hide form modal on cancel button click
-            $('#cancel-button').on('click', function() {
-                $('#area-modal').addClass('hidden');
-            });
+            document.addEventListener('DOMContentLoaded', function () {
+                const button = document.querySelector('[data-collapse-toggle="navbar-sticky"]');
+                const menu = document.getElementById('navbar-sticky');
 
-            // Initialize calendar
-            var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth',
-                locale: 'th',
-                selectable: true,
-                events: '/drivers/get_calendar_events/',
-                eventDidMount: function() {
-                    updateOngoingEvents();
-                }
-            });
-
-            calendar.render();
-
-            function updateOngoingEvents() {
-                $.ajax({
-                    url: '/drivers/get_calendar_events/',
-                    type: 'GET',
-                    data: {
-                        driver_id: '{{ user.id }}'
-                    },
-                    success: function(events) {
-                        var eventList = $('#event-list');
-                        eventList.empty();
-                        events.forEach(function(event, index) {
-                            var eventItem = `
-                                <div class="p-4 bg-blue-100 rounded-lg shadow">
-                                    <h4 class="text-lg font-semibold">${index + 1}. ${event.title}</h4>
-                                    <p>${event.details}</p>
-                                    <p><strong>เริ่มต้น:</strong> ${event.start}</p>
-                                    <p><strong>สิ้นสุด:</strong> ${event.end}</p>
-                                </div>
-                            `;
-                            eventList.append(eventItem);
-                        });
-                    }
+                button.addEventListener('click', function () {
+                    const expanded = this.getAttribute('aria-expanded') === 'true' || false;
+                    this.setAttribute('aria-expanded', !expanded);
+                    menu.classList.toggle('hidden');
                 });
+            });
+
+            function toggleSidebar() {
+                let classesToApplyForSidebar = {
+                    active: [],
+                    inactive: ["sidebar-inactive"]
+                },
+                    classesToApplyForMain = {
+                        active: ["sm:w-5/6"],
+                        inactive: []
+                    },
+                    classesToApplyForMenuButton = {
+                        active: ["fa-times-circle", "text-red-light"],
+                        inactive: ["fa-bars"]
+                    };
+
+                let isMenuActive = menuSwitch.getAttribute("data-menu-active") === "true";
+
+                if (isMenuActive) {
+                    menuSwitch.setAttribute("data-menu-active", null);
+
+                    menuSwitch.children[0].classList.remove(
+                        ...classesToApplyForMenuButton.active
+                    );
+                    menuSwitch.children[0].classList.add(
+                        ...classesToApplyForMenuButton.inactive
+                    );
+
+                    sidebar.classList.remove(...classesToApplyForSidebar.active);
+                    sidebar.classList.add(...classesToApplyForSidebar.inactive);
+
+                    main.classList.remove(...classesToApplyForMain.active);
+                    main.classList.add(...classesToApplyForMain.inactive);
+                } else {
+                    menuSwitch.setAttribute("data-menu-active", true);
+
+                    menuSwitch.children[0].classList.add(
+                        ...classesToApplyForMenuButton.active
+                    );
+                    menuSwitch.children[0].classList.remove(
+                        ...classesToApplyForMenuButton.inactive
+                    );
+
+                    sidebar.classList.add(...classesToApplyForSidebar.active);
+                    sidebar.classList.remove(...classesToApplyForSidebar.inactive);
+
+                    main.classList.add(...classesToApplyForMain.active);
+                    main.classList.remove(...classesToApplyForMain.inactive);
+                }
             }
 
-            updateOngoingEvents();
-        });
+            document.querySelector("#menu-switch").addEventListener("click", e => {
+                e.preventDefault();
+                toggleSidebar();
+            });
+
+            profileMenu.addEventListener("click", e => {
+                e.preventDefault();
+                dropdownProfile.classList.toggle("hidden");
+            });
+
+            toggleSidebar();
+            setTimeout(() => {
+                sidebar.classList.add("slow-moves");
+                main.classList.add("slow-moves");
+            }, 300);
+        })();
+
+        function toggleDropdown(dropdownId, button) {
+            const dropdownMenu = document.getElementById(dropdownId);
+            dropdownMenu.classList.toggle('hidden');
+            button.querySelector('i.fa-chevron-down').classList.toggle('rotate-180');
+        }
     </script>
 </body>
 </html>

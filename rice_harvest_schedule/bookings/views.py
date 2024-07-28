@@ -209,6 +209,7 @@ def get_available_dates(request):
     return JsonResponse(list(available_dates), safe=False)
 
 
+
 def count_pending_rent_request(driver):
     no_of_pending_request = 0
     bookings = Booking.objects.filter(vehicle__driver=driver)

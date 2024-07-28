@@ -1,0 +1,64 @@
+<!-- templates/Driver/vehicle_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดรถ</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto mt-10 p-4 bg-white shadow-md rounded-lg">
+        <h1 class="text-center text-2xl font-bold mb-4">รายละเอียดรถ</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="flex justify-between">
+                <div class="w-1/2 flex justify-center items-center border-r pr-4">
+                    <div class="relative">
+                        <img src="{{ vehicle.image.url }}" alt="Vehicle Image" class="w-full h-auto rounded-lg shadow-md">
+                        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <button class="bg-gray-200 p-2 rounded-full focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
+                            <button class="bg-gray-200 p-2 rounded-full focus:outline-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-1/2 pl-4">
+                    <div class="mb-4">
+                        <label for="model" class="block text-sm font-medium text-gray-700">รุ่น :</label>
+                        {{ vehicle_form.model }}
+                    </div>
+                    <div class="mb-4">
+                        <label for="power" class="block text-sm font-medium text-gray-700">กำลังเครื่อง :</label>
+                        {{ vehicle_form.power }}
+                    </div>
+                    <div class="mb-4">
+                        <label for="type" class="block text-sm font-medium text-gray-700">ประเภท :</label>
+                        {{ vehicle_form.type }}
+                    </div>
+                    <div class="mb-4">
+                        <label for="price" class="block text-sm font-medium text-gray-700">ราคา :</label>
+                        {{ vehicle_form.price }}
+                    </div>
+                    <div class="mb-4">
+                        <label for="details" class="block text-sm font-medium text-gray-700">รายละเอียดรถ :</label>
+                        {{ vehicle_form.details }}
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center mt-6">
+                <button type="submit" class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-md mx-2">ยืนยัน</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

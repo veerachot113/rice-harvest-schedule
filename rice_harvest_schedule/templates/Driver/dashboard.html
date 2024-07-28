@@ -1,0 +1,90 @@
+<!-- driver_dashboard.html -->
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    Dashboard - Driver
+{% endblock %}
+
+{% block flowbite %}
+<!-- Flowbite -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block main %}
+    <style>
+        body {
+            background: linear-gradient(to bottom, #f3f4f6, #ffffff);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+
+    <div class="container mx-auto mt-36">
+        <!-- จำนวนคำขอการจอง และ จำนวนงานในเดือนนี้ -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+            <!-- จำนวนคำขอการจอง -->
+            <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-lg rounded-lg p-6 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-16 h-16 bg-yellow-600 text-white flex items-center justify-center rounded-full text-3xl font-bold">{{ pending_bookings_count }}</div>
+                    <div class="ml-4">
+                        <h2 class="text-2xl font-bold">จำนวนคำขอการจอง</h2>
+                        <p class="text-sm">ติดตามจำนวนคำขอที่เข้ามา</p>
+                    </div>
+                </div>
+                <div class="text-white text-lg"><a href="{% url 'driver_booking_list' %}">👁️</a></div>
+            </div>
+            <!-- จำนวนงานในเดือนนี้ -->
+            <div class="bg-gradient-to-r from-blue-400 to-blue-500 text-white shadow-lg rounded-lg p-6 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-16 h-16 bg-blue-600 text-white flex items-center justify-center rounded-full text-3xl font-bold">{{ events_count }}</div>
+                    <div class="ml-4">
+                        <h2 class="text-2xl font-bold">จำนวนงานในเดือนนี้</h2>
+                        <p class="text-sm">จำนวนงานที่กำลังดำเนินการในเดือนนี้</p>
+                    </div>
+                </div>
+                
+                <div class="text-white text-lg"><a href="{% url 'calendar_view' %}">📅</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ตารางรายการการจอง -->
+    <div class="container mx-auto mt-6">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-bold mb-6">การดำเนินการ</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ลำดับ</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อกิจกรรม</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รายละเอียด</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันเริ่มต้น</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันสิ้นสุด</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ดูรายละเอียดการจอง</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for event in events %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ forloop.counter }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ event.title }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ event.details }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ event.start|date:"d/m/Y H:i" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ event.end|date:"d/m/Y H:i" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-500"><a href="{% url 'booking_detail' event.id %}">ดูรายละเอียด</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</body>
+{% endblock %}

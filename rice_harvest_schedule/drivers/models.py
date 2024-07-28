@@ -127,3 +127,13 @@ class HarvestArea(models.Model):
     def __str__(self):
         return f'{self.province} - {self.district} - {self.subdistrict}'
 
+class VehicleDetail(models.Model):
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='details')
+    power = models.CharField(max_length=100, verbose_name='กำลังเครื่อง')
+    image1 = models.ImageField(upload_to='vehicle_detail_images/', null=True, blank=True, verbose_name='รูปภาพ 1')
+    image2 = models.ImageField(upload_to='vehicle_detail_images/', null=True, blank=True, verbose_name='รูปภาพ 2')
+    image3 = models.ImageField(upload_to='vehicle_detail_images/', null=True, blank=True, verbose_name='รูปภาพ 3')
+    details = models.TextField(verbose_name='รายละเอียดรถ', default='')
+
+    def __str__(self):
+        return f"{self.vehicle.model} - Details"

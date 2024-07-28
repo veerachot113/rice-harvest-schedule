@@ -123,7 +123,8 @@
                             </button>
                             <!-- Dropdown Menu -->
                             <div id="dropdownMenu{{ vehicle.id }}" class="hidden absolute right-0 mt-8 w-48 bg-white rounded-md shadow-lg z-10">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลรถเกี่ยว</a>
+                                <a href="{% url 'view_vehicle_detail' driver_id=vehicle.driver.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลรถเกี่ยว</a>
+
                                 <a href="{% url 'view_driver_profile' driver_id=vehicle.driver.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลเจ้าของรถ</a>
                             </div>
                         </div>

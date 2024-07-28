@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+รายละเอียดรถเกี่ยวข้าว
+{% endblock %}
+
+{% block main %}
+<div class="container mx-auto p-2 mt-40">
+    <div class="flex flex-col max-w-7xl mx-auto bg-white border border-gray-300 rounded-lg shadow-lg">
+        <h1 class="text-4xl text-center mb-2 mt-5">รายละเอียดรถเกี่ยวข้าว</h1>
+        <div class="w-full md:flex">
+            <div class="md:w-1/2 p-2 mb-4">
+                <div class="relative">
+                    <div id="carousel" class="carousel relative">
+                        <div class="carousel-inner relative overflow-hidden w-full">
+                            {% if detail %}
+                            <div class="carousel-item active" style="display: block; height:500px;">
+                                {% if detail.image1 %}
+                                <img class="block h-full w-full object-contain" src="{{ detail.image1.url }}" alt="Slide 1">
+                                {% endif %}
+                            </div>
+                            <div class="carousel-item" style="display: none; height:500px;">
+                                {% if detail.image2 %}
+                                <img class="block h-full w-full object-contain" src="{{ detail.image2.url }}" alt="Slide 2">
+                                {% endif %}
+                            </div>
+                            <div class="carousel-item" style="display: none; height:500px;">
+                                {% if detail.image3 %}
+                                <img class="block h-full w-full object-contain" src="{{ detail.image3.url }}" alt="Slide 3">
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="carousel-item active" style="display: block; height:500px;">
+                                <img class="block h-full w-full object-contain" src="#" alt="No Image Available">
+                            </div>
+                            {% endif %}
+                        </div>
+                        <button id="prev" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <button id="next" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="md:w-1/2 p-2 mt-10">
+                <div class="mb-4 flex items-center">
+                    <label for="model" class="block text-xl font-medium text-gray-700 w-40">รุ่น :</label>
+                    <div>{{ vehicle.model }}</div>
+                </div>
+                <div class="mb-4 flex items-center">
+                    <label for="price" class="block text-lg font-medium text-gray-700 w-40">ราคาต่อไร :</label>
+                    <div>{{ vehicle.price }} บาท</div>
+                </div>
+                <div class="mb-4">
+                    <label for="harvest_areas" class="block text-lg font-medium text-gray-700">พื้นที่เก็บเกี่ยว :</label>
+                    <div class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 sm:text-md bg-gray-50">
+                        {% for area in harvest_areas %}
+                            <div class="mb-2">
+                                <div class="flex items-center">
+                                    <label class="block text-sm font-medium text-gray-700 w-40">พื้นที่</label>
+                                    <div class="text-xs">จ.{{ area.province }} ,อ.{{ area.district }}, ต.{{ area.subdistrict }}</div>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <label class="block text-sm font-medium text-gray-700 w-40">รายละเอียด :</label>
+                                    <div class="text-xs">{{ area.details }}</div>
+                                </div>
+                                <div class="flex items-center">
+                                    <label class="block text-sm font-medium text-gray-700 w-40">วันทำการ :</label>
+                                    <div class="text-xs">{{ area.start_date|date:"j F Y" }} - {{ area.end_date|date:"j F Y" }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="mb-4 flex items-center">
+                    <label for="min_acres" class="block text-lg font-medium text-gray-700 w-40">ขั้นต่ำที่รับเกี่ยว :</label>
+                    <div>{{ vehicle.min_acres }} ไร่</div>
+                </div>
+                <div class="mb-4 flex items-center">
+                    <label for="max_acres_per_day" class="block text-lg font-medium text-gray-700 w-40">จำนวนที่รับต่อวัน :</label>
+                    <div>{{ vehicle.max_acres_per_day }} ไร่</div>
+                </div>
+                <div class="mb-4 flex items-center">
+                    <label for="power" class="block text-lg font-medium text-gray-700 w-40">กำลังเครื่อง :</label>
+                    <div>{{ detail.power }}</div>
+                </div>
+                <div class="mb-4">
+                    <label for="details" class="block text-lg font-medium text-gray-700">รายละเอียดรถ :</label>
+                    <textarea class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-100 focus:border-indigo-500 md:text-xl" readonly>{{ detail.details }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+    var currentIndex = 0;
+    var items = $('.carousel-item');
+    var itemAmt = items.length;
+
+    function cycleItems() {
+        var item = $('.carousel-item').eq(currentIndex);
+        items.hide();
+        item.css('display','block');
+    }
+
+    $('#next').click(function() {
+        currentIndex += 1;
+        if (currentIndex > itemAmt - 1) {
+            currentIndex = 0;
+        }
+        cycleItems();
+    });
+
+    $('#prev').click(function() {
+        currentIndex -= 1;
+        if (currentIndex < 0) {
+            currentIndex = itemAmt - 1;
+        }
+        cycleItems();
+    });
+
+    cycleItems();
+});
+</script>
+{% endblock %}

@@ -126,7 +126,7 @@ def user_login(request):
                 elif 'farmer' in [group.name for group in user.groups.all()]:
                     return redirect('home_farmer')
                 elif 'driver' in [group.name for group in user.groups.all()]:
-                    return redirect('home_driver')
+                    return redirect('driver_dashboard')
                 else:
                     return redirect('home')
             else:

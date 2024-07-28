@@ -16,7 +16,14 @@ urlpatterns = [
     path('get_harvest_areas/', get_harvest_areas, name='get_harvest_areas'),
     path('update_harvest_area/<int:area_id>/', update_harvest_area, name='update_harvest_area'),
     path('delete_harvest_area/<int:area_id>/', delete_harvest_area, name='delete_harvest_area'),
+    path('dashboard/', driver_dashboard, name='driver_dashboard'),
+    path('detail/<int:event_id>/', booking_detail, name='booking_detail'),
+    path('vehicle_detail/', vehicle_detail, name='vehicle_detail'),
+    path('view_vehicle/<int:driver_id>/', view_vehicle_detail, name='view_vehicle_detail'),
+
 ]
+
+
 
  
 

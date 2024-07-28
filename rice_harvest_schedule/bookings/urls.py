@@ -12,4 +12,6 @@ urlpatterns = [
     path('get_districts/', get_districts, name='get_districts'),
     path('get_subdistricts/', get_subdistricts, name='get_subdistricts'),
     path('get_available_dates/', get_available_dates, name='get_available_dates'),
+
+    
 ]

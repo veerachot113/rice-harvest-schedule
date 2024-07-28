@@ -51,6 +51,7 @@
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">เวลานัดหมาย</th>
                         <th class="py-2 px-4 border-b">สถานะคำขอ</th>
+                        <th class="py-2 px-4 border-b">ดูตาราง</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -87,6 +88,14 @@
                                 href="{% url 'cancel_booking' booking.id %}">Cancel</a>
                         </td>
                         {% endif %}
+                        <td class="text-center">
+                            {% if booking.request_status == "Accepted" %}
+                            <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded text-white"
+                                href="{% url 'get_schedule' booking.vehicle.driver.id %}">ดูตาราง</a>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -109,6 +118,7 @@
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">เวลานัดหมาย</th>
                         <th class="py-2 px-4 border-b">สถานะคำขอ</th>
+                        <th class="py-2 px-4 border-b">ดูตาราง</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -138,6 +148,7 @@
                             <a class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded text-white"
                                 href="{% url 'cancel_booking' booking.id %}">Cancel</a>
                         </td>
+                        <td class="text-center">-</td>
                     </tr>
                     {% endif %}
                     {% endfor %}
@@ -162,6 +173,7 @@
                         <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
                         <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
                         <th class="py-2 px-4 border-b">สถานะคำขอ</th>
+                        <th class="py-2 px-4 border-b">ดูตาราง</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -179,6 +191,10 @@
                         <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
                         <td class="text-green-500 font-bold text-center">{{ booking.request_status }}</td>
+                        <td class="text-center">
+                            <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded text-white"
+                                href="{% url 'get_schedule' booking.vehicle.driver.id %}">ดูตาราง</a>
+                        </td>
                     </tr>
                     {% endif %}
                     {% endfor %}
@@ -203,6 +219,7 @@
                         <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
                         <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
                         <th class="py-2 px-4 border-b">สถานะคำขอ</th>
+                        <th class="py-2 px-4 border-b">ดูตาราง</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -220,6 +237,7 @@
                         <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
                         <td class="text-red-500 font-bold text-center">{{ booking.request_status }}</td>
+                        <td class="text-center">-</td>
                     </tr>
                     {% endif %}
                     {% endfor %}
@@ -229,4 +247,3 @@
     </div>
 </div>
 {% endblock %}
-
