@@ -1,21 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}
+เลือกการสมัคร
+{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Website Title</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Tailwind CSS -->
+{% block flowbite %}
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-</head>
-
-<body class="bg-emerald-600">
+{% endblock %}
+{% block content %}
+<body class="bg-white relative">
     <div class="grid justify-items-center mt-[5cm] text-3xl font-bold">
 
 
@@ -27,7 +21,7 @@
                     <div class="card-body text-center">
                         <h1 class="card-title">ชาวนา</h1>
                         <div class="link-div">
-                            Go to ชาวนา
+                            สมัครสมาชิกเป็นชาวนา
                         </div>
                     </div>
                 </a>
@@ -36,17 +30,13 @@
                     <div class="card-body text-center">
                         <h1 class="card-title">คนขับรถเกี่ยวนวดข้าว</h1>
                         <div class="link-div">
-                            Go to คนขับรถ
+                            สมัครสมาชิกคนขับรถเกี่ยวนวดข้าว
                         </div>
                     </div>
                 </a>
             </div>
-            <h4 class="text-center mt-10 mb-5">มีบัญชีอยู่แล้ว? <a href="{% url 'login' %}"
-                    class="text-emerald-600">เข้าสู่ระบบ</a></h4>
+            <h4 class="text-center mt-10 mb-5">มีบัญชีอยู่แล้ว? <a href="{% url 'login' %}"class="text-emerald-600">เข้าสู่ระบบ</a></h4>
         </div>
     </div>
 
-
-</body>
-
-</html>
+    {% endblock %}

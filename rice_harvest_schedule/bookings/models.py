@@ -11,7 +11,7 @@ class Booking(models.Model):
     quantity = models.IntegerField()
     phone = models.CharField(max_length=15)
     details = models.TextField(blank=True, null=True)
-    request_status = models.CharField(max_length=30, default="Pending")
+    request_status = models.CharField(max_length=30, default="รอดำเนินการ")
     appointment_start_date = models.DateTimeField(null=True, blank=True)
     appointment_end_date = models.DateTimeField(null=True, blank=True)
     province = models.CharField(max_length=100, default='')

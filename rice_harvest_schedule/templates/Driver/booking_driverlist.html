@@ -1,8 +1,12 @@
+<!-- booking_driver.html -->
 {% extends "base.html" %}
 {% block flowbite %}
 <!-- Flowbite -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 {% endblock %}
 {% block content %}
 
@@ -16,7 +20,7 @@
         <li class="me-2" role="presentation">
             <button class="inline-block p-4 border-b-2 rounded-t-lg focus:bg-transparent focus:outline-none"
                 id="profile-styled-tab" data-tabs-target="#styled-profile" type="button" role="tab"
-                aria-controls="profile" aria-selected="false">รออนุมัติ</button>
+                aria-controls="profile" aria-selected="false">รอดำเนินการ</button>
             <span class="badge badge-primary mx-2">{{ no_of_pending_request }}</span>
         </li>
         <li class="me-2" role="presentation">
@@ -53,7 +57,7 @@
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    {% if booking.request_status == "Pending" %}
+                    {% if booking.request_status == "รอดำเนินการ" %}
                     <tr class="bg-gray border-b">
                         <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
                         <td class="px-5 py-4 text-center">{{ booking.fullname }}</td>
@@ -96,7 +100,7 @@
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    {% if booking.request_status == "Accepted" %}
+                    {% if booking.request_status == "อนุมัติแล้ว" %}
                     <tr class="bg-gray border-b">
                         <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
                         </th>
@@ -137,7 +141,7 @@
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    {% if booking.request_status == "Declined" %}
+                    {% if booking.request_status == "ปฏิเสธ" %}
                     <tr class="bg-gray border-b">
                         <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
                         </th>
@@ -191,11 +195,11 @@
                             </div>
                             <div class="mb-4">
                                 <label class="block mb-2 text-sm font-medium text-gray-700">เวลาเริ่มต้น :</label>
-                                <input type="time" id="event-start-time" name="start_time" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                                <input type="text" id="event-start-time" name="start_time" class="flatpickr w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
                             </div>
                             <div class="mb-6">
                                 <label class="block mb-2 text-sm font-medium text-gray-700">เวลาเสร็จสิ้น :</label>
-                                <input type="time" id="event-end-time" name="end_time" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+                                <input type="text" id="event-end-time" name="end_time" class="flatpickr w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
                             </div>
                             <div class="flex justify-between">
                                 <button type="button" id="cancel-button" class="px-4 py-2 font-bold text-white bg-red-500 rounded-md hover:bg-red-700 focus:outline-none focus:ring focus:border-red-300">ยกเลิก</button>
@@ -218,13 +222,30 @@ $(document).ready(function() {
         $('#event-title').val('');
         $('#event-details').val('');
         $('#event-start-time').val('');
-        $('#event-end-time').val('');
+        $('#event-end-time').val('23:59');
         $('#event-modal').removeClass('hidden');
     });
 
     // Close modal
     $('#close-modal, #cancel-button').on('click', function() {
         $('#event-modal').addClass('hidden');
+    });
+
+    // Initialize Flatpickr
+    flatpickr("#event-start-time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true
+    });
+
+    flatpickr("#event-end-time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        defaultHour: 23,
+        defaultMinute: 59
     });
 
     // Handle form submission
@@ -256,7 +277,8 @@ $(document).ready(function() {
         });
     });
 });
-
 </script>
 
 {% endblock %}
+
+

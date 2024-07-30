@@ -1,17 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driver Schedule</title>
+<!-- schedule.html -->
+{% extends "home.html" %}
+{% block title %}
+ตารางงาน
+{% endblock %}
+
+{% block flowbite %}
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
-</head>
+    {% endblock %}
+
+    {% block main %}
 <body style="font-family: 'K2D', sans-serif;">
     <div class="max-w-sm mx-auto">
-        <div class="text-xl text-center font-extrabold mt-5 mb-5 bg-green-200 p-3 rounded-md border border-1 border-gray-400 shadow-lg">
+        <div class="text-xl text-center font-extrabold mt-24 mb-2 p-3  rounded-md border border-1 border-gray-400 shadow-lg">
             <i class="fa-solid fa-calendar-days"></i>&nbsp;&nbsp; ตารางรถเกี่ยวนวดข้าว
         </div>
     </div>
@@ -195,5 +198,4 @@
             updateOngoingEvents();
         });
     </script>
-</body>
-</html>
+{% endblock %}

@@ -1,12 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}
+เข้าสู่ระบบ
+{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login & Registration Form</title>
+{% block flowbite %}
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+{% block content %}
     <style>
         .alert-hide {
             opacity: 0;
@@ -18,8 +19,8 @@
 </head>
 
 <body>
-    <div class="bg-emerald-600 min-h-screen flex items-center justify-center">
-        <div class="container mx-auto w-96 bg-white rounded-lg shadow-lg p-8">
+    <div class="bg-white min-h-screen flex items-center justify-center">
+        <div class="container mx-auto w-96 bg-white rounded-lg shadow-xl p-8 border border-10">
             <header class="text-2xl font-semibold text-center mb-6">เข้าสู่ระบบ</header>
             {% if messages %}
             <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 mt-20 space-y-4">
@@ -55,7 +56,7 @@
             <form action="{% url 'login' %}" method="post" class="space-y-4">
                 {% csrf_token %}
 
-                <label for="username" class="block text-emerald-600">Username:
+                <label for="username" class="block text-emerald-600">ชื่อผู้ใช้:
                     <input type="text" name="username" placeholder="Username" required class="inline-block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-black text-black">
                 </label>
 
@@ -74,7 +75,7 @@
                 <div class="flex justify-between">
                     <a href="{% url 'password_reset' %}" class="text-emerald-600 text-sm">ลืมรหัสผ่าน?</a>
                 </div>
-                <button type="submit" class="block w-full bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 transition duration-300">Login</button>
+                <button type="submit" class="block w-full bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 transition duration-300">เข้าสู่ระบบ</button>
             </form>
             <div class="text-center mt-4">
                 <span class="text-black-600">ยังไม่มีบัญชีผู้ใช้ <a href="{% url 'chooserole' %}" class="font-semibold hover:underline text-emerald-600">ลงทะเบียน</a></span>
@@ -120,6 +121,4 @@
             }
         }
     </script>
-</body>
-
-</html>
+{% endblock %}

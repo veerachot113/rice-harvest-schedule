@@ -4,7 +4,7 @@ import json
 import math
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.timezone import make_aware, get_current_timezone
 from .models import Booking
 from .forms import BookingForm
@@ -13,7 +13,10 @@ from accounts.decorators import farmer_required, driver_required
 from django.utils.dateparse import parse_date
 from drivers.models import Vehicle, CalendarEvent, HarvestArea
 from drivers.forms import CalendarEventForm
+from auth_admin.models import DriverDocument
 
+def check_is_staff(user):
+    return user.is_staff
 
 @farmer_required
 @login_required
@@ -130,7 +133,7 @@ def accept_booking(request, booking_id):
         end_datetime = datetime.combine(end_date, end_time)
 
         booking.appointment_end_date = end_datetime
-        booking.request_status = "Accepted"
+        booking.request_status = "อนุมัติแล้ว"
         booking.save()
 
         # Create a calendar event
@@ -151,7 +154,7 @@ def accept_booking(request, booking_id):
 def decline_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     if request.method == 'POST':
-        booking.request_status = "Declined"
+        booking.request_status = "ปฏิเสธ"
         booking.request_responded_by = request.user.username
         booking.save()
         return redirect('driver_booking_list')
@@ -159,20 +162,23 @@ def decline_booking(request, booking_id):
 @login_required
 def cancel_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
-    if booking.farmer == request.user and booking.request_status == "Pending":
+    if booking.farmer == request.user and booking.request_status == "รอดำเนินการ":
         booking.delete()
     return redirect('farmer_booking_list')
 
 @login_required
 def farmer_booking_list(request):
     bookings = Booking.objects.filter(farmer=request.user)
-    return render(request, 'Farmer/booking_farmerlist.html', {'bookings': bookings})
+    return render(request, 'farmer/booking_farmerlist.html', {'bookings': bookings})
 
 @login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def driver_booking_list(request):
     no_of_pending_request = count_pending_rent_request(request.user)
+    no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
     bookings = Booking.objects.filter(vehicle__driver=request.user)
-    return render(request, 'Driver/booking_driverlist.html', {'bookings': bookings, 'no_of_pending_request': no_of_pending_request})
+    return render(request, 'driver/booking_driverlist.html', {'bookings': bookings, 'no_of_pending_request': no_of_pending_request,'no_of_pending_documents': no_of_pending_documents})
+
 
 @login_required
 def get_available_dates(request):
@@ -214,6 +220,6 @@ def count_pending_rent_request(driver):
     no_of_pending_request = 0
     bookings = Booking.objects.filter(vehicle__driver=driver)
     for booking in bookings:
-        if booking.request_status == "Pending":
+        if booking.request_status == "รอดำเนินการ":
             no_of_pending_request += 1
     return no_of_pending_request

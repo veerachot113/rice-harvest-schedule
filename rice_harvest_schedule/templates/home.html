@@ -1,8 +1,8 @@
-<!-- home.html -->
 {% extends "base.html" %}
 {% load static %}
 
 {% block car %}
+{% block content %}
 <div class="w-full text-black py-10 mt-20 relative">
     <div class="container mx-auto text-center">
         <h1 class="text-4xl font-bold mb-10">แนะนำรถเกี่ยวข้าว</h1>
@@ -10,20 +10,22 @@
 </div>
 
 <div class="container-fluid w-full">
-    <div class="bg-white p-6 rounded-lg shadow-2xl w-full flex flex-col md:flex-row justify-between items-center md:space-x-4 px-4">
-        <h2 class="text-2xl font-bold text-gray-800">ปรเภทรถเกี่ยวนวดข้าว</h2>
-        <div class="list-feature flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 items-center">
-            <div class="list-checkbox flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                <div class="form-checkbox flex items-center space-x-2">
-                    <input id="type_sack" type="checkbox" value="แบบรองกระสอบ" class="form-checkbox h-4 w-4 text-blue-600">
-                    <label for="type_sack" class="text-gray-700"><span class="checkbox"></span>แบบรองกระสอบ</label>
+    <form method="post" action="{% url 'home' %}">
+        {% csrf_token %}
+        <div class="bg-white p-6 rounded-lg shadow-2xl w-full flex flex-col md:flex-row justify-between items-center md:space-x-4 px-4">
+            <h2 class="text-2xl font-bold text-gray-800">ปรเภทรถเกี่ยวนวดข้าว</h2>
+            <div class="list-feature flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 items-center">
+                <div class="list-checkbox flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                    <div class="form-checkbox flex items-center space-x-2">
+                        <input id="type_sack" name="vehicle_type" type="checkbox" value="แบบรองกระสอบ" class="form-checkbox h-4 w-4 text-blue-600">
+                        <label for="type_sack" class="text-gray-700"><span class="checkbox"></span>แบบรองกระสอบ</label>
+                    </div>
+                    <div class="form-checkbox flex items-center space-x-2">
+                        <input id="type_tank" name="vehicle_type" type="checkbox" value="แบบถังอุ้ม" class="form-checkbox h-4 w-4 text-blue-600">
+                        <label for="type_tank" class="text-gray-700"><span class="checkbox"></span>แบบถังอุ้ม</label>
+                    </div>
                 </div>
-                <div class="form-checkbox flex items-center space-x-2">
-                    <input id="type_tank" type="checkbox" value="แบบถังอุ้ม" class="form-checkbox h-4 w-4 text-blue-600">
-                    <label for="type_tank" class="text-gray-700"><span class="checkbox"></span>แบบถังอุ้ม</label>
-                </div>
-            </div>
-            <select id="province_select" class="form-input p-2 border border-gray-300 rounded-lg shadow-sm">
+                <select id="province_select" name="province_select" class="form-input p-2 border border-gray-300 rounded-lg shadow-sm">
                     <option value="">เลือกจังหวัด</option>
                     <option value="กรุงเทพมหานคร">กรุงเทพมหานคร</option>
                     <option value="กระบี่">กระบี่</option>
@@ -102,13 +104,15 @@
                     <option value="อุทัยธานี">อุทัยธานี</option>
                     <option value="อุบลราชธานี">อุบลราชธานี</option>
                 </select>
-                
+            </div>
+            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 items-center">
+                <input type="month" id="start_month" name="start_month" class="form-input p-2 border border-gray-300 rounded-lg shadow-sm">
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">ค้นหา</button>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
-
+    
 <section class="w-full py-10 bg-gray-200">
     <div class="container mx-auto px-4 py-8">
         <div class="mx-auto grid max-w-6xl grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
@@ -124,7 +128,6 @@
                             <!-- Dropdown Menu -->
                             <div id="dropdownMenu{{ vehicle.id }}" class="hidden absolute right-0 mt-8 w-48 bg-white rounded-md shadow-lg z-10">
                                 <a href="{% url 'view_vehicle_detail' driver_id=vehicle.driver.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลรถเกี่ยว</a>
-
                                 <a href="{% url 'view_driver_profile' driver_id=vehicle.driver.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลเจ้าของรถ</a>
                             </div>
                         </div>
@@ -136,8 +139,7 @@
                             <p class="text-gray-600">ประเภท : {{ vehicle.type }}</p>
                             <p class="text-gray-600 ">ราคา : {{ vehicle.price }}</p>
                             <p class="text-gray-600 ">ขั้นต่ำที่รับเกี่ยว : {{ vehicle.min_acres }} ไร่</p>
-                            <!-- <p class="text-gray-600 ">จำนวนไร่ที่เกี่ยวได้ต่อวัน : {{ vehicle.max_acres_per_day }} ไร่</p>
-                            <p class="text-gray-600 mb-4">จังหวัด : {{ vehicle.province }}</p> -->
+                            <p class="text-gray-600 ">จังหวัด : {{ vehicle.province }}</p>
                             <!-- Booking Buttons -->
                             <div class="flex justify-center space-x-16 items-center mt-3">
                                 <a href="{% url 'get_schedule' driver_id=vehicle.driver.id %}" class="w-28 h-10 bg-blue-500 text-white text-xs font-bold uppercase rounded flex justify-center items-center hover:transform hover:scale-110 duration-300">ตารางการจอง</a>
@@ -204,4 +206,5 @@
     });
 </script>
 
+{% endblock %}
 {% endblock %}

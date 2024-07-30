@@ -9,15 +9,19 @@ from bookings.models import Booking
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware
-from datetime import datetime
-
+from django.utils import timezone
+from drivers.models import CalendarEvent
+from datetime import datetime, timedelta
+from auth_admin.models import DriverDocument
 import json
+
 def check_is_staff(user):
     return user.is_staff
 
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def add_vehicle(request):
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
     no_of_pending_request = count_pending_rent_request(request.user)
     existing_vehicle = Vehicle.objects.filter(driver=request.user).first()
     if request.method == 'POST':
@@ -29,7 +33,7 @@ def add_vehicle(request):
         if form.is_valid():
             form.instance.driver = request.user
             form.save()
-            return redirect('home_driver')
+            return redirect('add_vehicle')
     else:
         if existing_vehicle:
             form = VehicleForm(instance=existing_vehicle)
@@ -39,7 +43,8 @@ def add_vehicle(request):
     return render(request, 'Driver/add_vehicle.html', {
         'form': form,
         'existing_vehicle': existing_vehicle,
-        'no_of_pending_request': no_of_pending_request
+        'no_of_pending_request': no_of_pending_request,
+        'no_of_pending_documents': no_of_pending_documents
     })
 
 @login_required
@@ -48,15 +53,14 @@ def delete_vehicle(request, vehicle_id):
     vehicle = get_object_or_404(Vehicle, id=vehicle_id, driver=request.user)
     if request.method == 'POST':
         vehicle.delete()
-        return redirect('home_driver')
-    return render(request, 'Driver/confirm_delete.html', {'vehicle': vehicle})
-
+        return redirect('add_vehicle')
+    return redirect('add_vehicle')
 
 def count_pending_rent_request(driver):
     no_of_pending_request = 0
     bookings = Booking.objects.filter(vehicle__driver=driver)
     for booking in bookings:
-        if booking.request_status == "Pending":
+        if booking.request_status == "รอดำเนินการ":
             no_of_pending_request += 1
     return no_of_pending_request
 
@@ -64,18 +68,21 @@ def count_pending_rent_request(driver):
 def get_schedule(request, driver_id):
     driver = get_object_or_404(CustomUser, id=driver_id)
     harvest_areas = HarvestArea.objects.filter(driver=driver)
-    return render(request, 'Farmer/schedule.html', {'driver': driver, 'harvest_areas': harvest_areas})
+    return render(request, 'farmer/schedule.html', {'driver': driver, 'harvest_areas': harvest_areas}) 
+
 
 
 @login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def calendar_view(request):
+    no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
+    no_of_pending_request = Booking.objects.filter(request_status="รอดำเนินการ").count()
     harvest_areas = HarvestArea.objects.filter(driver=request.user)
-    return render(request, 'Driver/calendar.html', {'harvest_areas': harvest_areas})
-
-
-
+    return render(request, 'driver/calendar.html', {'harvest_areas': harvest_areas,'no_of_pending_request': no_of_pending_request ,'no_of_pending_documents': no_of_pending_documents})
 
 def get_calendar_events(request):
+    Booking.objects.filter(request_status="รอดำเนินการ").count()
+
     driver_id = request.GET.get('driver_id', request.user.id)
     events = CalendarEvent.objects.filter(driver_id=driver_id).values('id', 'title', 'details', 'start', 'end', 'farmer_id', 'driver_id')
     events_list = []
@@ -94,6 +101,7 @@ def get_calendar_events(request):
 
 @csrf_exempt
 @login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def add_calendar_event(request):
     if request.method == 'POST':
         title = request.POST.get('title')
@@ -117,6 +125,7 @@ def add_calendar_event(request):
 
 @csrf_exempt
 @login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def edit_calendar_event(request, event_id):
     if request.method == 'POST':
         event = get_object_or_404(CalendarEvent, id=event_id)
@@ -150,6 +159,7 @@ def edit_calendar_event(request, event_id):
 
 @csrf_exempt
 @login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def update_booking_dates(request, event_id):
     if request.method == 'POST':
         event = get_object_or_404(CalendarEvent, id=event_id)
@@ -178,6 +188,7 @@ def update_booking_dates(request, event_id):
 
 @csrf_exempt
 @login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def delete_calendar_event(request, event_id):
     if request.method == 'POST':
         event = get_object_or_404(CalendarEvent, id=event_id)
@@ -194,6 +205,7 @@ def get_harvest_areas(request):
     return JsonResponse(list(harvest_areas), safe=False)
 @csrf_exempt
 @login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def add_harvest_area(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -228,6 +240,7 @@ def add_harvest_area(request):
 
 @csrf_exempt
 @login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def update_harvest_area(request, area_id):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -268,26 +281,15 @@ def delete_harvest_area(request, area_id):
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
-
-
-from django.shortcuts import render
-from django.utils import timezone
-from bookings.models import Booking
-from drivers.models import CalendarEvent
-from datetime import datetime, timedelta
-from auth_admin.models import DriverDocument
-
-
-
-
+@login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def driver_dashboard(request):
-    no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()
+    no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
     no_of_pending_request = count_pending_rent_request(request.user)
     driver = request.user
 
     # Count pending booking requests
-    pending_bookings_count = Booking.objects.filter(vehicle__driver=driver, request_status="Pending").count()
+    pending_bookings_count = Booking.objects.filter(vehicle__driver=driver, request_status="รอดำเนินการ").count()
 
     # Get current date and time
     now = timezone.now()
@@ -308,7 +310,7 @@ def driver_dashboard(request):
         'no_of_pending_request': no_of_pending_request ,
         'no_of_pending_documents': no_of_pending_documents}
 
-    return render(request, 'Driver/dashboard.html', context)
+    return render(request, 'driver/dashboard.html', context)
 
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
@@ -329,7 +331,11 @@ def booking_detail(request, event_id):
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def vehicle_detail(request):
-    vehicle = get_object_or_404(Vehicle, driver=request.user)
+    vehicle = Vehicle.objects.filter(driver=request.user).first()
+    if not vehicle:
+        # ถ้าไม่มีรถที่เกี่ยวข้องกับผู้ใช้ ให้รีไดเรกต์ไปที่หน้าสำหรับเพิ่มรถ
+        return redirect('add_vehicle')
+
     try:
         detail = VehicleDetail.objects.get(vehicle=vehicle)
     except VehicleDetail.DoesNotExist:
@@ -357,12 +363,13 @@ def vehicle_detail(request):
         else:
             form = VehicleDetailForm()
 
-    return render(request, 'Driver/add_vehicle_detail.html', {
+    return render(request, 'driver/add_vehicle_detail.html', {
         'vehicle': vehicle,
         'detail': detail,
         'harvest_areas': harvest_area,
         'form': form
     })
+
 
 @login_required
 def view_vehicle_detail(request, driver_id):
@@ -374,7 +381,7 @@ def view_vehicle_detail(request, driver_id):
 
     harvest_areas = HarvestArea.objects.filter(driver_id=driver_id)
 
-    return render(request, 'Farmer/view_vehicle_detail.html', {
+    return render(request, 'farmer/view_vehicle_detail.html', {
         'vehicle': vehicle,
         'detail': detail,
         'harvest_areas': harvest_areas

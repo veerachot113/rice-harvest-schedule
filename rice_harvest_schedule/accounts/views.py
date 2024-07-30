@@ -16,7 +16,7 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmVie
 from django.urls import reverse_lazy
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
-
+from drivers.models import HarvestArea
 def get_backend(user):
     if user.user_type == 'farmer':
         return 'accounts.backends.UserFarmerBackend'
@@ -32,28 +32,56 @@ def custom_logout(request):
 
 @login_required
 def home_driver(request):
-    
-    no_of_pending_documents = DriverDocument.objects.filter(request_status="Pending").count()
+    no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
     no_of_pending_request = count_pending_rent_request(request.user)
-    vehicles = Vehicle.objects.filter(driver=request.user)
-    return render(request, 'Driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request ,'no_of_pending_documents': no_of_pending_documents})
+    vehicles = Vehicle.objects.all()  # แสดงรถทั้งหมด
+    return render(request, 'driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
+
 
 @login_required
 def home_farmer(request):
     vehicles = Vehicle.objects.all()
     return render(request, 'Farmer/home_farmer.html', {'vehicles': vehicles})
 
-def home(request):
+#ฟังก์การกรอกจังหวัด ประเภทรถ
+from datetime import datetime
+from collections import defaultdict
+
+def filter(request):
     vehicles = Vehicle.objects.all()
     if request.method == 'POST':
         selected_province = request.POST.get('province_select', None)
         selected_vehicle_types = request.POST.getlist('vehicle_type')
+        selected_start_month = request.POST.get('start_month', None)
+
         if selected_province:
             vehicles = vehicles.filter(province=selected_province)
         if selected_vehicle_types:
             vehicles = vehicles.filter(type__in=selected_vehicle_types)
 
+        # Filter by driver availability
+        if selected_start_month:
+            start_date = datetime.strptime(selected_start_month, "%Y-%m").date()
+            available_vehicles = []
+            driver_month_count = defaultdict(int)
+
+            for vehicle in vehicles:
+                harvest_areas = HarvestArea.objects.filter(driver=vehicle.driver)
+                for area in harvest_areas:
+                    if area.start_date <= start_date <= area.end_date:
+                        driver_month_count[vehicle.driver.id] += 1
+
+            if driver_month_count:
+                min_month_count = min(driver_month_count.values())
+                for vehicle in vehicles:
+                    if driver_month_count[vehicle.driver.id] == min_month_count:
+                        available_vehicles.append(vehicle)
+            
+            vehicles = available_vehicles
+
     return render(request, 'home.html', {'vehicles': vehicles})
+
+
 
 def useregister(request):
     return render(request, 'chooserole.html')
@@ -82,7 +110,7 @@ def register_farmer(request):
             messages.error(request, 'มีข้อผิดพลาดในการสมัครสมาชิก กรุณาตรวจสอบข้อมูลที่กรอก')
     else:
         form = UserFarmerRegistrationForm()
-    return render(request, 'Farmer/registerfarmer.html', {'form': form})
+    return render(request, 'farmer/registerfarmer.html', {'form': form})
 
 
 def register_driver(request):
@@ -109,7 +137,7 @@ def register_driver(request):
             messages.error(request, 'มีข้อผิดพลาดในการสมัครสมาชิก กรุณาตรวจสอบข้อมูลที่กรอก')
     else:
         form = UserDriverRegistrationForm()
-    return render(request, 'Driver/registerdriver.html', {'form': form})
+    return render(request, 'driver/registerdriver.html', {'form': form})
 
 
 def user_login(request):
@@ -167,6 +195,7 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 @login_required
 def profile_update(request):
     no_of_pending_request = count_pending_rent_request(request.user)
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
     form = None
     if 'farmer' in [group.name for group in request.user.groups.all()]:
         if request.method == 'POST':
@@ -185,8 +214,9 @@ def profile_update(request):
                 return redirect('profile_update')
         else:
             form = UserDriverUpdateForm(instance=request.user)
-        return render(request, 'profile_driver.html', {'form': form, 'no_of_pending_request': no_of_pending_request})
-
+        return render(request, 'profile_driver.html', {'form': form, 'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
+    
+@login_required
 def view_driver_profile(request, driver_id):
     no_of_pending_request = count_pending_rent_request(request.user)
     driver = get_object_or_404(CustomUser, id=driver_id, user_type='driver')
@@ -196,13 +226,13 @@ def view_driver_profile(request, driver_id):
         'is_vehicle_owner': is_vehicle_owner,
         'no_of_pending_request': no_of_pending_request,
     }
-    return render(request, 'Driver/driver_profile.html', context)
+    return render(request, 'driver/driver_profile.html', context)
 
 def count_pending_rent_request(user):
     no_of_pending_request = 0
     if 'driver' in [group.name for group in user.groups.all()]:
         bookings = Booking.objects.filter(vehicle__driver=user)
         for booking in bookings:
-            if booking.request_status == "Pending":
+            if booking.request_status == "รอดำเนินการ":
                 no_of_pending_request += 1
     return no_of_pending_request

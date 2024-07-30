@@ -76,20 +76,20 @@
                             N/A
                             {% endif %}
                         </td>
-                        {% if booking.request_status == "Accepted" %}
+                        {% if booking.request_status == "อนุมัติแล้ว" %}
                         <td class="text-green-500 font-bold text-center">
                             {{ booking.request_status }}
                         </td>
-                        {% elif booking.request_status == "Declined" %}
+                        {% elif booking.request_status == "ปฏิเสธ" %}
                         <td class="text-red-500 font-bold text-center">{{ booking.request_status }}</td>
-                        {% elif booking.request_status == "Pending" %}
-                        <td class="text-orange-600 font-bold text-center"> Pending
+                        {% elif booking.request_status == "รอดำเนินการ" %}
+                        <td class="text-orange-600 font-bold text-center"> รอดำเนินการ
                             <a class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded text-white"
-                                href="{% url 'cancel_booking' booking.id %}">Cancel</a>
+                                href="{% url 'cancel_booking' booking.id %}">ยกเลิก</a>
                         </td>
                         {% endif %}
                         <td class="text-center">
-                            {% if booking.request_status == "Accepted" %}
+                            {% if booking.request_status == "อนุมัติแล้ว" %}
                             <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded text-white"
                                 href="{% url 'get_schedule' booking.vehicle.driver.id %}">ดูตาราง</a>
                             {% else %}
@@ -123,7 +123,7 @@
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    {% if booking.request_status == "Pending" %}
+                    {% if booking.request_status == "รอดำเนินการ" %}
                     <tr class="bg-gray border-b">
                         <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
                         </th>
@@ -144,9 +144,9 @@
                             N/A
                             {% endif %}
                         </td>
-                        <td class="text-orange-600 font-bold text-center"> Pending
+                        <td class="text-orange-600 font-bold text-center"> รอดำเนินการ
                             <a class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded text-white"
-                                href="{% url 'cancel_booking' booking.id %}">Cancel</a>
+                                href="{% url 'cancel_booking' booking.id %}">ยกเลิก</a>
                         </td>
                         <td class="text-center">-</td>
                     </tr>
@@ -178,7 +178,7 @@
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    {% if booking.request_status == "Accepted" %}
+                    {% if booking.request_status == "อนุมัติแล้ว" %}
                     <tr class="bg-gray border-b">
                         <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
                         </th>
@@ -224,7 +224,7 @@
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    {% if booking.request_status == "Declined" %}
+                    {% if booking.request_status == "ปฏิเสธ" %}
                     <tr class="bg-gray border-b">
                         <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
                         </th>
