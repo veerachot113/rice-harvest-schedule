@@ -166,9 +166,13 @@ def cancel_booking(request, booking_id):
         booking.delete()
     return redirect('farmer_booking_list')
 
+
+
 @login_required
 def farmer_booking_list(request):
     bookings = Booking.objects.filter(farmer=request.user)
+    for booking in bookings:
+        booking.price = booking.vehicle.price * booking.quantity 
     return render(request, 'farmer/booking_farmerlist.html', {'bookings': bookings})
 
 @login_required
@@ -177,6 +181,8 @@ def driver_booking_list(request):
     no_of_pending_request = count_pending_rent_request(request.user)
     no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
     bookings = Booking.objects.filter(vehicle__driver=request.user)
+    for booking in bookings:
+        booking.price = booking.vehicle.price * booking.quantity 
     return render(request, 'driver/booking_driverlist.html', {'bookings': bookings, 'no_of_pending_request': no_of_pending_request,'no_of_pending_documents': no_of_pending_documents})
 
 

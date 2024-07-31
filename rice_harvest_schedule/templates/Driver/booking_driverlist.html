@@ -1,4 +1,3 @@
-<!-- booking_driver.html -->
 {% extends "base.html" %}
 {% block flowbite %}
 <!-- Flowbite -->
@@ -52,6 +51,7 @@
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
                         <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
+                        <th class="py-2 px-4 border-b">ราคา</th>
                         <th class="py-2 px-4 border-b">ดำเนินการ</th>
                     </tr>
                 </thead>
@@ -68,6 +68,7 @@
                         <td class="px-5 py-4 text-center">{{ booking.phone }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.price }}</td>
                         <td class="px-5 py-4 text-center">
                             <button type="button" class="bg-green-500 hover:bg-green-700 font-bold py-2 px-4 rounded open-accept-modal" data-id="{{ booking.id }}">อนุมัติ</button>
                             <a href="{% url 'decline_booking' booking.id %}" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ปฏิเสธ</a>
@@ -95,6 +96,7 @@
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
                         <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
+                        <th class="py-2 px-4 border-b">ราคา</th>
                         <th class="py-2 px-4 border-b">สถานะคำขอ</th>
                     </tr>
                 </thead>
@@ -112,6 +114,7 @@
                         <td class="px-5 py-4 text-center">{{ booking.phone }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.price }}</td>
                         <td class="text-green-500 font-bold text-center">{{ booking.request_status }}</td>
                     </tr>
                     {% endif %}
@@ -136,6 +139,7 @@
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
                         <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
+                        <th class="py-2 px-4 border-b">ราคา</th>
                         <th class="text-red-500 font-bold text-center">สถานะคำขอ</th>
                     </tr>
                 </thead>
@@ -153,6 +157,7 @@
                         <td class="px-5 py-4 text-center">{{ booking.phone }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.price }}</td>
                         <td class="text-red-500 font-bold text-center">{{ booking.request_status }}</td>
                     </tr>
                     {% endif %}
@@ -280,5 +285,3 @@ $(document).ready(function() {
 </script>
 
 {% endblock %}
-
-

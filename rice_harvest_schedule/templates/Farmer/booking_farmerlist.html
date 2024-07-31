@@ -50,6 +50,7 @@
                         <th class="py-2 px-4 border-b">รายละเอียด</th>
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">เวลานัดหมาย</th>
+                        <th class="py-2 px-4 border-b">ราคา</th>
                         <th class="py-2 px-4 border-b">สถานะคำขอ</th>
                         <th class="py-2 px-4 border-b">ดูตาราง</th>
                     </tr>
@@ -57,10 +58,8 @@
                 <tbody>
                     {% for booking in bookings %}
                     <tr class="bg-gray border-b">
-                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
-                        </th>
-                        <td class="px-5 py-4 text-center">{{ booking.vehicle.driver.first_name }}
-                            {{ booking.vehicle.driver.last_name }}</td>
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                        <td class="px-5 py-4 text-center">{{ booking.vehicle.driver.first_name }} {{ booking.vehicle.driver.last_name }}</td>
                         <td class="px-5 py-4 text-center">{{booking.vehicle.type }}</td>
                         <td class="px-5 py-4 text-center">{{booking.quantity }}</td>
                         <td class="px-5 py-4 text-center">{{booking.address }}</td>
@@ -76,22 +75,19 @@
                             N/A
                             {% endif %}
                         </td>
+                        <td class="px-5 py-4 text-center">{{ booking.price }}</td>
                         {% if booking.request_status == "อนุมัติแล้ว" %}
-                        <td class="text-green-500 font-bold text-center">
-                            {{ booking.request_status }}
-                        </td>
+                        <td class="text-green-500 font-bold text-center">{{ booking.request_status }}</td>
                         {% elif booking.request_status == "ปฏิเสธ" %}
                         <td class="text-red-500 font-bold text-center">{{ booking.request_status }}</td>
                         {% elif booking.request_status == "รอดำเนินการ" %}
                         <td class="text-orange-600 font-bold text-center"> รอดำเนินการ
-                            <a class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded text-white"
-                                href="{% url 'cancel_booking' booking.id %}">ยกเลิก</a>
+                            <a class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded text-white" href="{% url 'cancel_booking' booking.id %}">ยกเลิก</a>
                         </td>
                         {% endif %}
                         <td class="text-center">
                             {% if booking.request_status == "อนุมัติแล้ว" %}
-                            <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded text-white"
-                                href="{% url 'get_schedule' booking.vehicle.driver.id %}">ดูตาราง</a>
+                            <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded text-white" href="{% url 'get_schedule' booking.vehicle.driver.id %}">ดูตาราง</a>
                             {% else %}
                             -
                             {% endif %}
@@ -102,6 +98,7 @@
             </table>
         </div>
     </div>
+
     <!-- Pending -->
     <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-pending" role="tabpanel"
         aria-labelledby="pending-tab">
@@ -117,6 +114,7 @@
                         <th class="py-2 px-4 border-b">รายละเอียด</th>
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">เวลานัดหมาย</th>
+                        <th class="py-2 px-4 border-b">ราคา</th>
                         <th class="py-2 px-4 border-b">สถานะคำขอ</th>
                         <th class="py-2 px-4 border-b">ดูตาราง</th>
                     </tr>
@@ -125,10 +123,8 @@
                     {% for booking in bookings %}
                     {% if booking.request_status == "รอดำเนินการ" %}
                     <tr class="bg-gray border-b">
-                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
-                        </th>
-                        <td class="px-5 py-4 text-center">{{ booking.vehicle.driver.first_name }}
-                            {{ booking.vehicle.driver.last_name }}</td>
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
+                        <td class="px-5 py-4 text-center">{{ booking.vehicle.driver.first_name }} {{ booking.vehicle.driver.last_name }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.vehicle.type }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.quantity }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.address }}</td>
@@ -144,9 +140,9 @@
                             N/A
                             {% endif %}
                         </td>
+                        <td class="px-5 py-4 text-center">{{ booking.price }}</td>
                         <td class="text-orange-600 font-bold text-center"> รอดำเนินการ
-                            <a class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded text-white"
-                                href="{% url 'cancel_booking' booking.id %}">ยกเลิก</a>
+                            <a class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded text-white" href="{% url 'cancel_booking' booking.id %}">ยกเลิก</a>
                         </td>
                         <td class="text-center">-</td>
                     </tr>
@@ -156,6 +152,7 @@
             </table>
         </div>
     </div>
+
     <!-- Accepted -->
     <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-dashboard" role="tabpanel"
         aria-labelledby="dashboard-tab">
@@ -172,6 +169,7 @@
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
                         <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
+                        <th class="py-2 px-4 border-b">ราคา</th>
                         <th class="py-2 px-4 border-b">สถานะคำขอ</th>
                         <th class="py-2 px-4 border-b">ดูตาราง</th>
                     </tr>
@@ -180,8 +178,7 @@
                     {% for booking in bookings %}
                     {% if booking.request_status == "อนุมัติแล้ว" %}
                     <tr class="bg-gray border-b">
-                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
-                        </th>
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
                         <td class="px-5 py-4 text-center">{{ booking.fullname }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.vehicle.type }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.quantity }}</td>
@@ -190,10 +187,10 @@
                         <td class="px-5 py-4 text-center">{{ booking.phone }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.price }}</td>
                         <td class="text-green-500 font-bold text-center">{{ booking.request_status }}</td>
                         <td class="text-center">
-                            <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded text-white"
-                                href="{% url 'get_schedule' booking.vehicle.driver.id %}">ดูตาราง</a>
+                            <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded text-white" href="{% url 'get_schedule' booking.vehicle.driver.id %}">ดูตาราง</a>
                         </td>
                     </tr>
                     {% endif %}
@@ -202,6 +199,7 @@
             </table>
         </div>
     </div>
+
     <!-- Declined -->
     <div class="hidden p-2 rounded-lg bg-gray-50 dark:bg-gray-800 mx-10" id="styled-settings" role="tabpanel"
         aria-labelledby="settings-tab">
@@ -218,6 +216,7 @@
                         <th class="py-2 px-4 border-b">เบอร์โทร</th>
                         <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
                         <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
+                        <th class="py-2 px-4 border-b">ราคา</th>
                         <th class="py-2 px-4 border-b">สถานะคำขอ</th>
                         <th class="py-2 px-4 border-b">ดูตาราง</th>
                     </tr>
@@ -226,8 +225,7 @@
                     {% for booking in bookings %}
                     {% if booking.request_status == "ปฏิเสธ" %}
                     <tr class="bg-gray border-b">
-                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}
-                        </th>
+                        <th scope="row" class="px-4 py-2 text-center font-medium text-gray-900">{{ forloop.counter }}</th>
                         <td class="px-5 py-4 text-center">{{ booking.fullname }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.vehicle.type }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.quantity }}</td>
@@ -236,6 +234,7 @@
                         <td class="px-5 py-4 text-center">{{ booking.phone }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_start_date }}</td>
                         <td class="px-5 py-4 text-center">{{ booking.appointment_end_date }}</td>
+                        <td class="px-5 py-4 text-center">{{ booking.price }}</td>
                         <td class="text-red-500 font-bold text-center">{{ booking.request_status }}</td>
                         <td class="text-center">-</td>
                     </tr>
