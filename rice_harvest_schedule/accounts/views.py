@@ -168,6 +168,8 @@ from .forms import CustomPasswordChangeForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
+from django.contrib.auth import update_session_auth_hash
+
 @login_required
 def change_password(request):
     if request.method == 'POST':
@@ -176,7 +178,7 @@ def change_password(request):
             user = form.save()
             update_session_auth_hash(request, user) 
             messages.success(request, 'รหัสผ่านของคุณถูกเปลี่ยนเรียบร้อยแล้ว!')
-            return redirect('profile_update')
+            return redirect('change_password')  # Redirect to the same page to show the success message
         else:
             messages.error(request, 'โปรดแก้ไขข้อผิดพลาดที่ปรากฏด้านล่าง.')
     else:
