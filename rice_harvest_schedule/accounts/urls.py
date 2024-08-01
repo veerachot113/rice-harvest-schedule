@@ -15,6 +15,7 @@ urlpatterns = [
     path('home_farmer/', home_farmer, name='home_farmer'),
     path('profile/update/', profile_update, name='profile_update'),
     path('driver/<int:driver_id>/', view_driver_profile, name='view_driver_profile'),
+    path('change_password/', change_password, name='change_password'),
     path('password_reset/', CustomPasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='accounts/password_reset_done.html'), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),

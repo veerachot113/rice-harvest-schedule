@@ -331,6 +331,8 @@ def booking_detail(request, event_id):
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def vehicle_detail(request):
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_request = count_pending_rent_request(request.user)
     vehicle = Vehicle.objects.filter(driver=request.user).first()
     if not vehicle:
         # ถ้าไม่มีรถที่เกี่ยวข้องกับผู้ใช้ ให้รีไดเรกต์ไปที่หน้าสำหรับเพิ่มรถ
@@ -367,7 +369,9 @@ def vehicle_detail(request):
         'vehicle': vehicle,
         'detail': detail,
         'harvest_areas': harvest_area,
-        'form': form
+        'form': form,
+        'no_of_pending_request':no_of_pending_request,
+        'no_of_pending_documents':no_of_pending_documents
     })
 
 

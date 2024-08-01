@@ -83,3 +83,14 @@ class UserDriverUpdateForm(UserChangeForm):
         model = CustomUser
         fields = ['email', 'first_name', 'last_name', 'address', 'phone']
 
+
+from django import forms
+from django.contrib.auth.forms import PasswordChangeForm
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(label="รหัสผ่านเดิม", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    new_password1 = forms.CharField(label="รหัสผ่านใหม่", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    new_password2 = forms.CharField(label="ยืนยันรหัสผ่านใหม่", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+
+
