@@ -27,5 +27,6 @@ urlpatterns = [
     path('drivers/', include('drivers.urls')),
     path('bookings/', include('bookings.urls')),
     path('authadmin/', include('auth_admin.urls')),
+    
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 

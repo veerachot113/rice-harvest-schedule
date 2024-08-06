@@ -14,6 +14,10 @@ from django.utils.dateparse import parse_date
 from drivers.models import Vehicle, CalendarEvent, HarvestArea
 from drivers.forms import CalendarEventForm
 from auth_admin.models import DriverDocument
+from drivers.views import get_credentials, create_google_calendar_event
+from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
+
 
 def check_is_staff(user):
     return user.is_staff
@@ -76,9 +80,8 @@ def create_booking(request, vehicle_id):
 
 
 
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from .models import HarvestArea
+
+
 
 @login_required
 def get_districts(request):
@@ -93,64 +96,6 @@ def get_subdistricts(request):
     return JsonResponse(list(subdistricts), safe=False)
 
 @login_required
-def accept_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id)
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        details = request.POST.get('details')
-        start_time_str = request.POST.get('appointment_start_time')
-        end_time_str = request.POST.get('appointment_end_time')
-
-        if not start_time_str or not end_time_str:
-            return JsonResponse({'status': 'error', 'message': 'Start time and end time are required.'})
-
-        try:
-            start_time = datetime.strptime(start_time_str, '%H:%M').time()
-            end_time = datetime.strptime(end_time_str, '%H:%M').time()
-        except ValueError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid time format.'})
-
-        appointment_date = booking.appointment_start_date.date()
-
-        # Combine the date and time into a datetime object without timezone
-        start_datetime = datetime.combine(appointment_date, start_time)
-        end_datetime = datetime.combine(appointment_date, end_time)
-        booking.appointment_start_date = start_datetime
-
-        quantity = booking.quantity
-        max_acres_per_day = booking.vehicle.max_acres_per_day
-        threshold = 5
-        
-        # Calculate the number of days required
-        if quantity <= max_acres_per_day + threshold:
-            days_required = 1
-        else:
-            additional_acres = quantity - (max_acres_per_day + threshold)
-            days_required = math.ceil(additional_acres / max_acres_per_day) + 1
-
-        # Calculate the end date
-        end_date = appointment_date + timedelta(days=days_required - 1)
-        end_datetime = datetime.combine(end_date, end_time)
-
-        booking.appointment_end_date = end_datetime
-        booking.request_status = "อนุมัติแล้ว"
-        booking.save()
-
-        # Create a calendar event
-        CalendarEvent.objects.create(
-            driver=request.user,
-            title=title,
-            details=details,
-            start=start_datetime,
-            end=end_datetime,
-            farmer=booking.farmer
-        )
-
-        return JsonResponse({'status': 'success'})
-    else:
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
-
-@login_required
 def decline_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     if request.method == 'POST':
@@ -158,13 +103,22 @@ def decline_booking(request, booking_id):
         booking.request_responded_by = request.user.username
         booking.save()
         return redirect('driver_booking_list')
+    return redirect('driver_booking_list')  # Redirect to driver booking list if not POST
+
 
 @login_required
 def cancel_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id)
+    try:
+        booking = get_object_or_404(Booking, id=booking_id)
+    except Booking.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Booking not found.'})
+
     if booking.farmer == request.user and booking.request_status == "รอดำเนินการ":
         booking.delete()
-    return redirect('farmer_booking_list')
+        return redirect('farmer_booking_list')
+
+    return JsonResponse({'status': 'error', 'message': 'You are not authorized to cancel this booking or the booking is not in a pending status.'})
+
 
 
 
@@ -229,3 +183,132 @@ def count_pending_rent_request(driver):
         if booking.request_status == "รอดำเนินการ":
             no_of_pending_request += 1
     return no_of_pending_request
+
+
+
+
+
+
+
+
+# /////////////////////////////////////////////////////
+
+
+
+
+
+
+from drivers.views import update_google_calendar_event  
+def create_google_calendar_event(creds, event):
+    service = build('calendar', 'v3', credentials=creds)
+    event_result = service.events().insert(calendarId='primary', body=event).execute()
+    return event_result
+
+
+def accept_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        details = request.POST.get('details')
+        start_time_str = request.POST.get('appointment_start_time')
+        end_time_str = request.POST.get('appointment_end_time')
+
+        if not start_time_str or not end_time_str:
+            return JsonResponse({'status': 'error', 'message': 'Start time and end time are required.'})
+
+        try:
+            start_time = datetime.strptime(start_time_str, '%H:%M').time()
+            end_time = datetime.strptime(end_time_str, '%H:%M').time()
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid time format.'})
+
+        appointment_date = booking.appointment_start_date.date()
+
+        # Combine the date and time into a datetime object without timezone
+        start_datetime = datetime.combine(appointment_date, start_time)
+        end_datetime = datetime.combine(appointment_date, end_time)
+        booking.appointment_start_date = start_datetime
+
+        quantity = booking.quantity
+        max_acres_per_day = booking.vehicle.max_acres_per_day
+        threshold = 5
+        
+        # Calculate the number of days required
+        if quantity <= max_acres_per_day + threshold:
+            days_required = 1
+        else:
+            additional_acres = quantity - (max_acres_per_day + threshold)
+            days_required = math.ceil(additional_acres / max_acres_per_day) + 1
+
+        # Calculate the end date
+        end_date = appointment_date + timedelta(days=days_required - 1)
+        end_datetime = datetime.combine(end_date, end_time)
+
+        booking.appointment_end_date = end_datetime
+        booking.request_status = "อนุมัติแล้ว"
+        booking.save()
+
+        # Check if the calendar event already exists
+        calendar_event = CalendarEvent.objects.filter(driver=request.user, farmer=booking.farmer, start=start_datetime, end=end_datetime).first()
+        if calendar_event:
+            # Update existing event
+            calendar_event.title = title
+            calendar_event.details = details
+            calendar_event.save()
+            
+            # Update Google Calendar event
+            creds = get_credentials()
+            if not isinstance(creds, Flow):
+                google_event = {
+                    'summary': title,
+                    'description': details,
+                    'start': {'dateTime': start_datetime.isoformat(), 'timeZone': 'Asia/Bangkok'},
+                    'end': {'dateTime': end_datetime.isoformat(), 'timeZone': 'Asia/Bangkok'},
+                    'attendees': [{'email': request.user.email}, {'email': booking.farmer.email}],
+                    'reminders': {
+                        'useDefault': False,
+                        'overrides': [
+                            {'method': 'email', 'minutes': 5},
+                            {'method': 'popup', 'minutes': 5},
+                        ],
+                    },
+                }
+                update_google_calendar_event(creds, calendar_event.google_event_id, google_event)
+        else:
+            # Create a new calendar event
+            calendar_event = CalendarEvent.objects.create(
+                driver=request.user,
+                title=title,
+                details=details,
+                start=start_datetime,
+                end=end_datetime,
+                farmer=booking.farmer
+            )
+
+            # บันทึกลง Google Calendar
+            driver_email = request.user.email
+            farmer_email = booking.farmer.email
+            creds = get_credentials()
+            if not isinstance(creds, Flow):
+                google_event = {
+                    'summary': title,
+                    'description': details,
+                    'start': {'dateTime': start_datetime.isoformat(), 'timeZone': 'Asia/Bangkok'},
+                    'end': {'dateTime': end_datetime.isoformat(), 'timeZone': 'Asia/Bangkok'},
+                    'attendees': [{'email': driver_email}, {'email': farmer_email}],
+                    'reminders': {
+                        'useDefault': False,
+                        'overrides': [
+                            {'method': 'email', 'minutes': 5},
+                            {'method': 'popup', 'minutes': 5},
+                        ],
+                    },
+                }
+                event_result = create_google_calendar_event(creds, google_event)
+                calendar_event.google_event_id = event_result['id']
+                calendar_event.save()
+
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+

@@ -111,6 +111,7 @@ class CalendarEvent(models.Model):
     start = models.DateTimeField()
     end = models.DateTimeField()
     farmer = models.ForeignKey(CustomUser, on_delete=models.CASCADE ,related_name='events', null=True)
+    google_event_id = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.title

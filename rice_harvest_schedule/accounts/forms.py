@@ -63,6 +63,25 @@ class UserDriverRegistrationForm(UserCreationForm):
         model = CustomUser
         fields = ['username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'address', 'phone']
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError('อีเมลนี้มีอยู่แล้วในระบบ')
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if CustomUser.objects.filter(username=username).exists():
+            raise forms.ValidationError('ชื่อผู้ใช้นี้มีอยู่แล้วในระบบ')
+        return username
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError('รหัสผ่านไม่ตรงกัน')
+        return password2
+
 class UserFarmerUpdateForm(UserChangeForm):
     first_name = forms.CharField(max_length=100, required=True, label='ชื่อ')
     last_name = forms.CharField(max_length=100, required=True, label='นามสกุล')

@@ -20,10 +20,6 @@ urlpatterns = [
     path('detail/<int:event_id>/', booking_detail, name='booking_detail'),
     path('vehicle_detail/', vehicle_detail, name='vehicle_detail'),
     path('view_vehicle/<int:driver_id>/', view_vehicle_detail, name='view_vehicle_detail'),
+    path('oauth2callback/', oauth2callback, name='oauth2callback'),
 
 ]
-
-
-
- 
-

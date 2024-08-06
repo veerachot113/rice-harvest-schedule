@@ -71,7 +71,10 @@
                         <td class="px-5 py-4 text-center">{{ booking.price }}</td>
                         <td class="px-5 py-4 text-center">
                             <button type="button" class="bg-green-500 hover:bg-green-700 font-bold py-2 px-4 rounded open-accept-modal" data-id="{{ booking.id }}">อนุมัติ</button>
-                            <a href="{% url 'decline_booking' booking.id %}" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ปฏิเสธ</a>
+                            <form action="{% url 'decline_booking' booking.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded">ปฏิเสธ</button>
+                            </form>
                         </td>
                     </tr>
                     {% endif %}
@@ -140,7 +143,7 @@
                         <th class="py-2 px-4 border-b">วันที่เริ่มต้น</th>
                         <th class="py-2 px-4 border-b">วันที่สิ้นสุด</th>
                         <th class="py-2 px-4 border-b">ราคา</th>
-                        <th class="text-red-500 font-bold text-center">สถานะคำขอ</th>
+                        <th class="py-2 px-4 border-b">สถานะคำขอ</th>
                     </tr>
                 </thead>
                 <tbody>
