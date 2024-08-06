@@ -19,7 +19,7 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 # from auth_admin.admin import admin_site  # Import the custom admin site
-
+from drivers.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),  # Use the custom admin site
     # path("accounts/", include("allauth.urls")),
@@ -27,6 +27,7 @@ urlpatterns = [
     path('drivers/', include('drivers.urls')),
     path('bookings/', include('bookings.urls')),
     path('authadmin/', include('auth_admin.urls')),
+    path('oauth2callback/', oauth2callback, name='oauth2callback'),
     
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 

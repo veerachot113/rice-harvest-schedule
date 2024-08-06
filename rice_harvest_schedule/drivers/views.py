@@ -37,6 +37,8 @@ def get_credentials():
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
+            with open(TOKEN_FILE, 'wb') as token:
+                pickle.dump(creds, token)
         else:
             flow = Flow.from_client_secrets_file(
                 CREDENTIALS_FILE,
@@ -46,6 +48,7 @@ def get_credentials():
             auth_url, _ = flow.authorization_url(prompt='consent')
             return redirect(auth_url)
     return creds
+
 from requests import Request
 def oauth2callback(request):
     flow = Flow.from_client_secrets_file(
