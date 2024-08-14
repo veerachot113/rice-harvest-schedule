@@ -34,13 +34,13 @@ def custom_logout(request):
 def home_driver(request):
     no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
     no_of_pending_request = count_pending_rent_request(request.user)
-    vehicles = Vehicle.objects.all()  # แสดงรถทั้งหมด
+    vehicles = Vehicle.objects.filter(status=True)  # แสดงรถทั้งหมด
     return render(request, 'driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
 
 
 @login_required
 def home_farmer(request):
-    vehicles = Vehicle.objects.all()
+    vehicles = Vehicle.objects.filter(status=True)
     return render(request, 'Farmer/home_farmer.html', {'vehicles': vehicles})
 
 #ฟังก์การกรอกจังหวัด ประเภทรถ
@@ -48,7 +48,7 @@ from datetime import datetime
 from collections import defaultdict
 
 def filter(request):
-    vehicles = Vehicle.objects.all()
+    vehicles = Vehicle.objects.filter(status=True)
     if request.method == 'POST':
         selected_province = request.POST.get('province_select', None)
         selected_vehicle_types = request.POST.getlist('vehicle_type')
@@ -256,3 +256,5 @@ def count_pending_rent_request(user):
             if booking.request_status == "รอดำเนินการ":
                 no_of_pending_request += 1
     return no_of_pending_request
+
+

@@ -7,7 +7,7 @@
     <div class="bg-white rounded-3xl shadow-lg p-6 max-w-md w-full mx-auto justify-center mt-20 border border-10">
         <div class="form">
             <h1 class="text-center text-xl font-semibold mb-6">เพิ่มรถ</h1>
-            <div class="w-full h-28 border border-dashed border-gray-300 rounded-lg flex justify-center items-center ">
+            <div class="w-full h-28 border border-dashed border-gray-300 rounded-lg flex justify-center items-center">
                 <img id="preview" src="{% if existing_vehicle and existing_vehicle.image %}{{ existing_vehicle.image.url }}{% else %}#{% endif %}" alt="Preview" class="object-contain object-center max-w-full max-h-full">
             </div>
             <form enctype="multipart/form-data" method="POST" id="vehicle-form">
@@ -18,6 +18,13 @@
             {% if existing_vehicle %}
             <div class="flex justify-between" id="button-group">
                 <button id="edit-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded-md transition duration-300 w-full mr-2">แก้ไข</button>
+                <button id="toggle-status-btn" class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md transition duration-300 w-full mr-2">
+                    {% if existing_vehicle.status %}
+                        ปิดการให้บริการ
+                    {% else %}
+                        เปิดการให้บริการ
+                    {% endif %}
+                </button>
                 <form method="POST" action="{% url 'delete_vehicle' existing_vehicle.id %}" class="w-full ml-2" id="delete-form">
                     {% csrf_token %}
                     <button type="submit" class="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded-md transition duration-300 w-full">ลบรถ</button>
@@ -31,58 +38,73 @@
 </div>
 
 <script>
-    window.addEventListener("load", () => {
-        document.getElementById("id_image").addEventListener("change", showImg)
-    })
+document.addEventListener('DOMContentLoaded', function() {
+    const editBtn = document.getElementById('edit-btn');
+    const toggleStatusBtn = document.getElementById('toggle-status-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const confirmBtn = document.getElementById('confirm-btn');
+    const deleteForm = document.getElementById('delete-form');
+    const form = document.getElementById('vehicle-form');
+    const submitBtn = document.getElementById('submit-btn');
 
-    function showImg(e) {
-        let preview_cover = document.getElementById("preview");
-        let img = e.target.files[0]
-        preview_cover.src = URL.createObjectURL(img);
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const editBtn = document.getElementById('edit-btn');
-        const cancelBtn = document.getElementById('cancel-btn');
-        const confirmBtn = document.getElementById('confirm-btn');
-        const deleteForm = document.getElementById('delete-form');
-        const form = document.getElementById('vehicle-form');
-        const submitBtn = document.getElementById('submit-btn');
-
-        if (editBtn) {
-            editBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                form.querySelectorAll('input, select, textarea').forEach(function(input) {
-                    input.disabled = false;
-                });
-                editBtn.classList.add('hidden');
-                deleteForm.classList.add('hidden');
-                cancelBtn.classList.remove('hidden');
-                confirmBtn.classList.remove('hidden');
-                submitBtn.classList.add('hidden');
+    if (editBtn) {
+        editBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            form.querySelectorAll('input, select, textarea').forEach(function(input) {
+                input.disabled = false;
             });
+            editBtn.classList.add('hidden');
+            deleteForm.classList.add('hidden');
+            cancelBtn.classList.remove('hidden');
+            confirmBtn.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+        });
 
-            cancelBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                form.querySelectorAll('input, select, textarea').forEach(function(input) {
-                    input.disabled = true;
-                });
-                editBtn.classList.remove('hidden');
-                deleteForm.classList.remove('hidden');
-                cancelBtn.classList.add('hidden');
-                confirmBtn.classList.add('hidden');
-          
-            });
-
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
             form.querySelectorAll('input, select, textarea').forEach(function(input) {
                 input.disabled = true;
             });
+            editBtn.classList.remove('hidden');
+            deleteForm.classList.remove('hidden');
+            cancelBtn.classList.add('hidden');
             confirmBtn.classList.add('hidden');
-            submitBtn.classList.add('hidden');
-        }
-    });
+        });
+
+        form.querySelectorAll('input, select, textarea').forEach(function(input) {
+            input.disabled = true;
+        });
+        confirmBtn.classList.add('hidden');
+        submitBtn.classList.add('hidden');
+    }
+
+    if (toggleStatusBtn) {
+        toggleStatusBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const vehicleId = "{{ existing_vehicle.id }}";  // เก็บ id ของ vehicle
+            fetch("{% url 'toggle_vehicle_status' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ vehicle_id: vehicleId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const newStatus = data.new_status;
+                    toggleStatusBtn.textContent = newStatus ? 'ปิดการให้บริการ' : 'เปิดการให้บริการ';
+                } else {
+                    alert('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    }
+});
+
 </script>
 {% endblock %}
-
-
-

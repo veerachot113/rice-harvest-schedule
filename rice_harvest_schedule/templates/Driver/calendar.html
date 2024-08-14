@@ -176,9 +176,21 @@
 </div>
 <script>
 $(document).ready(function() {
+    function checkGoogleCalendarConnection() {
+        return $.ajax({
+            url: '/drivers/check_google_calendar/', // URL สำหรับเช็คสถานะการเชื่อมต่อ
+            type: 'GET',
+            async: false
+        }).responseJSON.connected;
+    }
+    
     $('#toggle-form').on('click', function () {
-        $('#data-entry-modal').removeClass('hidden');
-        $('#edit-index').val('');  // Clear the edit index when opening the form to add new entry
+        if (!checkGoogleCalendarConnection()) {
+            window.location.href = '/oauth2callback/'; // รีไดเร็กต์ไปยังหน้าเชื่อมต่อถ้ายังไม่ได้เชื่อม
+        } else {
+            $('#data-entry-modal').removeClass('hidden');
+            $('#edit-index').val('');  // Clear the edit index when opening the form to add new entry
+        }
     });
 
     $('#cancel-button').on('click', function () {
@@ -305,39 +317,42 @@ $(document).ready(function() {
     calendar.render();
 
     $('#event-form').on('submit', function(e) {
-        e.preventDefault();
+    e.preventDefault();
 
-        var id = $('#event-id').val();
-        var title = $('#event-title').val();
-        var details = $('#event-details').val();
-        var start = $('#event-start').val();
-        var end = $('#event-end').val();
+    var id = $('#event-id').val();
+    var title = $('#event-title').val();
+    var details = $('#event-details').val();
+    var start = $('#event-start').val();
+    var end = $('#event-end').val();
 
-        $.ajax({
-            url: id ? `/drivers/edit_calendar_event/${id}/` : `/drivers/add_calendar_event/`,
-            type: 'POST',
-            data: {
-                id: id,
-                title: title,
-                details: details,
-                start: start,
-                end: end,
-                csrfmiddlewaretoken: '{{ csrf_token }}'
-            },
-            success: function(response) {
-                if (response.status === 'success') {
-                    if (id) {
-                        updateBookingDates(id, start, end);
-                    }
-                    calendar.refetchEvents();
-                    $('#event-modal').addClass('hidden');
-                    updateOngoingEvents();
-                } else {
-                    alert(response.message);
-                }
+    $.ajax({
+        url: id ? `/drivers/edit_calendar_event/${id}/` : `/drivers/add_calendar_event/`,
+        type: 'POST',
+        data: {
+            id: id,
+            title: title,
+            details: details,
+            start: start,
+            end: end,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                calendar.refetchEvents();
+                $('#event-modal').addClass('hidden');
+                updateOngoingEvents();
+            } else if (response.status === 'redirect') {
+                window.location.href = response.url;  // รีไดเรกต์ไปยังหน้าเชื่อมต่อ Google Calendar
+            } else {
+                alert(response.message);
             }
-        });
+        },
+        error: function() {
+            alert("เกิดข้อผิดพลาด กรุณาลองอีกครั้ง");
+        }
     });
+});
+
 
     function updateBookingDates(eventId, start, end) {
         $.ajax({
@@ -369,27 +384,31 @@ $(document).ready(function() {
         $('#event-modal').addClass('hidden');
     });
 
-    $('#delete-button').on('click', function() {
-        var id = $('#event-id').val();
-        if (id) {
-            $.ajax({
-                url: `/drivers/delete_calendar_event/${id}/`,
-                type: 'POST',
-                data: {
-                    csrfmiddlewaretoken: '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    if (response.status === 'success') {
-                        calendar.refetchEvents();
-                        $('#event-modal').addClass('hidden');
-                        updateOngoingEvents();
-                    } else {
-                        alert(response.message);
-                    }
+// Handle delete event
+$('#delete-button').on('click', function() {
+    var id = $('#event-id').val();
+    if (id) {
+        $.ajax({
+            url: `/drivers/delete_calendar_event/${id}/`,
+            type: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    calendar.refetchEvents();
+                    $('#event-modal').addClass('hidden');
+                } else if (response.status === 'redirect') {
+                    window.location.href = response.url;  // รีไดเรกต์ไปยังหน้าเชื่อมต่อ Google Calendar
+                } else {
+                    alert(response.message);
                 }
-            });
-        }
-    });
+            }
+        });
+    }
+});
+
+
 
     function formatDate(dateString) {
         const date = new Date(dateString);

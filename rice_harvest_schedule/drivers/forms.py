@@ -7,8 +7,10 @@ class VehicleForm(forms.ModelForm):
 
     class Meta:
         model = Vehicle
-        fields = ['model', 'type', 'price', 'province', 'image', 'min_acres', 'max_acres_per_day']
-
+        fields = ['model', 'type', 'price', 'province', 'image', 'min_acres', 'max_acres_per_day','status']
+    def __init__(self, *args, **kwargs):
+        super(VehicleForm, self).__init__(*args, **kwargs)
+        self.fields['status'].widget = forms.HiddenInput()
 class CalendarEventForm(forms.ModelForm):
     class Meta:
         model = CalendarEvent

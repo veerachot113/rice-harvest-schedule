@@ -1,5 +1,5 @@
 #drivers/views.py
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import *
@@ -19,21 +19,31 @@ import pickle
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from requests import Request
+from google.auth.transport.requests import Request
+from django.http import HttpResponseRedirect
+
 def check_is_staff(user):
     return user.is_staff
-
-
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 CREDENTIALS_FILE = 'google_api/credentials.json'
 TOKEN_FILE = 'google_api/token.pickle'
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-from requests import Request
+
+@login_required
+@user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
+def check_google_calendar(request):
+    creds = get_credentials()
+    if isinstance(creds, HttpResponseRedirect):
+        return JsonResponse({'connected': False})
+    return JsonResponse({'connected': True})
+
 def get_credentials():
     creds = None
     if os.path.exists(TOKEN_FILE):
         with open(TOKEN_FILE, 'rb') as token:
             creds = pickle.load(token)
+
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -41,14 +51,16 @@ def get_credentials():
                 pickle.dump(creds, token)
         else:
             flow = Flow.from_client_secrets_file(
-                CREDENTIALS_FILE,
-                scopes=SCOPES,
+                CREDENTIALS_FILE, 
+                scopes=SCOPES, 
                 redirect_uri='http://localhost:8000/oauth2callback'
             )
             auth_url, _ = flow.authorization_url(prompt='consent')
-            return redirect(auth_url)
+            return HttpResponseRedirect(auth_url)
+    
     return creds
 
+from django.urls import reverse
 from requests import Request
 def oauth2callback(request):
     flow = Flow.from_client_secrets_file(
@@ -65,7 +77,14 @@ def oauth2callback(request):
         credentials = flow.credentials
         with open(TOKEN_FILE, 'wb') as token:
             pickle.dump(credentials, token)
-        return HttpResponse("Authorization completed. You can close this window.")
+
+        # ตรวจสอบว่ามี pending booking หรือไม่ ถ้ามีให้รีไดเรกต์กลับไปที่การยืนยันการจอง
+        if 'pending_booking' in request.session:
+            pending_booking = request.session['pending_booking']
+            return HttpResponseRedirect(reverse('accept_booking', args=[pending_booking['booking_id']]))
+        else:
+            return HttpResponseRedirect(reverse('calendar_view'))
+
     
 
 def create_google_calendar_event(creds, event, calendar_event):
@@ -91,11 +110,9 @@ def update_google_calendar_event(creds, event_id, event):
     updated_event = service.events().update(calendarId='primary', eventId=event_id, body=event_result).execute()
     return updated_event
 
-
 def delete_google_calendar_event(creds, event_id):
     service = build('calendar', 'v3', credentials=creds)
     service.events().delete(calendarId='primary', eventId=event_id).execute()
-
 
 def get_schedule(request, driver_id):
     driver = get_object_or_404(CustomUser, id=driver_id)
@@ -139,6 +156,11 @@ def add_calendar_event(request):
         end = datetime.fromisoformat(request.POST.get('end'))
         farmer_id = request.POST.get('farmer')
 
+        # ตรวจสอบว่ามีการเชื่อมต่อกับ Google Calendar หรือไม่
+        creds = get_credentials()
+        if isinstance(creds, HttpResponseRedirect):
+            return JsonResponse({'status': 'redirect', 'url': creds.url})  # ส่ง URL กลับไปยัง AJAX เพื่อรีไดเรกต์
+
         if CalendarEvent.objects.filter(driver=request.user, start__lt=end, end__gt=start).exists():
             return JsonResponse({'status': 'error', 'message': 'ช่วงเวลานี้มีงานแล้ว'})
 
@@ -151,33 +173,30 @@ def add_calendar_event(request):
             farmer_id=farmer_id
         )
 
-        # Create Google Calendar event
-        creds = get_credentials()
-        if not isinstance(creds, Flow):
-            google_event = {
-                'summary': title,
-                'description': details,
-                'start': {'dateTime': start.isoformat(), 'timeZone': 'Asia/Bangkok'},
-                'end': {'dateTime': end.isoformat(), 'timeZone': 'Asia/Bangkok'},
-                'reminders': {
-                    'useDefault': False,
-                    'overrides': [
-                        {'method': 'email', 'minutes': 5},  # เพิ่มการแจ้งเตือนผ่านอีเมล 5 นาทีก่อนเหตุการณ์
-                        {'method': 'popup', 'minutes': 5},  # เพิ่มการแจ้งเตือนผ่านป๊อปอัพ 5 นาทีก่อนเหตุการณ์
-                    ],
-                },
-            }
-            if farmer_id:
-                farmer = CustomUser.objects.get(id=farmer_id)
-                google_event['attendees'] = [{'email': request.user.email}, {'email': farmer.email}]
-            else:
-                google_event['attendees'] = [{'email': request.user.email}]
+        # สร้าง Google Calendar event
+        google_event = {
+            'summary': title,
+            'description': details,
+            'start': {'dateTime': start.isoformat(), 'timeZone': 'Asia/Bangkok'},
+            'end': {'dateTime': end.isoformat(), 'timeZone': 'Asia/Bangkok'},
+            'reminders': {
+                'useDefault': False,
+                'overrides': [
+                    {'method': 'email', 'minutes': 5},
+                    {'method': 'popup', 'minutes': 5},
+                ],
+            },
+        }
+        if farmer_id:
+            farmer = CustomUser.objects.get(id=farmer_id)
+            google_event['attendees'] = [{'email': request.user.email}, {'email': farmer.email}]
+        else:
+            google_event['attendees'] = [{'email': request.user.email}]
 
-            create_google_calendar_event(creds, google_event, event)
+        create_google_calendar_event(creds, google_event, event)
 
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
-
 
 @csrf_exempt
 @login_required
@@ -190,66 +209,64 @@ def edit_calendar_event(request, event_id):
         start = parse_datetime(request.POST.get('start'))
         end = parse_datetime(request.POST.get('end'))
 
+        # เช็คการเชื่อมต่อกับ Google Calendar
+        creds = get_credentials()
+        if isinstance(creds, HttpResponseRedirect):
+            return JsonResponse({'status': 'redirect', 'url': creds.url})  # ส่ง URL กลับไปยัง AJAX เพื่อรีไดเรกต์
+
+        # ตรวจสอบหากมีเหตุการณ์ที่ซ้อนทับกัน
         if CalendarEvent.objects.filter(driver=request.user, start__lt=end, end__gt=start).exclude(id=event_id).exists():
             return JsonResponse({'status': 'error', 'message': 'ช่วงเวลานี้มีงานแล้ว'})
 
+        # อัปเดตเหตุการณ์ในฐานข้อมูล
         event.title = title
         event.details = details
         event.start = start
         event.end = end
         event.save()
 
-        # Update Google Calendar event
-        creds = get_credentials()
-        if not isinstance(creds, Flow):
-            google_event = {
-                'summary': title,
-                'description': details,
-                'start': {'dateTime': start.isoformat(), 'timeZone': 'Asia/Bangkok'},
-                'end': {'dateTime': end.isoformat(), 'timeZone': 'Asia/Bangkok'},
-                'reminders': {
-                    'useDefault': False,
-                    'overrides': [
-                        {'method': 'email', 'minutes': 5},  # เพิ่มการแจ้งเตือนผ่านอีเมล 5 นาทีก่อนเหตุการณ์
-                        {'method': 'popup', 'minutes': 5},  # เพิ่มการแจ้งเตือนผ่านป๊อปอัพ 5 นาทีก่อนเหตุการณ์
-                    ],
-                },
-            }
-            if event.farmer:
-                google_event['attendees'] = [{'email': request.user.email}, {'email': event.farmer.email}]
-            else:
-                google_event['attendees'] = [{'email': request.user.email}]
-
-            update_google_calendar_event(creds, event.google_event_id, google_event)
-
-        # อัพเดทการจองที่เกี่ยวข้อง (ถ้ามี)
-        booking = Booking.objects.filter(
-            vehicle__driver=request.user,
-            appointment_start_date__lte=event.start,
-            appointment_end_date__gte=event.end,
-            farmer=event.farmer
-        ).first()
-        if booking:
-            booking.appointment_start_date = event.start
-            booking.appointment_end_date = event.end
-            booking.save()
+        # อัปเดตเหตุการณ์ใน Google Calendar
+        google_event = {
+            'summary': title,
+            'description': details,
+            'start': {'dateTime': start.isoformat(), 'timeZone': 'Asia/Bangkok'},
+            'end': {'dateTime': end.isoformat(), 'timeZone': 'Asia/Bangkok'},
+            'attendees': [{'email': request.user.email}],
+            'reminders': {
+                'useDefault': False,
+                'overrides': [
+                    {'method': 'email', 'minutes': 5},
+                    {'method': 'popup', 'minutes': 5},
+                ],
+            },
+        }
+        update_google_calendar_event(creds, event.google_event_id, google_event)
 
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
-
 
 @csrf_exempt
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def delete_calendar_event(request, event_id):
     if request.method == 'POST':
+        # เช็คการเชื่อมต่อกับ Google Calendar
+        creds = get_credentials()
+        if isinstance(creds, HttpResponseRedirect):
+            return JsonResponse({'status': 'redirect', 'url': creds.url})  # ส่ง URL กลับไปยัง AJAX เพื่อรีไดเรกต์
+
         event = get_object_or_404(CalendarEvent, id=event_id)
         
         # ลบเหตุการณ์จาก Google Calendar
         if event.google_event_id:
-            creds = get_credentials()
-            if not isinstance(creds, Flow):
+            try:
                 delete_google_calendar_event(creds, event.google_event_id)
+            except Exception as e:
+                # ตรวจสอบหากเกิดข้อผิดพลาดกรณีที่เหตุการณ์ถูกลบไปแล้ว
+                if "Resource has been deleted" in str(e):
+                    print(f"Event {event.google_event_id} already deleted from Google Calendar.")
+                else:
+                    return JsonResponse({'status': 'error', 'message': 'Failed to delete the event from Google Calendar.'})
 
         # ลบเหตุการณ์จากฐานข้อมูล
         event.delete()
@@ -294,6 +311,22 @@ def get_harvest_areas(request):
     return JsonResponse(list(harvest_areas), safe=False)
 
 
+from django.http import JsonResponse
+
+@login_required
+def toggle_vehicle_status(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        vehicle_id = data.get('vehicle_id')
+        vehicle = get_object_or_404(Vehicle, id=vehicle_id, driver=request.user)
+
+        # สลับสถานะ
+        vehicle.status = not vehicle.status
+        vehicle.save()
+
+        return JsonResponse({'status': 'success', 'new_status': vehicle.status})
+
+    return JsonResponse({'status': 'error'}, status=400)
 
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
@@ -454,7 +487,6 @@ def booking_detail(request, event_id):
     ).first()
     return render(request, 'booking/booking_detail.html', {'booking': booking, 'event': event})
 
-
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def vehicle_detail(request):
@@ -499,7 +531,6 @@ def vehicle_detail(request):
         'no_of_pending_request':no_of_pending_request,
         'no_of_pending_documents':no_of_pending_documents
     })
-
 
 @login_required
 def view_vehicle_detail(request, driver_id):

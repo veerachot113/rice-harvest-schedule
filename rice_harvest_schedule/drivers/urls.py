@@ -21,5 +21,6 @@ urlpatterns = [
     path('vehicle_detail/', vehicle_detail, name='vehicle_detail'),
     path('view_vehicle/<int:driver_id>/', view_vehicle_detail, name='view_vehicle_detail'),
     path('oauth2callback/', oauth2callback, name='oauth2callback'),
-
+    path('check_google_calendar/', check_google_calendar, name='check_google_calendar'),  # เส้นทางสำหรับเช็คสถานะการเชื่อมต่อ
+    path('toggle-vehicle-status/', toggle_vehicle_status, name='toggle_vehicle_status'),
 ]

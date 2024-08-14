@@ -70,14 +70,14 @@
                             <label for="price" class="block text-lg font-medium text-gray-700 w-40">ราคาต่อไร :</label>
                             <div >{{ vehicle.price }} บาท</div>
                         </div>
-                        <div class="mb-2">
+                        <!-- <div class="mb-2">
                             <label for="harvest_areas" class="block text-lg font-medium text-gray-700">พื้นที่เก็บเกี่ยว :</label>
                             <div class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-2 py-2 sm:text-md bg-gray-50">
                                 {% for area in harvest_areas %}
                                     <div>จ.{{ area.province }},ต.{{ area.district }},อ.{{ area.subdistrict }}:พื้นที่.{{ area.details }}</div>
                                 {% endfor %}
                             </div>
-                        </div>
+                        </div> -->
                         <div class="mb-2 flex items-center">
                             <label for="min_acres" class="block text-lg font-medium text-gray-700 w-40">ขั้นต่ำที่รับเกี่ยว :</label>
                             <div>{{ vehicle.min_acres }} ไร่</div>
@@ -102,10 +102,12 @@
                             <label for="image3" class="block text-sm font-medium text-gray-700">เพิ่มรูปภาพ 3 :</label>
                             <input type="file" id="image3" name="image3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-100 focus:border-indigo-500 sm:text-xl" disabled>
                         </div>
+                        
                         <div class="mb-2">
                             <label for="details" class="block text-sm font-medium text-gray-700">รายละเอียดรถ :</label>
                             <textarea id="details" name="details" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-100 focus:border-indigo-500 sm:text-xl" readonly>{{ detail.details }}</textarea>
                         </div>
+                        
                         <div class="flex justify-between mt-4">
                             <button type="button" id="edit-button" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md ml-28">แก้ไข</button>
                             <div class="flex justify-end">
@@ -149,17 +151,21 @@ $(document).ready(function(){
 
     cycleItems();
 
-    $('#edit-button').click(function() {
-        $('#power, #image1, #image2, #image3, #details').prop('readonly', false).prop('disabled', false).removeClass('bg-gray-50');
-        $('#edit-button').hide();
-        $('#save-button, #cancel-button').show();
-    });
+$('#edit-button').click(function() {
+    $('#power, #details').prop('readonly', false).removeClass('bg-gray-50');
+    $('#image1, #image2, #image3').prop('disabled', false);
+    $('#edit-button').hide();
+    $('#save-button, #cancel-button').show();
+});
 
-    $('#cancel-button').click(function() {
-        $('#power, #image1, #image2, #image3, #details').prop('readonly', true).prop('disabled', true).addClass('bg-gray-50');
-        $('#edit-button').show();
-        $('#save-button, #cancel-button').hide();
-    });
+$('#cancel-button').click(function() {
+    $('#power, #details').prop('readonly', true).addClass('bg-gray-50');
+    $('#image1, #image2, #image3').prop('disabled', true);
+    $('#edit-button').show();
+    $('#save-button, #cancel-button').hide();
+});
+
+
 });
 </script>
 

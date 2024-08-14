@@ -256,34 +256,38 @@ $(document).ready(function() {
         defaultMinute: 59
     });
 
-    // Handle form submission
-    $('#event-form').on('submit', function(e) {
-        e.preventDefault();
-        var bookingId = $('#event-id').val();
-        var title = $('#event-title').val();
-        var details = $('#event-details').val();
-        var startTime = $('#event-start-time').val();
-        var endTime = $('#event-end-time').val();
+// Handle form submission
+$('#event-form').on('submit', function(e) {
+    e.preventDefault();
+    var bookingId = $('#event-id').val();
+    var title = $('#event-title').val();
+    var details = $('#event-details').val();
+    var startTime = $('#event-start-time').val();
+    var endTime = $('#event-end-time').val();
 
-        $.ajax({
-            url: `/bookings/accept/${bookingId}/`,
-            type: 'POST',
-            data: {
-                title: title,
-                details: details,
-                appointment_start_time: startTime,
-                appointment_end_time: endTime,
-                csrfmiddlewaretoken: '{{ csrf_token }}'
-            },
-            success: function(response) {
-                if (response.status === 'success') {
-                    window.location.reload();
-                } else {
-                    alert('Error: ' + response.message);
-                }
+    $.ajax({
+        url: `/bookings/accept/${bookingId}/`,
+        type: 'POST',
+        data: {
+            title: title,
+            details: details,
+            appointment_start_time: startTime,
+            appointment_end_time: endTime,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                window.location.reload();
+            } else if (response.status === 'redirect') {
+                window.location.href = response.url;  // รีไดเรกต์ไปยังหน้าเชื่อมต่อ Google Calendar
+            } else {
+                alert('Error: ' + response.message);
             }
-        });
+        }
     });
+});
+
+
 });
 </script>
 

@@ -99,6 +99,7 @@ class Vehicle(models.Model):
     image = models.ImageField(upload_to='vehicle_images/',null=True, blank=True, verbose_name='รูปภาพรถ')
     min_acres = models.IntegerField(default='', verbose_name='ขั้นต่ำที่รับเกี่ยว (ไร่)')
     max_acres_per_day = models.IntegerField(default='', verbose_name='จำนวนไร่สูงสุดที่เกี่ยวได้ต่อวัน (ไร่)')
+    status = models.BooleanField(default=True, verbose_name='สถานะการให้บริการ')
 
 
     def __str__(self):
