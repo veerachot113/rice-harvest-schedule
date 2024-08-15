@@ -39,14 +39,28 @@
 <body class="bg-light h-screen overflow-hidden ">
     <div id="main" class="w-full min-h-full absolute pin-r flex flex-col overflow-y-auto max-h-screen">
         <nav id="navbar" class="fixed top-0 left-0 z-50 w-full border-b text-lg p-6 bg-white shadow-md flex flex-wrap justify-between items-center">
-            {% if user.is_authenticated %}
-            <button id="menu-switch" class="focus:outline-none">
-                <span class="fa fa-bars"></span>
-            </button>
-            {% endif %}
+            <div class="flex items-center">
+                {% if user.is_authenticated %}
+                    <button id="menu-switch" class="focus:outline-none">
+                        <span class="fa fa-bars"></span>
+                    </button>
+                {% endif %}
+                <div class="ml-4 text-xl font-bold">
+                    <a href="{% if user.groups.all.0.name == 'driver' %}
+                                {% url 'home_driver' %}
+                             {% elif user.groups.all.0.name == 'farmer' %}
+                                {% url 'home_farmer' %}
+                             {% else %}
+                                {% url 'home' %}
+                             {% endif %}" class="text-black hover:text-blue-700">
+                        จองง่าย ได้เกี่ยว
+                    </a>
+                </div>
+            </div>
+            
             <div class="flex-grow"></div>
             {% if user.is_authenticated %}
-            <button id="profile-menu" class="focus:outline-none flex items-center ">
+            <button id="profile-menu" class="focus:outline-none flex items-center">
                 <span class="fa fa-user-circle"></span>
                 <span class="ml-2">{{ user.username }}</span>
             </button>
@@ -80,6 +94,7 @@
                 </ul>
             </div>
         </nav>
+        
 
         {% block main %}{% block content %} {% block car %} {% block booking %}
         {% endblock %} {% endblock %}{% endblock %}{% endblock %}

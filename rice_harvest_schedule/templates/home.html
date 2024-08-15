@@ -5,7 +5,7 @@
 {% block content %}
 <div class="w-full text-black py-10 mt-20 relative">
     <div class="container mx-auto text-center">
-        <h1 class="text-4xl font-bold mb-10">แนะนำรถเกี่ยวข้าว</h1>
+        <h1 class="text-4xl font-bold mb-10 mt-4">แนะนำรถเกี่ยวข้าว</h1>
     </div>
 </div>
 
@@ -106,16 +106,22 @@
                 </select>
             </div>
             <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 items-center">
-                <input type="month" id="start_month" name="start_month" class="form-input p-2 border border-gray-300 rounded-lg shadow-sm">
+                <div class="flex flex-col">
+                    <label for="start_month" class="text-gray-800 font-medium ">ค้นหาตารางว่างของแต่ละเดือน</label>
+                    <input type="month" id="start_month" name="start_month" class="form-input p-2 border border-gray-300 rounded-lg shadow-sm">
+                </div>
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">ค้นหา</button>
             </div>
+            
         </div>
     </form>
 </div>
     
-<section class="w-full py-10 bg-gray-200">
-    <div class="container mx-auto px-4 py-8">
-        <div class="mx-auto grid max-w-6xl grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+<section class="w-full py-10 bg-gray-100">
+    <!-- <div class="container mx-auto px-4 py-3 "> -->
+        <!-- <div class="mx-auto grid max-w-full grid-cols-1 gap-8 p-8 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4"> -->
+        <div class="mx-auto grid max-w-7xl  grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <!-- <div class="mx-auto grid max-w-6xl grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3"> -->
             {% for vehicle in vehicles %}
                 <article class="rounded-xl bg-white p-3 shadow-lg hover:shadow-xl hover:transform hover:scale-95 duration-300"
                          data-province="{{ vehicle.province }}">
@@ -150,7 +156,7 @@
                 </article>
             {% endfor %}
         </div>
-    </div>
+    <!-- </div> -->
 </section>
 
 <script>
