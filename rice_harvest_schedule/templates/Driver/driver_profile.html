@@ -2,10 +2,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}
-    Profile - Driver
+    ข้อมูลส่วนตัวคนขับรถเกี่ยวนวดข้าว
 {% endblock %}   
 {% block main %}
-    <div class="flex justify-center items-center min-h-screen p-4 bg-gray-100 mt-5">
+    <div class="flex justify-center items-center min-h-screen p-4 bg-white mt-5">
         <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-auto border">
             <button onclick="window.history.back();" class="mb-4 text-blue-600 hover:underline focus:outline-none">
                 &larr; กลับ
@@ -27,6 +27,10 @@
                 <div class="mb-4">
                     <label for="phone" class="block mb-2 font-medium">เบอร์โทรศัพท์ :</label>
                     <p class="border border-gray-300 rounded-md px-4 py-2">{{ driver.phone }}</p>
+                </div>
+                <div class="mb-4">
+                    <label for="email" class="block mb-2 font-medium">Email :</label>
+                    <p class="border border-gray-300 rounded-md px-4 py-2">{{ driver.email }}</p>
                 </div>
             </div>
         </div>

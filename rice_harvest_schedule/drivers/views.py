@@ -44,21 +44,34 @@ def get_credentials():
         with open(TOKEN_FILE, 'rb') as token:
             creds = pickle.load(token)
 
+    # ถ้าไม่มี credentials หรือไม่ valid และมี refresh token
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-            with open(TOKEN_FILE, 'wb') as token:
-                pickle.dump(creds, token)
+            try:
+                creds.refresh(Request())
+                with open(TOKEN_FILE, 'wb') as token:
+                    pickle.dump(creds, token)
+            except Exception as e:
+                # ลบไฟล์ token ออกหากการรีเฟรชล้มเหลว
+                if os.path.exists(TOKEN_FILE):
+                    os.remove(TOKEN_FILE)
+                # ให้ flow ใหม่เพื่อรับ token ใหม่
+                return _start_google_flow()
+
         else:
-            flow = Flow.from_client_secrets_file(
-                CREDENTIALS_FILE, 
-                scopes=SCOPES, 
-                redirect_uri='http://localhost:8000/oauth2callback'
-            )
-            auth_url, _ = flow.authorization_url(prompt='consent')
-            return HttpResponseRedirect(auth_url)
+            return _start_google_flow()
     
     return creds
+
+def _start_google_flow():
+    flow = Flow.from_client_secrets_file(
+        CREDENTIALS_FILE, 
+        scopes=SCOPES, 
+        redirect_uri='http://localhost:8000/oauth2callback'
+    )
+    auth_url, _ = flow.authorization_url(prompt='consent')
+    return HttpResponseRedirect(auth_url)
+
 
 from django.urls import reverse
 from requests import Request

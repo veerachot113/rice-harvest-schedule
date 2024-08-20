@@ -52,7 +52,7 @@
                                 {% url 'home_farmer' %}
                              {% else %}
                                 {% url 'home' %}
-                             {% endif %}" class="text-black hover:text-blue-700">
+                             {% endif %}" class="text-black hover:text-emerald-600">
                         จองง่าย ได้เกี่ยว
                     </a>
                 </div>
@@ -71,8 +71,8 @@
             </div>
             {% else %}
             <div class="mt-2 sm:mt-0 sm:flex md:order-2 ml-auto" style="margin-right: 80px;">
-                <a href="{% url 'login' %}" class="rounde mr-3 hidden border border-blue-700 py-1.5 px-6 text-center text-sm font-medium text-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 md:inline-block rounded-lg">เข้าสู่ระบบ</a>
-                <a href="{% url 'chooserole' %}" class="rounde mr-3 hidden bg-blue-700 py-1.5 px-6 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 md:mr-0 md:inline-block rounded-lg">สมัครสมาชิก</a>
+                <a href="{% url 'login' %}" class="rounde mr-3 hidden border border-emerald-600 py-1.5 px-6 text-center text-sm font-medium text-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-blue-300 md:inline-block rounded-lg">เข้าสู่ระบบ</a>
+                <a href="{% url 'chooserole' %}" class="rounde mr-3 hidden bg-emerald-600 py-1.5 px-6 text-center text-sm font-medium text-white hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-blue-300 md:mr-0 md:inline-block rounded-lg">สมัครสมาชิก</a>
             </div>
             <div class="md:hidden flex items-center">
                 <button data-collapse-toggle="navbar-sticky" type="button" class="inline-flex items-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 md:hidden" aria-controls="navbar-sticky" aria-expanded="false">
@@ -86,10 +86,10 @@
             <div id="navbar-sticky" class="hidden md:hidden w-full items-center justify-between md:order-1  ">
                 <ul class="mt-4 flex flex-col text-center rounded-lg border border-gray-100 bg-gray-50 p-4 md:mt-0 md:flex-row md:space-x-8 md:border-0 md:bg-white md:text-sm md:font-medium">
                     <li>
-                        <a href="{% url 'login' %}" class="block rounded bg-blue-700 py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 md:text-blue-700" aria-current="page">เข้าสู่ระบบ</a>
+                        <a href="{% url 'login' %}" class="block rounded bg-emerald-600 py-2 pl-3 pr-4 text-white md:bg-transparent md:p-0 md:text-bemerald-600" aria-current="page">เข้าสู่ระบบ</a>
                     </li>
                     <li>
-                        <a href="{% url 'chooserole' %}" class="block rounded py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-100 md:p-0 md:hover:bg-transparent md:hover:text-blue-700">สมัครสมาชิก</a>
+                        <a href="{% url 'chooserole' %}" class="block rounded py-2 pl-3 pr-4 text-emerald-600 hover:bg-gray-100 md:p-0 md:hover:bg-transparent md:hover:text-teal-700">สมัครสมาชิก</a>
                     </li>
                 </ul>
             </div>
@@ -104,20 +104,20 @@
         <ul class="list-reset mt-6">
             {% if user.is_authenticated %}
             {% if user.is_superuser %}
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'document_review' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-file-alt"></span>
                     ตรวจสอบเอกสาร
                     <span class="bg-yellow-300 text-black text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">{{ no_of_pending_documents }}</span>
                 </a>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'user_list' 'driver' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-users"></span>
                     รายชื่อคนขับ
                 </a>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'user_list' 'farmer' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-users"></span>
                     รายชื่อชาวนา
@@ -126,75 +126,75 @@
             {% endif %}
             {% for group in user.groups.all %}
             {% if group.name == 'farmer' %}
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'home_farmer' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-home"></span>
                     หน้าแรก
                 </a>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'farmer_booking_list' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-newspaper"></span>
-                    ข้อมูลจองรถเกี่ยวนวดข้าว
+                    ข้อมูลการจองรถเกี่ยวนวดข้าว
                 </a>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'profile_update' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-user"></span>
                     ข้อมูลส่วนตัว
                 </a>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'logout' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-sign-out-alt"></span>
                     ออกจากระบบ
                 </a>
             </li>
             {% elif group.name == 'driver' %}
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'driver_dashboard' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-tachometer-alt"></span>
                     แผงควบคุม
                 </a>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'home_driver' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-home"></span>
                     หน้าแรก
                 </a>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'add_vehicle' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-plus-circle"></span>
                     เพิ่มรถเกี่ยว
                 </a>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'calendar_view' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-calendar"></span>
                     เพิ่มตารางรถเกี่ยว
                 </a>
             </li>  
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'driver_booking_list' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-book"></span>
-                    ข้อมูลจองรถเกี่ยวนวดข้าว
+                    ข้อมูลการจองรถเกี่ยวนวดข้าว
                     <span class="bg-yellow-300 text-black text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">{{ no_of_pending_request }}</span>
                 </a>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'vehicle_detail' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-info-circle"></span>
                     เพิ่มข้อมูลรถ
                 </a>
             </li>     
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'profile_update' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-user"></span>
                     ข้อมูลส่วนตัว
                 </a>
             </li>
-            <li class="hover:bg-teal relative">
+            <li class="hover:bg-emerald-600 relative">
                 <button id="dropdownButton" data-dropdown-toggle="dropdownMenu" class="w-full text-grey-darkest font-bold text-left text-sm no-underline flex items-center justify-between px-6 py-4 hover:text-white focus:outline-none" onclick="toggleDropdown('dropdownMenu', this)">
                     <span class="fa fa-file-alt"></span>
                     <span>ตรวจสอบสถานะเอกสาร</span>
@@ -204,13 +204,13 @@
                 <!-- Dropdown menu -->
                 <div id="dropdownMenu" class="hidden z-10 w-full bg-white rounded-lg shadow">
                     <ul class="py-2 text-sm text-gray-700 dark:text-gray-200">
-                        <li class="hover:bg-teal">
+                        <li class="hover:bg-emerald-600">
                             <a href="{% url 'document_status' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
                                 <span class="fa fa-file-alt"></span> สถานะเอกสาร
                                 <span class="bg-yellow-300 text-black text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">{{ no_of_pending_documents }}</span>
                             </a>
                         </li>
-                        <li class="hover:bg-teal">
+                        <li class="hover:bg-emerald-600">
                             <a href="{% url 'upload_document' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
                                 <span class="fa fa-upload"></span> ส่งเอกสาร
                             </a>
@@ -218,7 +218,7 @@
                     </ul>
                 </div>
             </li>
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'logout' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-sign-out-alt"></span>
                     ออกจากระบบ
@@ -227,7 +227,7 @@
             {% endif %}
             {% endfor %}
             {% if user.is_superuser %}
-            <li class="hover:bg-teal">
+            <li class="hover:bg-emerald-600">
                 <a href="{% url 'admin:index' %}" class="block px-6 py-4 w-full text-grey-darkest font-bold hover:text-white text-left text-sm no-underline">
                     <span class="fa fa-cog"></span>
                     การจัดการไซต์ (Admin)
