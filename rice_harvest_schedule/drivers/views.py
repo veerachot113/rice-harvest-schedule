@@ -135,8 +135,8 @@ def get_schedule(request, driver_id):
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def calendar_view(request):
-    no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
-    no_of_pending_request = Booking.objects.filter(request_status="รอดำเนินการ").count()
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     harvest_areas = HarvestArea.objects.filter(driver=request.user)
     return render(request, 'driver/calendar.html', {'harvest_areas': harvest_areas,'no_of_pending_request': no_of_pending_request ,'no_of_pending_documents': no_of_pending_documents})
 
@@ -345,7 +345,7 @@ def toggle_vehicle_status(request):
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def add_vehicle(request):
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
-    no_of_pending_request = count_pending_rent_request(request.user)
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     existing_vehicle = Vehicle.objects.filter(driver=request.user).first()
     if request.method == 'POST':
         if existing_vehicle:
@@ -379,13 +379,6 @@ def delete_vehicle(request, vehicle_id):
         return redirect('add_vehicle')
     return redirect('add_vehicle')
 
-def count_pending_rent_request(driver):
-    no_of_pending_request = 0
-    bookings = Booking.objects.filter(vehicle__driver=driver)
-    for booking in bookings:
-        if booking.request_status == "รอดำเนินการ":
-            no_of_pending_request += 1
-    return no_of_pending_request
 
 @csrf_exempt
 @login_required
@@ -468,8 +461,8 @@ def delete_harvest_area(request, area_id):
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def driver_dashboard(request):
-    no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
-    no_of_pending_request = count_pending_rent_request(request.user)
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     driver = request.user
     pending_bookings_count = Booking.objects.filter(vehicle__driver=driver, request_status="รอดำเนินการ").count()
     now = timezone.now()
@@ -491,6 +484,9 @@ def driver_dashboard(request):
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def booking_detail(request, event_id):
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
+
     event = get_object_or_404(CalendarEvent, id=event_id)
     booking = Booking.objects.filter(
         appointment_start_date=event.start,
@@ -498,13 +494,13 @@ def booking_detail(request, event_id):
         farmer_id=event.farmer_id,
         vehicle__driver=request.user
     ).first()
-    return render(request, 'booking/booking_detail.html', {'booking': booking, 'event': event})
+    return render(request, 'booking/booking_detail.html', {'booking': booking, 'event': event, 'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
 
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def vehicle_detail(request):
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
-    no_of_pending_request = count_pending_rent_request(request.user)
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     vehicle = Vehicle.objects.filter(driver=request.user).first()
     if not vehicle:
         return redirect('add_vehicle')

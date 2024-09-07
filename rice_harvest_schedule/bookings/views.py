@@ -127,8 +127,8 @@ def farmer_booking_list(request):
 @login_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def driver_booking_list(request):
-    no_of_pending_request = count_pending_rent_request(request.user)
-    no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
     bookings = Booking.objects.filter(vehicle__driver=request.user)
     for booking in bookings:
         booking.price = booking.vehicle.price * booking.quantity 

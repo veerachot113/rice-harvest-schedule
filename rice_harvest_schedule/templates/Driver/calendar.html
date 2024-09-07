@@ -82,7 +82,7 @@
                         </div>
                     <div class="sm:flex sm:items-start">
                         <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">เพิ่มตารางงาน</h3>
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4 text-center" id="modal-title"></h3>
                             <form id="event-form">
                                 <input type="hidden" id="event-id" name="id">
                                 <div class="mb-4">
@@ -261,9 +261,9 @@ $(document).ready(function() {
             $('#event-id').val('');
             $('#event-title').val('');
             $('#event-details').val('');
-            $('#event-start').val(info.startStr + 'T08:00');
-            $('#event-end').val(info.endStr + 'T17:00');
-            $('#modal-title').text('Add New Event');
+            $('#event-start').val(info.startStr + ' | 08:00');
+            $('#event-end').val(info.endStr + ' | 23:00');
+            $('#modal-title').text('เพิ่มตารางงาน');
             $('#edit-button').addClass('hidden');
             $('#delete-button').addClass('hidden');
             $('#event-title').prop('disabled', false);
@@ -279,7 +279,7 @@ $(document).ready(function() {
             $('#event-details').val(info.event.extendedProps.details);
             $('#event-start').val(info.event.start.toISOString().slice(0, 16));  // แปลงเวลาที่ดึงมาให้อยู่ในรูปแบบที่ถูกต้อง
             $('#event-end').val(info.event.end ? info.event.end.toISOString().slice(0, 16) : info.event.start.toISOString().slice(0, 16));  // แปลงเวลาที่ดึงมาให้อยู่ในรูปแบบที่ถูกต้อง
-            $('#modal-title').text('Edit Event');
+            $('#modal-title').text('แก้ไขตารางงาน');
             $('#edit-button').removeClass('hidden');
             $('#delete-button').removeClass('hidden');
             $('#event-title').prop('disabled', true);

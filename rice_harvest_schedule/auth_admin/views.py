@@ -9,7 +9,8 @@ from django.utils import timezone
 
 @login_required
 def upload_document(request):
-    no_of_pending_request = count_pending_rent_request(request.user)
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
     existing_document = DriverDocument.objects.filter(driver=request.user).exclude(request_status__in=['ปฏิเสธ', 'ยกเลิกแล้ว']).first()
     if existing_document:
         messages.error(request, 'คุณได้ส่งเอกสารไปแล้ว รอการตรวจสอบหรือส่งใหม่ในกรณีที่ถูกปฏิเสธหรือยกเลิก')
@@ -25,7 +26,6 @@ def upload_document(request):
             return redirect('document_status')
     else:
         form = DriverDocumentForm()
-    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
     return render(request, 'driver/upload_document.html', {'form': form, 'no_of_pending_documents': no_of_pending_documents, 'no_of_pending_request': no_of_pending_request})
 
 @login_required
@@ -43,7 +43,7 @@ def cancel_document(request, document_id):
 def document_status(request):
     documents = DriverDocument.objects.filter(driver=request.user)
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
-    no_of_pending_request = count_pending_rent_request(request.user)
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     return render(request, 'driver/document_status.html', {'documents': documents, 'no_of_pending_documents': no_of_pending_documents, 'no_of_pending_request': no_of_pending_request})
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -105,15 +105,24 @@ def delete_all_documents(request, user_id):
 @user_passes_test(lambda u: u.is_superuser)
 def user_list(request, user_type):
     no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
+
     if user_type == 'farmer':
         users = CustomUser.objects.filter(user_type='farmer')
+        user_type_name = 'ชาวนา'
     elif user_type == 'driver':
         users = CustomUser.objects.filter(user_type='driver')
+        user_type_name = 'คนขับรถเกี่ยว'
     else:
         messages.error(request, 'Invalid user type.')
         return redirect('home')
     
-    return render(request, 'auth_admin/user_list.html', {'users': users, 'user_type': user_type, 'no_of_pending_documents': no_of_pending_documents})
+    return render(request, 'auth_admin/user_list.html', {
+        'users': users, 
+        'user_type': user_type, 
+        'user_type_name': user_type_name,
+        'no_of_pending_documents': no_of_pending_documents
+    })
+
 
 @user_passes_test(lambda u: u.is_superuser)
 def delete_user(request, user_id):
@@ -128,12 +137,3 @@ def view_driver_document(request, user_id):
     driver = get_object_or_404(CustomUser, id=user_id, user_type='driver')
     documents = DriverDocument.objects.filter(driver=driver, request_status='อนุมัติแล้ว')
     return render(request, 'auth_admin/view_driver_document.html', {'driver': driver, 'documents': documents, 'no_of_pending_documents': no_of_pending_documents})
-
-
-def count_pending_rent_request(driver):
-    no_of_pending_request = 0
-    bookings = Booking.objects.filter(vehicle__driver=driver)
-    for booking in bookings:
-        if booking.request_status == "รอดำเนินการ":
-            no_of_pending_request += 1
-    return no_of_pending_request

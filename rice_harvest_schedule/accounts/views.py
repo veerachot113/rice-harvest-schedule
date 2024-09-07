@@ -31,12 +31,11 @@ def custom_logout(request):
     return redirect('home')
 
 @login_required
-def home_driver(request):
-    no_of_pending_documents = DriverDocument.objects.filter(request_status="รอดำเนินการ").count()
-    no_of_pending_request = count_pending_rent_request(request.user)
+def home_driver(request): 
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     vehicles = Vehicle.objects.filter(status=True)  # แสดงรถทั้งหมด
     return render(request, 'driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
-
 
 @login_required
 def home_farmer(request):
@@ -80,7 +79,6 @@ def filter(request):
             vehicles = available_vehicles
 
     return render(request, 'home.html', {'vehicles': vehicles})
-
 
 
 def useregister(request):
@@ -172,6 +170,8 @@ from django.contrib.auth import update_session_auth_hash
 
 @login_required
 def change_password(request):
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     if request.method == 'POST':
         form = CustomPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
@@ -183,7 +183,7 @@ def change_password(request):
             messages.error(request, 'โปรดแก้ไขข้อผิดพลาดที่ปรากฏด้านล่าง.')
     else:
         form = CustomPasswordChangeForm(request.user)
-    return render(request, 'accounts/change_password.html', {'form': form})
+    return render(request, 'accounts/change_password.html', {'form': form, 'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
 
 
 class CustomPasswordResetView(PasswordResetView):
@@ -214,7 +214,7 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 @login_required
 def profile_update(request):
-    no_of_pending_request = count_pending_rent_request(request.user)
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
     form = None
     if 'farmer' in [group.name for group in request.user.groups.all()]:
@@ -238,7 +238,7 @@ def profile_update(request):
     
 @login_required
 def view_driver_profile(request, driver_id):
-    no_of_pending_request = count_pending_rent_request(request.user)
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     driver = get_object_or_404(CustomUser, id=driver_id, user_type='driver')
     is_vehicle_owner = Vehicle.objects.filter(driver=driver).exists()
     context = {
@@ -247,14 +247,4 @@ def view_driver_profile(request, driver_id):
         'no_of_pending_request': no_of_pending_request,
     }
     return render(request, 'driver/driver_profile.html', context)
-
-def count_pending_rent_request(user):
-    no_of_pending_request = 0
-    if 'driver' in [group.name for group in user.groups.all()]:
-        bookings = Booking.objects.filter(vehicle__driver=user)
-        for booking in bookings:
-            if booking.request_status == "รอดำเนินการ":
-                no_of_pending_request += 1
-    return no_of_pending_request
-
 
