@@ -10,8 +10,8 @@ class CustomUser(AbstractUser):
     groups = models.ManyToManyField(Group, related_name='customuser_set', blank=True)
     user_permissions = models.ManyToManyField(Permission, related_name='customuser_permissions_set', blank=True)
     user_type = models.CharField(max_length=6, choices=USER_TYPE_CHOICES, default='farmer')
-    first_name = models.CharField(max_length=100, default='')  # เพิ่มชื่อ-สกุล
-    last_name = models.CharField(max_length=100, default='')  # เพิ่มชื่อ-สกุล
+    first_name = models.CharField(max_length=100, default='')
+    last_name = models.CharField(max_length=100, default='')
     address = models.CharField(max_length=255, default='')
     phone = models.CharField(max_length=15, default='')
     email = models.EmailField(max_length=255, unique=True)

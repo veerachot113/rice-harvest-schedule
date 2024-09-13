@@ -170,13 +170,13 @@ def get_available_dates(request):
     return JsonResponse(list(available_dates), safe=False)
 
 
-def count_pending_rent_request(driver):
-    no_of_pending_request = 0
-    bookings = Booking.objects.filter(vehicle__driver=driver)
-    for booking in bookings:
-        if booking.request_status == "รอดำเนินการ":
-            no_of_pending_request += 1
-    return no_of_pending_request
+# def count_pending_rent_request(driver):
+#     no_of_pending_request = 0
+#     bookings = Booking.objects.filter(vehicle__driver=driver)
+#     for booking in bookings:
+#         if booking.request_status == "รอดำเนินการ":
+#             no_of_pending_request += 1
+#     return no_of_pending_request
 
 from drivers.views import update_google_calendar_event  
 def create_google_calendar_event(creds, event):

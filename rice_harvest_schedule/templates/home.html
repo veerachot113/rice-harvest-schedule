@@ -118,6 +118,12 @@
 </div>
     
 <section class="w-full py-10 bg-gray-100">
+    {% if no_vehicles_message %}
+    <div class="text-red-600 font-semibold text-center py-4 text-5xl">
+        {{ no_vehicles_message }}
+    </div>
+{% endif %}
+
     <!-- <div class="container mx-auto px-4 py-3 "> -->
         <!-- <div class="mx-auto grid max-w-full grid-cols-1 gap-8 p-8 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4"> -->
         <div class="mx-auto grid max-w-7xl  grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -128,9 +134,10 @@
                     <div class="relative max-w-sm mx-auto bg-white rounded-lg shadow-md overflow-hidden">
                         <!-- Dropdown Button -->
                         <div class="absolute top-0 right-0 mt-2 mr-2">
-                            <button onclick="toggleDropdown('{{ vehicle.id }}')" class="text-gray-700 focus:outline-none">
+                            <button onclick="toggleVehicleDropdown('{{ vehicle.id }}')" class="text-gray-700 focus:outline-none">
                                 <i class="fa-solid fa-ellipsis-vertical"></i>
                             </button>
+                            
                             <!-- Dropdown Menu -->
                             <div id="dropdownMenu{{ vehicle.id }}" class="hidden absolute right-0 mt-8 w-48 bg-white rounded-md shadow-lg z-10">
                                 <a href="{% url 'view_vehicle_detail' driver_id=vehicle.driver.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ข้อมูลรถเกี่ยว</a>
@@ -160,56 +167,95 @@
 </section>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const typeSackCheckbox = document.getElementById('type_sack');
-        const typeTankCheckbox = document.getElementById('type_tank');
-        const provinceSelect = document.getElementById('province_select');
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSackCheckbox = document.getElementById('type_sack');
+    const typeTankCheckbox = document.getElementById('type_tank');
+    const provinceSelect = document.getElementById('province_select');
+    const noVehiclesMessageElement = document.createElement('div');
+    const noProvinceMessageElement = document.createElement('div');
+    noVehiclesMessageElement.className = 'text-red-600 font-semibold text-center py-4 text-5xl hidden';
+    noVehiclesMessageElement.innerText = 'ไม่มีรถประเภทนี้ให้บริการ ณ ตอนนี้';
+    noProvinceMessageElement.className = 'text-red-600 font-semibold text-center py-4 text-5xl hidden';
+    noProvinceMessageElement.innerText = 'ไม่มีรถบริการในจังหวัด ณ ตอนนี้';
+    document.querySelector('section').prepend(noVehiclesMessageElement);
+    document.querySelector('section').prepend(noProvinceMessageElement);
 
-        typeSackCheckbox.addEventListener('change', filterVehicles);
-        typeTankCheckbox.addEventListener('change', filterVehicles);
-        provinceSelect.addEventListener('change', filterVehicles);
+    typeSackCheckbox.addEventListener('change', filterVehicles);
+    typeTankCheckbox.addEventListener('change', filterVehicles);
+    provinceSelect.addEventListener('change', filterVehicles);
 
-        function filterVehicles() {
-            const typeSackChecked = typeSackCheckbox.checked;
-            const typeTankChecked = typeTankCheckbox.checked;
-            const selectedProvince = provinceSelect.value;
+    function filterVehicles() {
+        const typeSackChecked = typeSackCheckbox.checked;
+        const typeTankChecked = typeTankCheckbox.checked;
+        const selectedProvince = provinceSelect.value;
 
-            const vehicles = document.querySelectorAll('article');
-            vehicles.forEach(vehicle => {
-                const type = vehicle.querySelector('p:nth-child(2)').innerText.includes('แบบรองกระสอบ') ? 'แบบรองกระสอบ' : 'แบบถังอุ้ม';
-                const province = vehicle.getAttribute('data-province');
+        const vehicles = document.querySelectorAll('article');
+        let typeAvailable = false;
+        let provinceAvailable = false;
 
-                let typeMatch = (typeSackChecked && type === 'แบบรองกระสอบ') || (typeTankChecked && type === 'แบบถังอุ้ม');
-                if (!typeSackChecked && !typeTankChecked) {
-                    typeMatch = true; // Show all if none selected
+        vehicles.forEach(vehicle => {
+            const type = vehicle.querySelector('p:nth-child(2)').innerText.includes('แบบรองกระสอบ') ? 'แบบรองกระสอบ' : 'แบบถังอุ้ม';
+            const province = vehicle.getAttribute('data-province');
+
+            let typeMatch = (typeSackChecked && type === 'แบบรองกระสอบ') || (typeTankChecked && type === 'แบบถังอุ้ม');
+            if (!typeSackChecked && !typeTankChecked) {
+                typeMatch = true; // Show all if none selected
+            }
+
+            const provinceMatch = !selectedProvince || province === selectedProvince;
+
+            if (typeMatch && provinceMatch) {
+                vehicle.style.display = 'block';
+                typeAvailable = true;
+                provinceAvailable = true;
+            } else {
+                vehicle.style.display = 'none';
+                if (provinceMatch) {
+                    provinceAvailable = true;
                 }
+            }
+        });
 
-                const provinceMatch = !selectedProvince || province === selectedProvince;
-
-                if (typeMatch && provinceMatch) {
-                    vehicle.style.display = 'block';
-                } else {
-                    vehicle.style.display = 'none';
-                }
-            });
+        // Show or hide the no vehicles message based on type availability
+        if (typeSackChecked || typeTankChecked) {
+            if (!typeAvailable) {
+                noVehiclesMessageElement.classList.remove('hidden');
+            } else {
+                noVehiclesMessageElement.classList.add('hidden');
+            }
+        } else {
+            noVehiclesMessageElement.classList.add('hidden');
         }
 
-        function toggleDropdown(vehicleId) {
-            // ปิด dropdown ทั้งหมดที่ไม่ใช่ dropdown ที่ถูกกด
-            const allDropdowns = document.querySelectorAll('[id^="dropdownMenu"]');
-            allDropdowns.forEach(dropdown => {
-                if (dropdown.id !== 'dropdownMenu' + vehicleId) {
-                    dropdown.classList.add('hidden');
-                }
-            });
-
-            // เปิดหรือปิด dropdown ที่ถูกกด
-            const dropdownMenu = document.getElementById("dropdownMenu" + vehicleId);
-            dropdownMenu.classList.toggle("hidden");
+        // Show or hide the no province message based on province availability
+        if (selectedProvince) {
+            if (!provinceAvailable) {
+                noProvinceMessageElement.classList.remove('hidden');
+            } else {
+                noProvinceMessageElement.classList.add('hidden');
+            }
+        } else {
+            noProvinceMessageElement.classList.add('hidden');
         }
+    }
 
-        window.toggleDropdown = toggleDropdown;
+    function toggleVehicleDropdown(vehicleId) {
+    // ปิด dropdown ทั้งหมดที่ไม่ใช่ dropdown ที่ถูกกด
+    const allDropdowns = document.querySelectorAll('[id^="dropdownMenu"]');
+    allDropdowns.forEach(dropdown => {
+        if (dropdown.id !== 'dropdownMenu' + vehicleId) {
+            dropdown.classList.add('hidden');
+        }
     });
+
+    // เปิดหรือปิด dropdown ที่ถูกกด
+    const dropdownMenu = document.getElementById("dropdownMenu" + vehicleId);
+    dropdownMenu.classList.toggle("hidden");
+}
+
+window.toggleVehicleDropdown = toggleVehicleDropdown;
+});
+
 </script>
 
 
