@@ -75,6 +75,7 @@ def _start_google_flow():
 
 from django.urls import reverse
 from requests import Request
+@csrf_exempt
 def oauth2callback(request):
     flow = Flow.from_client_secrets_file(
         CREDENTIALS_FILE,

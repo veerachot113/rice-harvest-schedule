@@ -11,7 +11,7 @@ class DriverDocument(models.Model):
     submission_date = models.DateTimeField(auto_now_add=True)
     request_status = models.CharField(max_length=30, default="รอดำเนินการ")
     note = models.TextField(blank=True, null=True)
-    response_date = models.DateTimeField(null=True, blank=True)  # เพิ่มฟิลด์นี้เพื่อบันทึกวันและเวลาตอบกลับ
+    response_date = models.DateTimeField(null=True, blank=True)  
 
     def __str__(self):
         return self.driver.username

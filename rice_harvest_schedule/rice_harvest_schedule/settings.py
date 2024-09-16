@@ -16,7 +16,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+SESSION_COOKIE_AGE = 1209600  # ตั้งค่า session ให้หมดอายุภายใน 2 สัปดาห์
+SESSION_SAVE_EVERY_REQUEST = True  # ต่ออายุ session ทุกครั้งที่มี request
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 

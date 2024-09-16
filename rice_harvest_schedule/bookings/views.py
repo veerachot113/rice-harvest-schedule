@@ -135,6 +135,7 @@ def driver_booking_list(request):
     return render(request, 'driver/booking_driverlist.html', {'bookings': bookings, 'no_of_pending_request': no_of_pending_request,'no_of_pending_documents': no_of_pending_documents})
 
 
+
 @login_required
 def get_available_dates(request):
     province = request.GET.get('province')
@@ -167,16 +168,17 @@ def get_available_dates(request):
                 available_dates.discard(current_date.strftime("%Y-%m-%d"))  # ลบวันที่ที่มีงานออกจาก available_dates
                 current_date += timedelta(days=1)
 
+    # ดึง booking ที่มีสถานะ "รอดำเนินการ" และลบวันที่ที่มีการจองในช่วงนั้นออก
+    pending_bookings = Booking.objects.filter(vehicle__driver_id=driver_id, request_status="รอดำเนินการ")
+    for booking in pending_bookings:
+        current_date = booking.appointment_start_date.date()
+        end_date = booking.appointment_end_date.date()
+        while current_date <= end_date:
+            available_dates.discard(current_date.strftime("%Y-%m-%d"))  # ลบวันที่ที่มีการจองรออนุมัติ
+            current_date += timedelta(days=1)
+
     return JsonResponse(list(available_dates), safe=False)
 
-
-# def count_pending_rent_request(driver):
-#     no_of_pending_request = 0
-#     bookings = Booking.objects.filter(vehicle__driver=driver)
-#     for booking in bookings:
-#         if booking.request_status == "รอดำเนินการ":
-#             no_of_pending_request += 1
-#     return no_of_pending_request
 
 from drivers.views import update_google_calendar_event  
 def create_google_calendar_event(creds, event):
