@@ -48,7 +48,7 @@ def create_booking(request, vehicle_id):
             quantity = form.cleaned_data['quantity']
             
             if quantity < vehicle.min_acres:
-                return JsonResponse({'error': f'Minimum acreage requirement not met: {vehicle.min_acres} acres needed.'}, status=400)
+                return JsonResponse({'error': f'ไม่เป็นไปตามข้อกำหนดพื้นที่ขั้นต่ำ: {vehicle.min_acres} ต้องการพื้นที่.'}, status=400)
 
             if quantity <= vehicle.max_acres_per_day + 5:
                 days_required = 1
@@ -61,7 +61,7 @@ def create_booking(request, vehicle_id):
                 booking.appointment_start_date = parse_date(appointment_start_date_str)
                 booking.appointment_end_date = booking.appointment_start_date + timedelta(days=days_required - 1)
             else:
-                return JsonResponse({'error': 'Appointment start date is required.'}, status=400)
+                return JsonResponse({'error': 'ต้องระบุวันที่เริ่มต้นการนัดหมาย.'}, status=400)
             
             # Combine address details
             address = form.cleaned_data['address']
@@ -114,7 +114,7 @@ def cancel_booking(request, booking_id):
         booking.delete()
         return redirect('farmer_booking_list')
 
-    return JsonResponse({'status': 'error', 'message': 'You are not authorized to cancel this booking or the booking is not in a pending status.'})
+    return JsonResponse({'status': 'error', 'message': 'คุณไม่ได้รับอนุญาตให้ยกเลิกการจองนี้หรือการจองไม่อยู่ในสถานะรอดำเนินการ.'})
 
 
 @login_required
@@ -205,16 +205,16 @@ def accept_booking(request, booking_id):
         start_time_str = request.POST.get('appointment_start_time')
         end_time_str = request.POST.get('appointment_end_time')
     else:
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+        return JsonResponse({'status': 'error', 'message': 'วิธีการร้องขอไม่ถูกต้อง.'})
 
     if not start_time_str or not end_time_str:
-        return JsonResponse({'status': 'error', 'message': 'Start time and end time are required.'})
+        return JsonResponse({'status': 'error', 'message': 'ต้องระบุเวลาเริ่มต้นและเวลาสิ้นสุด.'})
 
     try:
         start_time = datetime.strptime(start_time_str, '%H:%M').time()
         end_time = datetime.strptime(end_time_str, '%H:%M').time()
     except ValueError:
-        return JsonResponse({'status': 'error', 'message': 'Invalid time format.'})
+        return JsonResponse({'status': 'error', 'message': 'รูปแบบเวลาไม่ถูกต้อง.'})
 
     appointment_date = booking.appointment_start_date.date()
 

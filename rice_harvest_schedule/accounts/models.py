@@ -1,5 +1,5 @@
 # accounts/models.py
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 class CustomUser(AbstractUser):
@@ -7,9 +7,7 @@ class CustomUser(AbstractUser):
         ('farmer', 'Farmer'),
         ('driver', 'Driver'),
     )
-    groups = models.ManyToManyField(Group, related_name='customuser_set', blank=True)
-    user_permissions = models.ManyToManyField(Permission, related_name='customuser_permissions_set', blank=True)
-    user_type = models.CharField(max_length=6, choices=USER_TYPE_CHOICES, default='farmer')
+    user_type = models.CharField(max_length=6, choices=USER_TYPE_CHOICES, default='')  # กำหนดบทบาท (farmer หรือ driver)
     first_name = models.CharField(max_length=100, default='')
     last_name = models.CharField(max_length=100, default='')
     address = models.CharField(max_length=255, default='')
@@ -19,6 +17,7 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+
 
 class Farmer(CustomUser):
     class Meta:

@@ -3,7 +3,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from auth_admin.models import DriverDocument
@@ -55,25 +54,15 @@ def register_farmer(request):
             user = form.save(commit=False)
             user.user_type = 'farmer'
             user.save()
-            farmer_group = Group.objects.get(name='farmer')
-            user.groups.add(farmer_group)
-            user.save()
-            
-            # subject = 'ยืนยันการลงทะเบียน'
-            # message = f'ยินดีต้อนรับ \n\n คุณ{user.first_name} {user.last_name} \n\n ชื่อผู้ใช้ของคุณ: {user.username}!'
-            # from_email = 'จองง่ายได้เกี่ยว@rice.com'
-            # recipient_list = [user.email]
-            
-            # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-            
+
             messages.success(request, 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ')
             return redirect('login')  # เปลี่ยนเป็นหน้าเข้าสู่ระบบหลังจากลงทะเบียนสำเร็จ
         else:
+            # ฟอร์มไม่ถูกต้อง ส่งฟอร์มที่มีข้อมูลเดิมกลับไปพร้อมข้อความ error
             messages.error(request, 'มีข้อผิดพลาดในการสมัครสมาชิก กรุณาตรวจสอบข้อมูลที่กรอก')
     else:
         form = UserFarmerRegistrationForm()
     return render(request, 'farmer/registerfarmer.html', {'form': form})
-
 
 def register_driver(request):
     if request.method == 'POST':
@@ -82,9 +71,7 @@ def register_driver(request):
             user = form.save(commit=False)
             user.user_type = 'driver'
             user.save()
-            driver_group = Group.objects.get(name='driver')
-            user.groups.add(driver_group)
-            user.save()
+
             
             # subject = 'ยืนยันการลงทะเบียน'
             # message = f'ยินดีต้อนรับ \n\n คุณ{user.first_name} {user.last_name} \n\n ชื่อผู้ใช้ของคุณ: {user.username}!'
@@ -113,9 +100,9 @@ def user_login(request):
                 login(request, user)
                 if user.is_superuser:
                     return redirect('document_review')
-                elif 'farmer' in [group.name for group in user.groups.all()]:
+                elif user.user_type == 'farmer':
                     return redirect('home_farmer')
-                elif 'driver' in [group.name for group in user.groups.all()]:
+                elif user.user_type == 'driver':
                     return redirect('driver_dashboard')
                 else:
                     return redirect('home')
@@ -126,6 +113,7 @@ def user_login(request):
     else:
         form = AuthenticationForm()
     return render(request, 'accounts/registration/login.html', {'form': form})
+
 from .forms import CustomPasswordChangeForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -134,8 +122,8 @@ from django.contrib.auth import update_session_auth_hash
 
 @login_required
 def change_password(request):
-    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
-    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
+    # no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
+    # no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     if request.method == 'POST':
         form = CustomPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
@@ -147,7 +135,7 @@ def change_password(request):
             messages.error(request, 'โปรดแก้ไขข้อผิดพลาดที่ปรากฏด้านล่าง.')
     else:
         form = CustomPasswordChangeForm(request.user)
-    return render(request, 'accounts/change_password.html', {'form': form, 'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
+    return render(request, 'accounts/change_password.html', {'form': form}) #'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
 
 
 class CustomPasswordResetView(PasswordResetView):
@@ -180,8 +168,7 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 def profile_update(request):
     no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
-    form = None
-    if 'farmer' in [group.name for group in request.user.groups.all()]:
+    if request.user.user_type == 'farmer':
         if request.method == 'POST':
             form = UserFarmerUpdateForm(request.POST, instance=request.user)
             if form.is_valid():
@@ -190,7 +177,7 @@ def profile_update(request):
         else:
             form = UserFarmerUpdateForm(instance=request.user)
         return render(request, 'profile_farmer.html', {'form': form})
-    elif 'driver' in [group.name for group in request.user.groups.all()]:
+    elif request.user.user_type == 'driver':
         if request.method == 'POST':
             form = UserDriverUpdateForm(request.POST, instance=request.user)
             if form.is_valid():
@@ -198,7 +185,12 @@ def profile_update(request):
                 return redirect('profile_update')
         else:
             form = UserDriverUpdateForm(instance=request.user)
-        return render(request, 'profile_driver.html', {'form': form, 'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
+        return render(request, 'profile_driver.html', {
+            'form': form, 
+            'no_of_pending_request': no_of_pending_request, 
+            'no_of_pending_documents': no_of_pending_documents
+        })
+
     
 @login_required
 def view_driver_profile(request, driver_id):

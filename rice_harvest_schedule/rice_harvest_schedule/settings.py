@@ -208,4 +208,4 @@ AUTHENTICATION_BACKENDS = [
 # LOGOUT_REDIRECT_URL = '/authadmin/document_review/'
 LOGIN_URL = 'login'
 
-
+AUTH_USER_MODEL = 'accounts.CustomUser'
