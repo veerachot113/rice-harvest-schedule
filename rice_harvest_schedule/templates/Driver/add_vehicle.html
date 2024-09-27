@@ -1,4 +1,3 @@
-<!-- driver/add_vehicle.html -->
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
@@ -46,6 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteForm = document.getElementById('delete-form');
     const form = document.getElementById('vehicle-form');
     const submitBtn = document.getElementById('submit-btn');
+    const imageInput = document.getElementById('id_image');
+    const previewCover = document.getElementById('preview');
 
     if (editBtn) {
         editBtn.addEventListener('click', function(e) {
@@ -104,7 +105,16 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-});
 
+    // Image preview handler
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const img = e.target.files[0];
+            if (img) {
+                previewCover.src = URL.createObjectURL(img);
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

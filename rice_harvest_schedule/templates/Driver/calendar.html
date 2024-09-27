@@ -253,68 +253,82 @@ $(document).ready(function() {
     }
 
     var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-        initialView: 'dayGridMonth',
-        locale: 'th',
-        selectable: true,
-        timeZone: 'UTC',
-        select: function(info) {
-            $('#event-id').val('');
-            $('#event-title').val('');
-            $('#event-details').val('');
-            $('#event-start').val(info.startStr + ' | 08:00');
-            $('#event-end').val(info.endStr + ' | 23:00');
-            $('#modal-title').text('เพิ่มตารางงาน');
-            $('#edit-button').addClass('hidden');
-            $('#delete-button').addClass('hidden');
-            $('#event-title').prop('disabled', false);
-            $('#event-details').prop('disabled', false);
-            $('#event-start').prop('disabled', false);
-            $('#event-end').prop('disabled', false);
-            $('button[type="submit"]').prop('disabled', false);
-            $('#event-modal').removeClass('hidden');
-        },
-        eventClick: function(info) {
-            $('#event-id').val(info.event.id);
-            $('#event-title').val(info.event.title);
-            $('#event-details').val(info.event.extendedProps.details);
-            $('#event-start').val(info.event.start.toISOString().slice(0, 16));  // แปลงเวลาที่ดึงมาให้อยู่ในรูปแบบที่ถูกต้อง
-            $('#event-end').val(info.event.end ? info.event.end.toISOString().slice(0, 16) : info.event.start.toISOString().slice(0, 16));  // แปลงเวลาที่ดึงมาให้อยู่ในรูปแบบที่ถูกต้อง
-            $('#modal-title').text('แก้ไขตารางงาน');
-            $('#edit-button').removeClass('hidden');
-            $('#delete-button').removeClass('hidden');
-            $('#event-title').prop('disabled', true);
-            $('#event-details').prop('disabled', true);
-            $('#event-start').prop('disabled', true);
-            $('#event-end').prop('disabled', true);
-            $('button[type="submit"]').prop('disabled', true);
-            $('#event-modal').removeClass('hidden');
-        },
-        events: {
-            url: '/drivers/get_calendar_events/',
-            extraParams: function() {
-                return {
-                    driver_id: '{{ user.id }}'
-                };
-            },
-            success: function(events) {
-                return events.map(function(event) {
-                    if (event.farmer_id === '{{ user.id }}') {
-                        event.color = 'green';  // สีของงานของตัวเอง
-                    } else if (event.driver_id && event.driver_id.toString() === '{{ user.id }}' && !event.farmer_id) {
-                        event.color = 'red';  // สีของงานที่คนขับรถเพิ่มเอง
-                    } else {
-                        event.color = 'blue';  // สีของงานอื่น
-                    }
-                    return event;
-                });
+    initialView: 'dayGridMonth',
+    locale: 'th',
+    selectable: true,
+    timeZone: 'UTC',
+    select: function(info) {
+        // ตรวจสอบการเชื่อมต่อ Google Calendar ก่อนแสดงฟอร์ม
+        $.ajax({
+            url: '/drivers/check_google_calendar/',
+            type: 'GET',
+            success: function(response) {
+                if (response.connected) {
+                    // ถ้าเชื่อมต่อแล้ว ให้แสดงฟอร์มเพิ่มงาน
+                    $('#event-id').val('');
+                    $('#event-title').val('');
+                    $('#event-details').val('');
+                    $('#event-start').val(info.startStr + ' 08:00');
+                    $('#event-end').val(info.endStr + ' 23:00');
+                    $('#modal-title').text('เพิ่มตารางงาน');
+                    $('#edit-button').addClass('hidden');
+                    $('#delete-button').addClass('hidden');
+                    $('#event-title').prop('disabled', false);
+                    $('#event-details').prop('disabled', false);
+                    $('#event-start').prop('disabled', false);
+                    $('#event-end').prop('disabled', false);
+                    $('button[type="submit"]').prop('disabled', false);
+                    $('#event-modal').removeClass('hidden');
+                } else {
+                    // ถ้ายังไม่เชื่อมต่อ ให้รีไดเรกต์ไปยังหน้าการเชื่อมต่อ Google Calendar
+                    window.location.href = '/oauth2callback/';
+                }
             }
+        });
+    },
+    eventClick: function(info) {
+        $('#event-id').val(info.event.id);
+        $('#event-title').val(info.event.title);
+        $('#event-details').val(info.event.extendedProps.details);
+        $('#event-start').val(info.event.start.toISOString().slice(0, 16));  // แปลงเวลาที่ดึงมาให้อยู่ในรูปแบบที่ถูกต้อง
+        $('#event-end').val(info.event.end ? info.event.end.toISOString().slice(0, 16) : info.event.start.toISOString().slice(0, 16));  // แปลงเวลาที่ดึงมาให้อยู่ในรูปแบบที่ถูกต้อง
+        $('#modal-title').text('แก้ไขตารางงาน');
+        $('#edit-button').removeClass('hidden');
+        $('#delete-button').removeClass('hidden');
+        $('#event-title').prop('disabled', true);
+        $('#event-details').prop('disabled', true);
+        $('#event-start').prop('disabled', true);
+        $('#event-end').prop('disabled', true);
+        $('button[type="submit"]').prop('disabled', true);
+        $('#event-modal').removeClass('hidden');
+    },
+    events: {
+        url: '/drivers/get_calendar_events/',
+        extraParams: function() {
+            return {
+                driver_id: '{{ user.id }}'
+            };
         },
-        eventDidMount: function() {
-            updateOngoingEvents();
+        success: function(events) {
+            return events.map(function(event) {
+                if (event.farmer_id === '{{ user.id }}') {
+                    event.color = 'green';  // สีของงานของตัวเอง
+                } else if (event.driver_id && event.driver_id.toString() === '{{ user.id }}' && !event.farmer_id) {
+                    event.color = 'red';  // สีของงานที่คนขับรถเพิ่มเอง
+                } else {
+                    event.color = 'blue';  // สีของงานอื่น
+                }
+                return event;
+            });
         }
-    });
+    },
+    eventDidMount: function() {
+        updateOngoingEvents();
+    }
+});
 
-    calendar.render();
+calendar.render();
+
 
     $('#event-form').on('submit', function(e) {
     e.preventDefault();

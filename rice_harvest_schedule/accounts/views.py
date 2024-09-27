@@ -149,6 +149,10 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'accounts/reset_password_confirm.html'
     success_url = reverse_lazy('login')
 
+    def form_valid(self, form):
+        messages.success(self.request, 'รหัสผ่านของคุณถูกเปลี่ยนเรียบร้อยแล้ว! กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่.')
+        return super().form_valid(form)
+
     def dispatch(self, *args, **kwargs):
         uidb64 = kwargs.get('uidb64')
         self.user = self.get_user(uidb64)

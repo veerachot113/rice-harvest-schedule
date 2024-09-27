@@ -122,7 +122,7 @@ def update_google_calendar_event(creds, event_id, event):
     event_result['attendees'] = event.get('attendees', [])
     
     updated_event = service.events().update(calendarId='primary', eventId=event_id, body=event_result).execute()
-    return updated_event
+    return updated_event 
 
 def delete_google_calendar_event(creds, event_id):
     service = build('calendar', 'v3', credentials=creds)
@@ -196,8 +196,10 @@ def add_calendar_event(request):
             'reminders': {
                 'useDefault': False,
                 'overrides': [
-                    {'method': 'email', 'minutes': 5},
-                    {'method': 'popup', 'minutes': 5},
+                    {'method': 'email', 'minutes': 1440},  # 1 day = 1440 minutes
+                    {'method': 'email', 'minutes': 60},    # 1 hour = 60 minutes
+                    {'method': 'popup', 'minutes': 60},    # Popup reminder 1 hour before
+                    {'method': 'popup', 'minutes': 30},
                 ],
             },
         }
@@ -249,8 +251,10 @@ def edit_calendar_event(request, event_id):
             'reminders': {
                 'useDefault': False,
                 'overrides': [
-                    {'method': 'email', 'minutes': 5},
-                    {'method': 'popup', 'minutes': 5},
+                    {'method': 'email', 'minutes': 1440},  # 1 day = 1440 minutes
+                    {'method': 'email', 'minutes': 60},    # 1 hour = 60 minutes
+                    {'method': 'popup', 'minutes': 60},    # Popup reminder 1 hour before
+                    {'method': 'popup', 'minutes': 30},
                 ],
             },
         }

@@ -227,7 +227,7 @@ def accept_booking(request, booking_id):
     threshold = 5
     
     if quantity <= max_acres_per_day + threshold:
-        days_required = 1
+        days_required = 1  
     else:
         additional_acres = quantity - (max_acres_per_day + threshold)
         days_required = math.ceil(additional_acres / max_acres_per_day) + 1
@@ -268,8 +268,10 @@ def accept_booking(request, booking_id):
             'reminders': {
                 'useDefault': False,
                 'overrides': [
-                    {'method': 'email', 'minutes': 5},
-                    {'method': 'popup', 'minutes': 5},
+                    {'method': 'email', 'minutes': 1440},  # 1 day = 1440 minutes
+                    {'method': 'email', 'minutes': 60},    # 1 hour = 60 minutes
+                    {'method': 'popup', 'minutes': 60},    # Popup reminder 1 hour before
+                    {'method': 'popup', 'minutes': 30},
                 ],
             },
         }
@@ -293,8 +295,10 @@ def accept_booking(request, booking_id):
             'reminders': {
                 'useDefault': False,
                 'overrides': [
-                    {'method': 'email', 'minutes': 5},
-                    {'method': 'popup', 'minutes': 5},
+                    {'method': 'email', 'minutes': 1440},  # 1 day = 1440 minutes
+                    {'method': 'email', 'minutes': 60},    # 1 hour = 60 minutes
+                    {'method': 'popup', 'minutes': 60},    # Popup reminder 1 hour before
+                    {'method': 'popup', 'minutes': 30},
                 ],
             },
         }

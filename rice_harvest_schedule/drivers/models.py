@@ -12,7 +12,7 @@ class Vehicle(models.Model):
         ('แบบถังอุ้ม', 'แบบถังอุ้ม'),
     )
     type = models.CharField(max_length=100,verbose_name='ประเภทรถ', choices=TYPE_CHOICES)
-    price = models.DecimalField(max_digits=10, decimal_places=0, verbose_name='ราคา')
+    price = models.DecimalField(max_digits=10, decimal_places=0, verbose_name='ราคา (ไร่)')
     
     PROVINCE_CHOICES = [
     ('กระบี่', 'กระบี่'),
