@@ -17,16 +17,3 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
-
-
-class Farmer(CustomUser):
-    class Meta:
-        proxy = True
-        verbose_name = 'Farmer'
-        verbose_name_plural = 'Farmers'
-
-class Driver(CustomUser):
-    class Meta:
-        proxy = True
-        verbose_name = 'Driver'
-        verbose_name_plural = 'Drivers'

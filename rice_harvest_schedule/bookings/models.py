@@ -1,6 +1,6 @@
 # bookings/models.py
 from django.db import models
-from drivers.models import Vehicle, HarvestArea
+from drivers.models import Vehicle
 from accounts.models import CustomUser
 
 class Booking(models.Model):

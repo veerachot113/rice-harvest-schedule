@@ -19,7 +19,6 @@
                 <th class="py-3 px-6 text-center font-medium text-gray-600">เอกสาร</th>
                 <th class="py-3 px-6 text-center font-medium text-gray-600">วันที่ส่ง</th>
                 <th class="py-3 px-6 text-center font-medium text-gray-600">สถานะ</th>
-                <th class="py-3 px-6 text-center font-medium text-gray-600">ดำเนินการ</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
@@ -38,12 +37,6 @@
                         {{ document.request_status }}
                     </span>
                 </td>
-                <td class="px-6 py-4 text-center">
-                    <form method="post" action="{% url 'delete_document' document.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">ลบเอกสาร</button>
-                    </form>
-                </td>
             </tr>
             <tr class="hover:bg-gray-50 transition duration-200">
                 <td class="px-6 py-4 font-medium text-gray-800 text-center">{{ forloop.counter }}</td>
@@ -59,12 +52,6 @@
                         {{ document.request_status }}
                     </span>
                 </td>
-                <td class="px-6 py-4 text-center">
-                    <form method="post" action="{% url 'delete_document' document.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">ลบเอกสาร</button>
-                    </form>
-                </td>
             </tr>
             <tr class="hover:bg-gray-50 transition duration-200">
                 <td class="px-6 py-4 font-medium text-gray-800 text-center">{{ forloop.counter }}</td>
@@ -79,12 +66,6 @@
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if document.request_status == 'อนุมัติแล้ว' %}bg-green-100 text-green-800{% elif document.request_status == 'ปฏิเสธ' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
                         {{ document.request_status }}
                     </span>
-                </td>
-                <td class="px-6 py-4 text-center">
-                    <form method="post" action="{% url 'delete_document' document.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">ลบเอกสาร</button>
-                    </form>
                 </td>
             </tr>
             {% endfor %}

@@ -76,32 +76,17 @@ def process_document(request, document_id):
     return redirect('document_review')
 
 @user_passes_test(lambda u: u.is_superuser)
-def delete_document(request, document_id):
-    document = get_object_or_404(DriverDocument, id=document_id)
-    driver = document.driver
-    document.delete()  # ลบเอกสารจริงๆ ออกจากฐานข้อมูล
-    messages.success(request, 'เอกสารได้ถูกลบเรียบร้อยแล้ว')
-    
-    # Update driver status
-    if not DriverDocument.objects.filter(driver=driver, request_status='อนุมัติแล้ว').exists():
-        driver.is_staff = False
-        driver.is_active = False  # ให้เป็น is_active = False เมื่อไม่มีเอกสารที่อนุมัติ
-        driver.save()
-        messages.success(request, 'สถานะของผู้ขับขี่ถูกเปลี่ยนเป็นไม่ทำงานแล้ว')
-        
-    return redirect(request.META.get('HTTP_REFERER', 'home'))
-
-@user_passes_test(lambda u: u.is_superuser)
 def delete_all_documents(request, user_id):
     driver = get_object_or_404(CustomUser, id=user_id, user_type='driver')
     documents = DriverDocument.objects.filter(driver=driver)
-    for document in documents:
-        document.delete()  # ลบเอกสารจริงๆ ออกจากฐานข้อมูล
-    driver.is_staff = False
-    driver.is_active = False  # ให้เป็น is_active = False เมื่อยกเลิกเอกสารทั้งหมด
-    driver.save()
-    messages.success(request, 'เอกสารทั้งหมดของผู้ใช้ได้ถูกลบเรียบร้อยแล้ว และสถานะผู้ใช้ถูกเปลี่ยนเป็นไม่ทำงานแล้ว')
+    if request.method == 'POST':
+        documents.delete()  # ลบเอกสารทั้งหมดออกจากฐานข้อมูลด้วยคำสั่งเดียว
+        driver.is_staff = False
+        driver.is_active = False  # เปลี่ยนสถานะผู้ใช้
+        driver.save()
+        messages.success(request, 'เอกสารทั้งหมดของผู้ใช้ได้ถูกลบเรียบร้อยแล้ว และสถานะผู้ใช้ถูกเปลี่ยนเป็นไม่ทำงานแล้ว')
     return redirect('view_driver_document', user_id=user_id)
+
 
 @user_passes_test(lambda u: u.is_superuser)
 def user_list(request, user_type):

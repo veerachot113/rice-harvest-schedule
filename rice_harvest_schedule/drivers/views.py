@@ -555,7 +555,6 @@ def view_vehicle_detail(request, driver_id):
         detail = None
 
     harvest_areas = HarvestArea.objects.filter(driver_id=driver_id)
-
     return render(request, 'farmer/view_vehicle_detail.html', {
         'vehicle': vehicle,
         'detail': detail,

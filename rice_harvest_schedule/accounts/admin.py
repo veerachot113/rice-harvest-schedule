@@ -1,6 +1,6 @@
 # accounts/admin.py
 from django.contrib import admin
-from .models import CustomUser, Farmer, Driver
+from .models import CustomUser
 
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'user_type', 'is_staff', 'is_active')
@@ -18,5 +18,3 @@ class DriverAdmin(CustomUserAdmin):
         qs = super().get_queryset(request)
         return qs.filter(user_type='driver')
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Farmer, FarmerAdmin)
-admin.site.register(Driver, DriverAdmin)
