@@ -37,7 +37,7 @@ def create_booking(request, vehicle_id):
     
     event_dates_json = json.dumps(event_dates)
     harvest_areas = HarvestArea.objects.filter(driver=vehicle.driver).values('province', 'district', 'subdistrict').distinct()
-    unique_provinces = set(area['province'] for area in harvest_areas)  # ดึงจังหวัดที่ไม่ซ้ำกัน
+    unique_provinces = set(area['province'] for area in harvest_areas) 
 
     if request.method == 'POST':
         form = BookingForm(request.POST)
@@ -63,7 +63,6 @@ def create_booking(request, vehicle_id):
             else:
                 return JsonResponse({'error': 'ต้องระบุวันที่เริ่มต้นการนัดหมาย.'}, status=400)
             
-            # Combine address details
             address = form.cleaned_data['address']
             province = form.cleaned_data['province']
             district = form.cleaned_data['district']

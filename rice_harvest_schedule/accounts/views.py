@@ -1,12 +1,12 @@
 # accounts/views.py
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate,update_session_auth_hash
 from django.contrib import messages
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm,PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from auth_admin.models import DriverDocument
-from .forms import UserFarmerRegistrationForm, UserDriverRegistrationForm, UserFarmerUpdateForm, UserDriverUpdateForm,CustomPasswordResetForm, CustomSetPasswordForm
+from .forms import UserFarmerRegistrationForm,CustomPasswordChangeForm, UserDriverRegistrationForm, UserFarmerUpdateForm, UserDriverUpdateForm,CustomPasswordResetForm, CustomSetPasswordForm
 from .models import CustomUser
 from drivers.models import Vehicle
 from bookings.models import Booking
@@ -54,11 +54,9 @@ def register_farmer(request):
             user = form.save(commit=False)
             user.user_type = 'farmer'
             user.save()
-
             messages.success(request, 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ')
-            return redirect('login')  # เปลี่ยนเป็นหน้าเข้าสู่ระบบหลังจากลงทะเบียนสำเร็จ
+            return redirect('login')
         else:
-            # ฟอร์มไม่ถูกต้อง ส่งฟอร์มที่มีข้อมูลเดิมกลับไปพร้อมข้อความ error
             messages.error(request, 'มีข้อผิดพลาดในการสมัครสมาชิก กรุณาตรวจสอบข้อมูลที่กรอก')
     else:
         form = UserFarmerRegistrationForm()
@@ -71,17 +69,8 @@ def register_driver(request):
             user = form.save(commit=False)
             user.user_type = 'driver'
             user.save()
-
-            
-            # subject = 'ยืนยันการลงทะเบียน'
-            # message = f'ยินดีต้อนรับ \n\n คุณ{user.first_name} {user.last_name} \n\n ชื่อผู้ใช้ของคุณ: {user.username}!'
-            # from_email = 'จองง่ายได้เกี่ยว@rice.com'
-            # recipient_list = [user.email]
-            
-            # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-
             messages.success(request, 'สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ')
-            return redirect('login')  # เปลี่ยนเป็นหน้าเข้าสู่ระบบหลังจากลงทะเบียนสำเร็จ
+            return redirect('login') 
         else:
             messages.error(request, 'มีข้อผิดพลาดในการสมัครสมาชิก กรุณาตรวจสอบข้อมูลที่กรอก')
     else:
@@ -113,12 +102,6 @@ def user_login(request):
     else:
         form = AuthenticationForm()
     return render(request, 'accounts/registration/login.html', {'form': form})
-
-from .forms import CustomPasswordChangeForm
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-
-from django.contrib.auth import update_session_auth_hash
 
 @login_required
 def change_password(request):
@@ -198,13 +181,11 @@ def profile_update(request):
     
 @login_required
 def view_driver_profile(request, driver_id):
-    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     driver = get_object_or_404(CustomUser, id=driver_id, user_type='driver')
     is_vehicle_owner = Vehicle.objects.filter(driver=driver).exists()
     context = {
         'driver': driver,
         'is_vehicle_owner': is_vehicle_owner,
-        'no_of_pending_request': no_of_pending_request,
     }
     return render(request, 'driver/driver_profile.html', context)
 
@@ -223,7 +204,6 @@ def filter(request):
         if selected_vehicle_types:
             vehicles = vehicles.filter(type__in=selected_vehicle_types)
 
-        # Filter by driver availability
         if selected_start_month:
             start_date = datetime.strptime(selected_start_month, "%Y-%m").date()
             available_vehicles = []

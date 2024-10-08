@@ -170,10 +170,9 @@ def add_calendar_event(request):
         end = datetime.fromisoformat(request.POST.get('end'))
         farmer_id = request.POST.get('farmer')
 
-        # ตรวจสอบว่ามีการเชื่อมต่อกับ Google Calendar หรือไม่
         creds = get_credentials()
         if isinstance(creds, HttpResponseRedirect):
-            return JsonResponse({'status': 'redirect', 'url': creds.url})  # ส่ง URL กลับไปยัง AJAX เพื่อรีไดเรกต์
+            return JsonResponse({'status': 'redirect', 'url': creds.url}) 
 
         if CalendarEvent.objects.filter(driver=request.user, start__lt=end, end__gt=start).exists():
             return JsonResponse({'status': 'error', 'message': 'ช่วงเวลานี้มีงานแล้ว'})
@@ -187,7 +186,6 @@ def add_calendar_event(request):
             farmer_id=farmer_id
         )
 
-        # สร้าง Google Calendar event
         google_event = {
             'summary': title,
             'description': details,
@@ -196,9 +194,9 @@ def add_calendar_event(request):
             'reminders': {
                 'useDefault': False,
                 'overrides': [
-                    {'method': 'email', 'minutes': 1440},  # 1 day = 1440 minutes
-                    {'method': 'email', 'minutes': 60},    # 1 hour = 60 minutes
-                    {'method': 'popup', 'minutes': 60},    # Popup reminder 1 hour before
+                    {'method': 'email', 'minutes': 1440},  
+                    {'method': 'email', 'minutes': 60},    
+                    {'method': 'popup', 'minutes': 60},    
                     {'method': 'popup', 'minutes': 30},
                 ],
             },
@@ -225,23 +223,19 @@ def edit_calendar_event(request, event_id):
         start = parse_datetime(request.POST.get('start'))
         end = parse_datetime(request.POST.get('end'))
 
-        # เช็คการเชื่อมต่อกับ Google Calendar
         creds = get_credentials()
         if isinstance(creds, HttpResponseRedirect):
-            return JsonResponse({'status': 'redirect', 'url': creds.url})  # ส่ง URL กลับไปยัง AJAX เพื่อรีไดเรกต์
+            return JsonResponse({'status': 'redirect', 'url': creds.url}) 
 
-        # ตรวจสอบหากมีเหตุการณ์ที่ซ้อนทับกัน
         if CalendarEvent.objects.filter(driver=request.user, start__lt=end, end__gt=start).exclude(id=event_id).exists():
             return JsonResponse({'status': 'error', 'message': 'ช่วงเวลานี้มีงานแล้ว'})
 
-        # อัปเดตเหตุการณ์ในฐานข้อมูล
         event.title = title
         event.details = details
         event.start = start
         event.end = end
         event.save()
 
-        # อัปเดตเหตุการณ์ใน Google Calendar
         google_event = {
             'summary': title,
             'description': details,
@@ -251,9 +245,9 @@ def edit_calendar_event(request, event_id):
             'reminders': {
                 'useDefault': False,
                 'overrides': [
-                    {'method': 'email', 'minutes': 1440},  # 1 day = 1440 minutes
-                    {'method': 'email', 'minutes': 60},    # 1 hour = 60 minutes
-                    {'method': 'popup', 'minutes': 60},    # Popup reminder 1 hour before
+                    {'method': 'email', 'minutes': 1440}, 
+                    {'method': 'email', 'minutes': 60}, 
+                    {'method': 'popup', 'minutes': 60},   
                     {'method': 'popup', 'minutes': 30},
                 ],
             },
@@ -268,25 +262,19 @@ def edit_calendar_event(request, event_id):
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def delete_calendar_event(request, event_id):
     if request.method == 'POST':
-        # เช็คการเชื่อมต่อกับ Google Calendar
         creds = get_credentials()
         if isinstance(creds, HttpResponseRedirect):
-            return JsonResponse({'status': 'redirect', 'url': creds.url})  # ส่ง URL กลับไปยัง AJAX เพื่อรีไดเรกต์
+            return JsonResponse({'status': 'redirect', 'url': creds.url})
 
         event = get_object_or_404(CalendarEvent, id=event_id)
-        
-        # ลบเหตุการณ์จาก Google Calendar
         if event.google_event_id:
             try:
                 delete_google_calendar_event(creds, event.google_event_id)
             except Exception as e:
-                # ตรวจสอบหากเกิดข้อผิดพลาดกรณีที่เหตุการณ์ถูกลบไปแล้ว
                 if "Resource has been deleted" in str(e):
                     print(f"Event {event.google_event_id} already deleted from Google Calendar.")
                 else:
                     return JsonResponse({'status': 'error', 'message': 'Failed to delete the event from Google Calendar.'})
-
-        # ลบเหตุการณ์จากฐานข้อมูล
         event.delete()
         
         return JsonResponse({'status': 'success'})
@@ -338,12 +326,10 @@ def toggle_vehicle_status(request):
         vehicle_id = data.get('vehicle_id')
         vehicle = get_object_or_404(Vehicle, id=vehicle_id, driver=request.user)
 
-        # สลับสถานะ
         vehicle.status = not vehicle.status
         vehicle.save()
 
         return JsonResponse({'status': 'success', 'new_status': vehicle.status})
-
     return JsonResponse({'status': 'error'}, status=400)
 
 @login_required

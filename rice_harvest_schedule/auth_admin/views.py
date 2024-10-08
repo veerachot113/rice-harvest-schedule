@@ -62,7 +62,7 @@ def process_document(request, document_id):
         if action == 'approve':
             document.request_status = 'อนุมัติแล้ว'
             document.driver.is_staff = True
-            document.driver.is_active = True  # ให้เป็น is_active เมื่ออนุมัติเอกสาร
+            document.driver.is_active = True
             document.driver.save()
         elif action == 'decline':
             document.request_status = 'ปฏิเสธ'
@@ -70,7 +70,7 @@ def process_document(request, document_id):
             messages.error(request, 'Invalid action.')
             return redirect('document_review')
         document.note = note
-        document.response_date = timezone.now()  # บันทึกวันและเวลาตอบกลับ
+        document.response_date = timezone.now()  
         document.save()
         messages.success(request, f'เอกสารได้ถูก{action}เรียบร้อยแล้ว')
     return redirect('document_review')
@@ -80,9 +80,9 @@ def delete_all_documents(request, user_id):
     driver = get_object_or_404(CustomUser, id=user_id, user_type='driver')
     documents = DriverDocument.objects.filter(driver=driver)
     if request.method == 'POST':
-        documents.delete()  # ลบเอกสารทั้งหมดออกจากฐานข้อมูลด้วยคำสั่งเดียว
+        documents.delete() 
         driver.is_staff = False
-        driver.is_active = False  # เปลี่ยนสถานะผู้ใช้
+        driver.is_active = False 
         driver.save()
         messages.success(request, 'เอกสารทั้งหมดของผู้ใช้ได้ถูกลบเรียบร้อยแล้ว และสถานะผู้ใช้ถูกเปลี่ยนเป็นไม่ทำงานแล้ว')
     return redirect('view_driver_document', user_id=user_id)
