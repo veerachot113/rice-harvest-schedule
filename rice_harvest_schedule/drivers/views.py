@@ -439,6 +439,7 @@ def delete_harvest_area(request, area_id):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 @login_required
+@driver_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def driver_dashboard(request):
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
