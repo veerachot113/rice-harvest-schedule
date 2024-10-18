@@ -7,8 +7,11 @@ from .forms import DriverDocumentForm
 from accounts.models import CustomUser
 from bookings.models import Booking
 from django.utils import timezone
+from accounts.decorators import*
+
 
 @login_required
+@driver_required
 def upload_document(request):
     no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
@@ -30,6 +33,7 @@ def upload_document(request):
     return render(request, 'driver/upload_document.html', {'form': form, 'no_of_pending_documents': no_of_pending_documents, 'no_of_pending_request': no_of_pending_request})
 
 @login_required
+@driver_required
 def cancel_document(request, document_id):
     document = get_object_or_404(DriverDocument, id=document_id, driver=request.user)
     if document.request_status == 'รอดำเนินการ':
@@ -41,6 +45,7 @@ def cancel_document(request, document_id):
     return redirect('document_status')
 
 @login_required
+@driver_required
 def document_status(request):
     documents = DriverDocument.objects.filter(driver=request.user)
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()

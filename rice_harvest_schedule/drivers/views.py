@@ -20,7 +20,8 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from requests import Request
 from google.auth.transport.requests import Request
-from django.http import HttpResponseRedirect
+from django.urls import reverse
+from accounts.decorators import*
 
 def check_is_staff(user):
     return user.is_staff
@@ -44,7 +45,6 @@ def get_credentials():
         with open(TOKEN_FILE, 'rb') as token:
             creds = pickle.load(token)
 
-    # ถ้าไม่มี credentials หรือไม่ valid และมี refresh token
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             try:
@@ -52,12 +52,9 @@ def get_credentials():
                 with open(TOKEN_FILE, 'wb') as token:
                     pickle.dump(creds, token)
             except Exception as e:
-                # ลบไฟล์ token ออกหากการรีเฟรชล้มเหลว
                 if os.path.exists(TOKEN_FILE):
                     os.remove(TOKEN_FILE)
-                # ให้ flow ใหม่เพื่อรับ token ใหม่
                 return _start_google_flow()
-
         else:
             return _start_google_flow()
     
@@ -73,8 +70,6 @@ def _start_google_flow():
     return HttpResponseRedirect(auth_url)
 
 
-from django.urls import reverse
-from requests import Request
 @csrf_exempt
 def oauth2callback(request):
     flow = Flow.from_client_secrets_file(
@@ -92,7 +87,6 @@ def oauth2callback(request):
         with open(TOKEN_FILE, 'wb') as token:
             pickle.dump(credentials, token)
 
-        # ตรวจสอบว่ามี pending booking หรือไม่ ถ้ามีให้รีไดเรกต์กลับไปที่การยืนยันการจอง
         if 'pending_booking' in request.session:
             pending_booking = request.session['pending_booking']
             return HttpResponseRedirect(reverse('accept_booking', args=[pending_booking['booking_id']]))
@@ -112,13 +106,11 @@ def update_google_calendar_event(creds, event_id, event):
     service = build('calendar', 'v3', credentials=creds)
     event_result = service.events().get(calendarId='primary', eventId=event_id).execute()
     
-    # Update the event details
     event_result['summary'] = event['summary']
     event_result['description'] = event['description']
     event_result['start'] = event['start']
     event_result['end'] = event['end']
     
-    # Update attendees
     event_result['attendees'] = event.get('attendees', [])
     
     updated_event = service.events().update(calendarId='primary', eventId=event_id, body=event_result).execute()
@@ -134,6 +126,7 @@ def get_schedule(request, driver_id):
     return render(request, 'farmer/schedule.html', {'driver': driver, 'harvest_areas': harvest_areas}) 
 
 @login_required
+@driver_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def calendar_view(request):
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
@@ -289,12 +282,10 @@ def update_booking_dates(request, event_id):
         start = parse_datetime(request.POST.get('start'))
         end = parse_datetime(request.POST.get('end'))
 
-        # Update event dates
         event.start = start
         event.end = end
         event.save()
 
-        # Update the related booking dates (if exists)
         booking = Booking.objects.filter(
             vehicle__driver=request.user,
             farmer=event.farmer
@@ -306,7 +297,7 @@ def update_booking_dates(request, event_id):
             booking.save()
             return JsonResponse({'status': 'success'})
         else:
-            return JsonResponse({'status': 'success'})  # Even if no matching booking, return success
+            return JsonResponse({'status': 'success'})  
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 @login_required
@@ -316,8 +307,6 @@ def get_harvest_areas(request):
     )
     return JsonResponse(list(harvest_areas), safe=False)
 
-
-from django.http import JsonResponse
 
 @login_required
 def toggle_vehicle_status(request):
@@ -333,6 +322,7 @@ def toggle_vehicle_status(request):
     return JsonResponse({'status': 'error'}, status=400)
 
 @login_required
+@driver_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def add_vehicle(request):
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
@@ -384,7 +374,6 @@ def add_harvest_area(request):
         subdistrict = data.get('subdistrict')
         details = data.get('details')
 
-        # Check for overlapping dates
         overlapping_areas = HarvestArea.objects.filter(
             driver=request.user,
             start_date__lte=end_date,

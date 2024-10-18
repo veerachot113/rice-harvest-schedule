@@ -33,6 +33,7 @@ def custom_logout(request):
     return redirect('home')
 
 @login_required
+@driver_required
 def home_driver(request): 
     no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
     no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
@@ -40,6 +41,7 @@ def home_driver(request):
     return render(request, 'driver/home_driver.html', {'vehicles': vehicles, 'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
 
 @login_required
+@farmer_required
 def home_farmer(request):
     vehicles = Vehicle.objects.filter(status=True)
     return render(request, 'Farmer/home_farmer.html', {'vehicles': vehicles})
@@ -113,7 +115,7 @@ def change_password(request):
             user = form.save()
             update_session_auth_hash(request, user) 
             messages.success(request, 'รหัสผ่านของคุณถูกเปลี่ยนเรียบร้อยแล้ว!')
-            return redirect('change_password')  # Redirect to the same page to show the success message
+            return redirect('change_password') 
         else:
             messages.error(request, 'โปรดแก้ไขข้อผิดพลาดที่ปรากฏด้านล่าง.')
     else:
@@ -188,8 +190,6 @@ def view_driver_profile(request, driver_id):
         'is_vehicle_owner': is_vehicle_owner,
     }
     return render(request, 'driver/driver_profile.html', context)
-
-#ฟังก์การกรอกจังหวัด ประเภทรถ
 
 
 def filter(request):

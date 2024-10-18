@@ -92,6 +92,7 @@ def get_subdistricts(request):
     return JsonResponse(list(subdistricts), safe=False)
 
 @login_required
+@driver_required
 def decline_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     if request.method == 'POST':
@@ -99,10 +100,11 @@ def decline_booking(request, booking_id):
         booking.request_responded_by = request.user.username
         booking.save()
         return redirect('driver_booking_list')
-    return redirect('driver_booking_list')  # Redirect to driver booking list if not POST
+    return redirect('driver_booking_list')  
 
 
 @login_required
+@farmer_required
 def cancel_booking(request, booking_id):
     try:
         booking = get_object_or_404(Booking, id=booking_id)
@@ -117,6 +119,7 @@ def cancel_booking(request, booking_id):
 
 
 @login_required
+@farmer_required
 def farmer_booking_list(request):
     bookings = Booking.objects.filter(farmer=request.user)
     for booking in bookings:
@@ -124,6 +127,7 @@ def farmer_booking_list(request):
     return render(request, 'farmer/booking_farmerlist.html', {'bookings': bookings})
 
 @login_required
+@driver_required
 @user_passes_test(check_is_staff, login_url='upload_document', redirect_field_name=None)
 def driver_booking_list(request):
     no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
@@ -132,7 +136,6 @@ def driver_booking_list(request):
     for booking in bookings:
         booking.price = booking.vehicle.price * booking.quantity 
     return render(request, 'driver/booking_driverlist.html', {'bookings': bookings, 'no_of_pending_request': no_of_pending_request,'no_of_pending_documents': no_of_pending_documents})
-
 
 
 @login_required
@@ -156,30 +159,27 @@ def get_available_dates(request):
                 available_dates.add(current_date.strftime("%Y-%m-%d"))
                 current_date += timedelta(days=1)
 
-    # ดึงกิจกรรมที่มีอยู่ใน CalendarEvent และปิดวันที่ที่มีงานแล้ว
-    driver_id = request.GET.get('driver_id')  # รับ driver_id จาก request
+    driver_id = request.GET.get('driver_id')  
     if driver_id:
         existing_events = CalendarEvent.objects.filter(driver_id=driver_id).values_list('start', 'end')
         for start, end in existing_events:
             current_date = start.date()
             end_date = end.date()
             while current_date <= end_date:
-                available_dates.discard(current_date.strftime("%Y-%m-%d"))  # ลบวันที่ที่มีงานออกจาก available_dates
+                available_dates.discard(current_date.strftime("%Y-%m-%d"))  
                 current_date += timedelta(days=1)
 
-    # ดึง booking ที่มีสถานะ "รอดำเนินการ" และลบวันที่ที่มีการจองในช่วงนั้นออก
     pending_bookings = Booking.objects.filter(vehicle__driver_id=driver_id, request_status="รอดำเนินการ")
     for booking in pending_bookings:
         current_date = booking.appointment_start_date.date()
         end_date = booking.appointment_end_date.date()
         while current_date <= end_date:
-            available_dates.discard(current_date.strftime("%Y-%m-%d"))  # ลบวันที่ที่มีการจองรออนุมัติ
+            available_dates.discard(current_date.strftime("%Y-%m-%d"))  
             current_date += timedelta(days=1)
 
     return JsonResponse(list(available_dates), safe=False)
 
 
-from drivers.views import update_google_calendar_event  
 def create_google_calendar_event(creds, event):
     service = build('calendar', 'v3', credentials=creds)
     event_result = service.events().insert(calendarId='primary', body=event).execute()
@@ -191,7 +191,6 @@ def create_google_calendar_event(creds, event):
 def accept_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     
-    # เช็คว่ามีข้อมูลที่เก็บไว้ใน session หรือไม่ ถ้ามีให้ใช้ข้อมูลเหล่านั้น
     if request.method == 'GET' and 'pending_booking' in request.session:
         pending_booking = request.session.pop('pending_booking')
         title = pending_booking.get('title')
@@ -236,10 +235,8 @@ def accept_booking(request, booking_id):
 
     booking.appointment_end_date = end_datetime
 
-    # ตรวจสอบการเชื่อมต่อกับ Google Calendar
     creds = get_credentials()
     if isinstance(creds, HttpResponseRedirect):
-        # บันทึกข้อมูลการจองใน session ก่อนที่จะ redirect ไปยังการเชื่อมต่อ
         request.session['pending_booking'] = {
             'booking_id': booking_id,
             'title': title,
@@ -267,9 +264,9 @@ def accept_booking(request, booking_id):
             'reminders': {
                 'useDefault': False,
                 'overrides': [
-                    {'method': 'email', 'minutes': 1440},  # 1 day = 1440 minutes
-                    {'method': 'email', 'minutes': 60},    # 1 hour = 60 minutes
-                    {'method': 'popup', 'minutes': 60},    # Popup reminder 1 hour before
+                    {'method': 'email', 'minutes': 1440}, 
+                    {'method': 'email', 'minutes': 60},  
+                    {'method': 'popup', 'minutes': 60},    
                     {'method': 'popup', 'minutes': 30},
                 ],
             },
@@ -294,9 +291,9 @@ def accept_booking(request, booking_id):
             'reminders': {
                 'useDefault': False,
                 'overrides': [
-                    {'method': 'email', 'minutes': 1440},  # 1 day = 1440 minutes
-                    {'method': 'email', 'minutes': 60},    # 1 hour = 60 minutes
-                    {'method': 'popup', 'minutes': 60},    # Popup reminder 1 hour before
+                    {'method': 'email', 'minutes': 1440}, 
+                    {'method': 'email', 'minutes': 60},    
+                    {'method': 'popup', 'minutes': 60},    
                     {'method': 'popup', 'minutes': 30},
                 ],
             },
