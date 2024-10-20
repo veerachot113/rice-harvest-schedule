@@ -107,8 +107,8 @@ def user_login(request):
 
 @login_required
 def change_password(request):
-    # no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
-    # no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_documents = DriverDocument.objects.filter(driver=request.user, request_status="รอดำเนินการ").count()
+    no_of_pending_request = Booking.objects.filter(vehicle__driver=request.user, request_status="รอดำเนินการ").count()
     if request.method == 'POST':
         form = CustomPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
@@ -120,7 +120,7 @@ def change_password(request):
             messages.error(request, 'โปรดแก้ไขข้อผิดพลาดที่ปรากฏด้านล่าง.')
     else:
         form = CustomPasswordChangeForm(request.user)
-    return render(request, 'accounts/change_password.html', {'form': form}) #'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
+    return render(request, 'accounts/change_password.html', {'form': form ,'no_of_pending_request': no_of_pending_request, 'no_of_pending_documents': no_of_pending_documents})
 
 
 class CustomPasswordResetView(PasswordResetView):
