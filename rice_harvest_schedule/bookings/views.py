@@ -99,7 +99,7 @@ def decline_booking(request, booking_id):
         booking.request_responded_by = request.user.username
         booking.save()
         return redirect('driver_booking_list')
-    return redirect('driver_booking_list')  # Redirect to driver booking list if not POST
+    return redirect('driver_booking_list') 
 
 
 @login_required
