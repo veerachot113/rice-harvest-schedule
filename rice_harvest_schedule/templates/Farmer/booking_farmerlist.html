@@ -4,6 +4,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 {% endblock %}
+
 {% block booking %}
 <h1 class="text-4xl font-bold text-center mt-20 mb-10 text-gray-800">รายการคำขอ</h1>
 
@@ -61,8 +62,8 @@
                     {% for booking in bookings %}
                     <tr class="hover:bg-gray-50">
                         <th scope="row" class="px-4 py-3 text-center font-medium text-gray-800">{{ forloop.counter }}</th>
-                        <td class="px-5 py-4 text-gray-800">{{ booking.vehicle.driver.first_name }} {{ booking.vehicle.driver.last_name }}</td>
-                        <td class="px-5 py-4 text-gray-800">{{booking.vehicle.type }}</td>
+                        <td class="px-5 py-4 text-gray-800">{{ booking.fullname }}</td>
+                        <td class="px-5 py-4 text-gray-800">{{ booking.vehicle_type }}</td>
                         <td class="px-5 py-4 text-gray-800">{{booking.quantity }}</td>
                         <td class="px-5 py-4 text-gray-800">{{booking.address }}</td>
                         <td class="px-5 py-4 text-gray-800">{{booking.details }}</td>
@@ -89,10 +90,10 @@
                             {% endif %}
                         </td>
                         <td class="text-center">
-                            {% if booking.request_status == "อนุมัติแล้ว" %}
-                            <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded text-white" href="{% url 'get_schedule' booking.vehicle.driver.id %}">ดูตาราง</a>
+                            {% if booking.request_status == "อนุมัติแล้ว" and booking.driver_id %}
+                                <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-2 rounded text-white" href="{% url 'get_schedule' booking.driver_id %}">ดูตาราง</a>
                             {% else %}
-                            -
+                                <span class="text-red-500">ไม่มีตาราง</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -128,7 +129,7 @@
                     <tr class="hover:bg-gray-50">
                         <th scope="row" class="px-4 py-3 text-center font-medium text-gray-800">{{ forloop.counter }}</th>
                         <td class="px-5 py-4 text-gray-800">{{ booking.vehicle.driver.first_name }} {{ booking.vehicle.driver.last_name }}</td>
-                        <td class="px-5 py-4 text-gray-800">{{ booking.vehicle.type }}</td>
+                        <td class="px-5 py-4 text-gray-800">{{ booking.vehicle_type }}</td>
                         <td class="px-5 py-4 text-gray-800">{{ booking.quantity }}</td>
                         <td class="px-5 py-4 text-gray-800">{{ booking.address }}</td>
                         <td class="px-5 py-4 text-gray-800">{{ booking.details }}</td>
@@ -183,7 +184,7 @@
                     <tr class="hover:bg-gray-50">
                         <th scope="row" class="px-4 py-3 text-center font-medium text-gray-800">{{ forloop.counter }}</th>
                         <td class="px-5 py-4 text-gray-800">{{ booking.fullname }}</td>
-                        <td class="px-5 py-4 text-gray-800">{{ booking.vehicle.type }}</td>
+                        <td class="px-5 py-4 text-gray-800">{{ booking.vehicle_type }}</td>
                         <td class="px-5 py-4 text-gray-800">{{ booking.quantity }}</td>
                         <td class="px-5 py-4 text-gray-800">{{ booking.address }}</td>
                         <td class="px-5 py-4 text-gray-800">{{ booking.details }}</td>
@@ -193,8 +194,13 @@
                         <td class="px-5 py-4 text-gray-800">{{ booking.price }}</td>
                         <td class="text-green-500 font-bold text-center">{{ booking.request_status }}</td>
                         <td class="text-center">
-                            <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded text-white" href="{% url 'get_schedule' booking.vehicle.driver.id %}">ดูตาราง</a>
+                            {% if booking.request_status == "อนุมัติแล้ว" and booking.driver_id %}
+                                <a class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-2 rounded text-white" href="{% url 'get_schedule' booking.driver_id %}">ดูตาราง</a>
+                            {% else %}
+                                <span class="text-red-500">ไม่มีตาราง</span>
+                            {% endif %}
                         </td>
+                        
                     </tr>
                     {% endif %}
                     {% endfor %}
@@ -230,7 +236,7 @@
                     <tr class="hover:bg-gray-50">
                         <th scope="row" class="px-4 py-3 text-center font-medium text-gray-800">{{ forloop.counter }}</th>
                         <td class="px-5 py-4 text-gray-800">{{ booking.fullname }}</td>
-                        <td class="px-5 py-4 text-gray-800">{{ booking.vehicle.type }}</td>
+                        <td class="px-5 py-4 text-gray-800">{{ booking.vehicle_type }}</td>
                         <td class="px-5 py-4 text-gray-800">{{ booking.quantity }}</td>
                         <td class="px-5 py-4 text-gray-800">{{ booking.address }}</td>
                         <td class="px-5 py-4 text-gray-800">{{ booking.details }}</td>
@@ -249,3 +255,4 @@
     </div>
 </div>
 {% endblock %}
+

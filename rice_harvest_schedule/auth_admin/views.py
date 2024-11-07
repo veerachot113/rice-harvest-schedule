@@ -87,7 +87,6 @@ def delete_all_documents(request, user_id):
     if request.method == 'POST':
         documents.delete() 
         driver.is_staff = False
-        driver.is_active = False 
         driver.save()
         messages.success(request, 'เอกสารทั้งหมดของผู้ใช้ได้ถูกลบเรียบร้อยแล้ว และสถานะผู้ใช้ถูกเปลี่ยนเป็นไม่ทำงานแล้ว')
     return redirect('view_driver_document', user_id=user_id)
