@@ -213,14 +213,12 @@ def accept_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
     if request.method == 'GET' and 'pending_booking' in request.session:
-        # Load pending booking details from session if it exists
         pending_booking = request.session.pop('pending_booking')
         title = pending_booking.get('title')
         details = pending_booking.get('details')
         start_time_str = pending_booking.get('start_time_str')
         end_time_str = pending_booking.get('end_time_str')
     elif request.method == 'POST':
-        # Retrieve form data from POST request
         title = request.POST.get('title')
         details = request.POST.get('details')
         start_time_str = request.POST.get('appointment_start_time')
@@ -228,7 +226,6 @@ def accept_booking(request, booking_id):
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
-    # Ensure start and end times are provided
     if not start_time_str or not end_time_str:
         return JsonResponse({'status': 'error', 'message': 'Start and end times are required.'})
 
@@ -248,7 +245,6 @@ def accept_booking(request, booking_id):
     max_acres_per_day = booking.vehicle.max_acres_per_day
     threshold = 5
 
-    # Calculate the required days for booking based on acreage
     if quantity <= max_acres_per_day + threshold:
         days_required = 1
     else:
@@ -260,10 +256,8 @@ def accept_booking(request, booking_id):
 
     booking.appointment_end_date = end_datetime
 
-    # Check Google Calendar connection
     creds = get_credentials()
     if isinstance(creds, HttpResponseRedirect):
-        # Save booking info to session and redirect to Google OAuth if not authenticated
         request.session['pending_booking'] = {
             'booking_id': booking_id,
             'title': title,
@@ -276,11 +270,9 @@ def accept_booking(request, booking_id):
     if not creds:
         return JsonResponse({'status': 'error', 'message': 'Failed to connect to Google Calendar. Please try again later.'})
 
-    # Approve booking in the system
     booking.request_status = "อนุมัติแล้ว"
     booking.save()
 
-    # Check if calendar event already exists and update it
     calendar_event = CalendarEvent.objects.filter(driver=request.user, farmer=booking.farmer, start=start_datetime, end=end_datetime).first()
     if calendar_event:
         calendar_event.title = title
@@ -305,7 +297,6 @@ def accept_booking(request, booking_id):
         }
         update_google_calendar_event(creds, calendar_event.google_event_id, google_event)
     else:
-        # Create a new calendar event
         calendar_event = CalendarEvent.objects.create(
             driver=request.user,
             title=title,
